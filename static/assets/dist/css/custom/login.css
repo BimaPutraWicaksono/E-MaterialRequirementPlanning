@@ -1,0 +1,27 @@
+.background_login {
+    display: none; /* Sembunyikan jika sudah menggunakan background */
+}            
+
+.card {
+    box-shadow: none;
+}
+
+.row {
+    border-radius:10px;
+    background-color: white;
+}
+
+.login-page {
+    background-color: #ffffff;
+}
+
+.login-box-msg {
+    margin-bottom: 20px;
+}
+
+/* Atur agar gambar hilang pada tampilan mobile */
+@media (max-width: 768px) {
+    .banner {
+        display: none !important;
+    }
+}

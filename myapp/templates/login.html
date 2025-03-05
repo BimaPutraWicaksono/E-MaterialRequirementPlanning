@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="icon"
+      href="{% static 'assets/dist/img/shin.png' %}"
+      type="image/png"
+    />
+    <title>Login Shin Buhin</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}"
+    />
+    <!-- icheck bootstrap -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}"
+    />
+    <!-- Theme style -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/adminlte.min.css' %}"
+    />
+    <!-- jQuery -->
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+
+    <!-- SweetAlert2 -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css' %}"
+    />
+
+    <!-- SweetAlert2 -->
+    <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+  </head>
+  <body>
+    <div class="hold-transition login-page">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="login-box w-100" style="margin-block: 50px">
+            <div class="login-logo">
+              <a href="#"><b>Login</b></a>
+            </div>
+            <div class="card bg-transparent border-0">
+              <div class="card-body">
+                <p class="login-box-msg">Enter Username and Password</p>
+                {% load widget_tweaks %}
+                <form action="{% url 'login' %}" method="post">
+                  {% csrf_token %}
+                  <div class="form-group mb-3">
+                    <label for="username">{{ form.username.label_tag }}</label>
+                    {% render_field form.username class="form-control" id="username" %}
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="password">{{ form.password.label_tag }}</label>
+                    {% render_field form.password class="form-control" id="password" %}
+                  </div>
+                  <div class="text-center">
+                    <button
+                      type="submit"
+                      class="btn btn-primary btn-block"
+                      disabled
+                      id="signInButton"
+                    >
+                      <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 banner">
+          <div>
+            <img
+              class="img-login"
+              src="{% static 'assets/dist/img/shin.png' %}"
+              alt=""
+            />
+          </div>
+          <div class="mt-4">
+            <h4><b>SHIN BUHIN |</b> ENJIN</h4>
+          </div>
+          <h6 style="font-size: 13px">
+            "Spirit to become a beneficial human."
+          </h6>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .banner {
+        width: 300px;
+        height: 400px;
+        align-item: center;
+        text-align: center;
+        padding-top: 28%;
+        padding-right: 4%;
+        background-image: url("{% static "assets/banner2.jpeg" %}");
+        background-size: cover;
+      }
+
+      .hold-transition {
+        position: relative;
+        height: 100vh; /* Mengatur tinggi untuk menutupi seluruh viewport */
+        overflow: hidden; /* Menghindari overflow */
+        background-image: url("{% static "assets/dist/img/view1.jpg" %}");
+        background-size: cover; /* Menyesuaikan ukuran gambar */
+        background-position: center; /* Memposisikan gambar di tengah */
+        background-repeat: no-repeat; /* Mencegah gambar diulang */
+      }
+
+      .hold-transition::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.4
+        ); /* Warna hitam dengan opacity 0.4 */
+        z-index: 1; /* Memastikan overlay berada di atas background */
+      }
+
+      .background_login {
+        display: none; /* Sembunyikan jika sudah menggunakan background */
+      }
+
+      .card {
+        box-shadow: none;
+      }
+
+      .row {
+        border-radius: 10px;
+        background-color: white;
+        position: relative;
+        z-index: 2; /* Memastikan konten login berada di atas overlay */
+      }
+
+      .login-page {
+        background-color: #ffffff;
+      }
+
+      .login-box-msg {
+        margin-bottom: 20px;
+      }
+
+      /* Atur agar gambar hilang pada tampilan mobile */
+      @media (max-width: 768px) {
+        .banner {
+          display: none !important;
+        }
+      }
+
+      input[type="text"] {
+        border-radius: 10px;
+      }
+
+      input[type="password"] {
+        border-radius: 10px;
+      }
+
+      .btn-primary {
+        border-radius: 10px;
+      }
+
+      /* Tambahkan animasi swivel */
+      @keyframes swivel {
+        0% {
+          transform: rotateY(0deg);
+        }
+        50% {
+          transform: rotateY(180deg);
+        }
+        100% {
+          transform: rotateY(0deg);
+        }
+      }
+
+      .img-login {
+        width: 120px;
+        animation: swivel 5s infinite; /* Mengatur durasi dan pengulangan animasi */
+      }
+    </style>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
+    <script>
+      $(document).ready(function () {
+          {% for msg in messages %}
+              Swal.fire({
+                  icon: '{{ msg.tags }}',
+                  title: '{{ msg.tags|title }}',
+                  text: '{{ msg }}',
+              });
+          {% endfor %}
+
+          {% if form.non_field_errors %}
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: '{% for error in form.non_field_errors %}{{ error }}{% endfor %}',
+              })
+          {% endif %}
+
+          let usernamePasswordCheck = () => {
+              if ($('#username').val() !== '' && $('#password').val() !== '') {
+                  $('#signInButton').attr('disabled', false);
+              } else {
+                  $('#signInButton').attr('disabled', true);
+              }
+          }
+
+          $('#username').keyup(function () {
+              usernamePasswordCheck();
+          });
+          $('#password').keyup(function () {
+              usernamePasswordCheck();
+          });
+      });
+    </script>
+  </body>
+</html>

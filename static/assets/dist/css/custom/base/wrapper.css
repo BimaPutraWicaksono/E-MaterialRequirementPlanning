@@ -1,0 +1,11 @@
+
+.content-wrapper{
+    /* background: linear-gradient(45deg, rgb(255, 81, 81), darkgrey, lightgrey);
+    background-size: 600% 600%;
+    animation: gradientAnimation 10s ease infinite; */
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    flex-wrap: wrap;
+    background: rgb(238, 238, 238 );
+}

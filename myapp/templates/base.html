@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="assets/dist/img/shin.png" type="image/png" />
+    <title>Shin Buhin | Enjin</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="{% static 'assets/dist/img/shin.png' %}"
+    />
+
+    <!-- Google Font: Source Sans Pro -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}"
+    />
+    <!-- Theme style -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/adminlte.min.css' %}"
+    />
+    <!-- DataTables -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}"
+    />
+
+    <!-- Link to Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/aboutShinBuhin.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/base/sidebar.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/base/navbar.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/base/footer.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/base/wrapper.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/import_excel.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/dashboard.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/base/profil.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/applicator.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/carline.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'assets/dist/css/custom/machine.css' %}"
+    />
+
+    {% comment %} Alert {% endcomment %}
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'assets/plugins/sweetalert2/sweetalert2.min.css' %}"
+    />
+    <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+  </head>
+  <body class="hold-transition sidebar-mini">
+    <div class="container-global">
+      <!-- Site wrapper -->
+      <div class="wrapper">
+        <!-- Navbar -->
+        {% include 'navbar.html' %} {% include 'sidebar.html' %}
+        <div class="content-wrapper">{% block content %}{% endblock %}</div>
+        {% include 'footer.html' %}
+        <aside class="control-sidebar control-sidebar-dark">
+          {% include 'profil.html' %}
+          
+        </aside>
+      </div>
+    </div>
+
+    <!-- DataTables  & Plugins -->
+    <script src="{% static 'assets/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/jszip/jszip.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/pdfmake/pdfmake.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/pdfmake/vfs_fonts.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+
+    <!-- jQuery -->
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
+    <script>
+      $(function () {
+        $("#example1")
+          .DataTable({
+            responsive: true,
+            lengthChange: false,
+            autoWidth: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"],
+          })
+          .buttons()
+          .container()
+          .appendTo("#example1_wrapper .col-md-6:eq(0)");
+
+        $("#example2").DataTable({
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          info: true,
+          autoWidth: false,
+          responsive: true,
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,80 @@
+.custom-text-dark {
+  color: #000;
+}
+
+.info-box{
+  min-height: 60px !important;
+  background: whitesmoke;
+  padding: 20px;
+}
+
+.col-md-3{
+  margin: 0px !important;
+}
+
+.info-box-icon{
+  background-color: rgb(51, 51, 51) !important;
+}
+
+.btn-warning{
+  background: #666!important;
+  border: none;
+  border-radius: 10px;
+}
+
+.btn-warning:hover{
+  background: #666666d3!important;
+}
+
+/* new cs */
+
+.card-body {
+  display: block; /* Change inline to block to work with height */
+  max-height: 415px; /* Set a max height */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.card{
+  background-color: rgb(228, 228, 228);
+  padding: 20px;
+  padding-bottom: 20px;
+  border-radius: 10px;
+}
+
+.card-carline {
+  padding: 20px;
+  box-shadow: 2px 2px 10px #b9b9b9; /* Example values */
+  border-radius: 10px;
+  background-color: white;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+
+
+/* load_aplicator */
+
+.stroke{
+  background-color: #494949;
+  width: 350px;
+  border-radius: 10px;
+  text-align: center;
+  padding-bottom: 3px;
+  padding-top: 10px;
+  margin-top: 0px !important;
+  margin:10px;
+  color: white;
+}
+
+.text-center{
+  width: 25%;
+}
+
+.row {
+  background-color: white;
+  border-radius: 10px;
+  max-height: 400px; /* Set a maximum width of 300px */
+  height: 100%; /* Ensure the width is 100% of the parent container */
+  overflow-y: auto; /* Scroll vertically if content overflows */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}

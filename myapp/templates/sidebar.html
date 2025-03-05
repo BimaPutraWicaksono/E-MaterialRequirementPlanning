@@ -1,0 +1,149 @@
+{% load static %} {% load user_tags %}
+
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <a href="{% url 'dashboard' %}" class="brand-link" style="width: 100%">
+    <img
+      src="{% static 'assets/dist/img/shin.png' %}"
+      class="brand-image img-circle elevation-3 ml-2"
+      data-widget="pushmenu"
+      style="padding: 3px"
+    />
+    <span class="brand-text font-weight-light" id="shinLink"
+      ><b>SHIN BUHIN |</b> ENJIN</span
+    >
+  </a>
+  <div class="sidebar">
+    <nav class="mt-2">
+      <ul
+        class="nav nav-pills nav-sidebar flex-column"
+        data-widget="treeview"
+        role="menu"
+        data-accordion="false"
+      >
+        <!-- Dashboard -->
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+        >
+          <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
+            <i class="nav-icon fas fa-home"></i>
+
+            <p>Dashboard</p>
+          </a>
+        </li>
+
+        <!-- Sparepart -->
+        <li class="nav-header" style="color: gray">Sparepart</li>
+        <!-- Applicator -->
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'applicator' %}active{% endif %}"
+        >
+          <a href="{% url 'applicator' %}" class="nav-link">
+            <i class="nav-icon fas fa-screwdriver"></i>
+            <p>Applicator</p>
+          </a>
+        </li>
+        <!-- Machine -->
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'machine' %}active{% endif %}"
+        >
+          <a href="{% url 'machine' %}" class="nav-link">
+            <i class="nav-icon fas fa-tools"></i>
+            <p>Machine</p>
+          </a>
+        </li>
+        <!-- Seal Unit -->
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'sealUnit' %}active{% endif %}"
+        >
+          <a href="{% url 'sealUnit' %}" class="nav-link">
+            <i class="nav-icon fas fa-toolbox"></i>
+            <p>Seal Unit</p>
+          </a>
+        </li>
+
+        <!-- Tools -->
+        <li class="nav-header" style="color: gray">Tools</li>
+        <!-- Production Plan -->
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'allSixProductionPlan' %}active{% endif %}"
+        >
+          <a href="{% url 'allSixProductionPlan' %}" class="nav-link">
+            <i class="nav-icon far fa-list-alt"></i>
+            <p>Six Production Plan</p>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'carline' or request.resolver_match.url_name == 'sixProductionPlan' or request.resolver_match.url_name == 'machineLoading' or request.resolver_match.url_name == 'machineLoadingCalculate' or request.resolver_match.url_name == 'requirementPartAllCarline' %}active{% endif %}"
+        >
+          <a href="{% url 'carline' %}" class="nav-link">
+            <i class="nav-icon fas fa-truck-loading"></i>
+            <p>Carline</p>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'strokePart'%}active{% endif %}"
+        >
+          <a href="{% url 'strokePart' %}" class="nav-link">
+            <i class="nav-icon fas fa-calculator"></i>
+            <p>Stroke Part</p>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'loadingPart' %}active{% endif %}"
+        >
+          <a
+            href="{% url 'loadingPart' %}"
+            class="nav-link"
+            id="loadingPartLink"
+          >
+            <i class="nav-icon fas fa-spinner"></i>
+            <p>Loading Part</p>
+          </a>
+        </li>
+        <!-- About Us -->
+        <li class="nav-header" style="color: gray">About Us</li>
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+        >
+          <a href="{% url 'about' %}" class="nav-link">
+            <i class="nav-icon far fa-calendar-alt"></i>
+            <p>Shin Buhin</p>
+          </a>
+        </li>
+        {% if request.user|has_group:"Admin" %}
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'daftar_akun' %}active{% endif %}"
+        >
+          <a href="{% url 'daftar_akun' %}" class="nav-link">
+            <i class="nav-icon fas fa-user-cog"></i>
+            <p>Account</p>
+          </a>
+        </li>
+        {%endif%}
+      </ul>
+    </nav>
+    <!-- Loading Spinner (Initially hidden) -->
+    <div id="loadingSpinner" class="d-none">
+      <div class="spinner-overlay">
+        <div class="spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+<script>
+  document.getElementById("shinLink").addEventListener("click", function () {
+    document.getElementById("loadingSpinner").classList.remove("d-none");
+  });
+  document
+    .getElementById("loadingPartLink")
+    .addEventListener("click", function () {
+      document.getElementById("loadingSpinner").classList.remove("d-none");
+    });
+  document
+    .getElementById("dashboardLink")
+    .addEventListener("click", function () {
+      document.getElementById("loadingSpinner").classList.remove("d-none");
+    });
+</script>

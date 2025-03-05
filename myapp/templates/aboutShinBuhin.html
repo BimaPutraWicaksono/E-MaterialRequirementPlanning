@@ -1,0 +1,123 @@
+{% extends "base.html" %} {% block content %} {% load user_tags %}
+<div class="container">
+  <div class="main-content">
+    <h2>About Us</h2>
+    <p>
+      Welcome to <strong>Shin Buhin | Enjin</strong>, your trusted partner in
+      precision part requirement calculations. We provide advanced tools to
+      simplify the process of determining necessary parts for manufacturing. Our
+      platform combines sophisticated algorithms with a user-friendly interface,
+      offering accurate results, streamlined workflows, and reduced errors.
+      Thank you for choosing us to enhance your production process efficiency.
+    </p>
+
+    <!-- User Manual Section -->
+    <div class="user-manual">
+      <h2>User Manual</h2>
+      <p>
+        To help you get the most out of this website, we’ve created a detailed
+        user manual. This guide will walk you through each step of the process,
+        from registration to using our precise calculation tools. Below is an
+        overview of what the manual offers:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Step-by-Step Instructions:</strong> Detailed explanations of
+          each feature, complete with illustrations for easy understanding.
+        </li>
+        <li>
+          <strong>User Guide:</strong> Special guidance for beginners to help
+          you get started quickly without confusion.
+        </li>
+        <li>
+          <strong>Tips and Tricks:</strong> Maximize platform efficiency with
+          these handy tips on spare part calculation and production process
+          management.
+        </li>
+        <li>
+          <strong>Troubleshooting:</strong> Solutions to common issues you might
+          encounter while using the platform.
+        </li>
+        <li>
+          <strong>Practical Case Studies:</strong> Real-world examples where our
+          tools have expedited production workflows and decision-making.
+        </li>
+        <li>
+          <strong>Advanced Features:</strong> Guidance on using advanced
+          features for more experienced users or those with complex
+          requirements.
+        </li>
+      </ul>
+
+      <p>
+        By following this guide, you’ll gain a thorough understanding of how our
+        platform works, allowing you to optimize each feature for your specific
+        needs. If you have any questions or need further assistance, our support
+        team is always here to help. We appreciate your trust in
+        <strong>Shin Buhin | Enjin</strong> and are committed to supporting your
+        success.
+      </p>
+    </div>
+  </div>
+
+  <!-- Buttons Positioned at the Bottom Right -->
+  <div class="button-container">
+    <!-- Manual Book Button -->
+    <button type="button" class="export-btn" id="manualBookButton">
+      <i class="fas fa-book mr-1"></i> Manual Book
+    </button>
+
+    <!-- Reset All Button -->
+    {% if request.user|has_group:"Admin" %}
+    <button type="button" class="reset-btn" id="deleteAllButton">
+      <i class="fas fa-trash mr-1"></i> Reset All
+    </button>
+    {% endif %}
+
+    <form
+      method="POST"
+      action="{% url 'delete_all_data' %}"
+      id="deleteAllForm"
+      style="display: none"
+    >
+      {% csrf_token %}
+    </form>
+  </div>
+</div>
+
+<!-- SweetAlert script for delete confirmation -->
+<script>
+  document
+    .getElementById("deleteAllButton")
+    .addEventListener("click", function () {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "All data [SPAREPART & TOOLS] will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+          cancelButton: "custom-swal-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById("deleteAllForm").submit();
+        }
+      });
+    });
+
+  // Manual Book button event listener
+  document
+    .getElementById("manualBookButton")
+    .addEventListener("click", function () {
+      window.location.href = "#"; // Redirect to manual book page
+    });
+</script>
+
+{% endblock %}

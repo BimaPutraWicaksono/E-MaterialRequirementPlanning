@@ -1,0 +1,119 @@
+.main-sidebar {
+    background-color: #ffffff !important;
+}
+
+.sidebar {
+    padding-top: 20px;
+    background-color: #ffffff !important;
+}
+
+.form-control-sidebar {
+    background-color: #ffffff !important;
+    border: 1px solid #1a1a1a!important;
+    border-radius: 3px;
+}
+
+.btn-sidebar {
+    background-color: #b5b5b5 !important;
+    height: 38px;
+}
+
+.input-group {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    width: 250px !important;
+    margin-left: 50px !important;
+    border-radius: 10px !important;
+   
+  }
+
+input[type="file"] {
+    margin-bottom: 20px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+input[type="text"] {
+    border-radius: 10px;
+}
+
+.brand-link {
+    border-bottom: 0 !important;
+    color: dimgrey !important;
+    display: flex;
+    padding-top: 35px;
+}
+
+.search-input {
+    color: #333333 !important;
+    background-color: #f0f0f0 !important;
+    border: 1px solid #ccc !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+}
+
+.form-control-sidebar {
+    color: #333333 !important;
+    padding-left: 10px;
+    width: 190px !important;
+}
+
+p {
+    color: rgb(36, 36, 36) !important;
+}
+
+p:active {
+    color: #f0f0f0 !important; /* Warna putih saat diklik */
+}
+
+a.nav-link:hover {
+    background: linear-gradient(to right, rgb(255, 81, 81), grey, white) !important;
+    color:#f0f0f0;
+    border-radius: 5px;
+}
+
+.brand-image {
+    height: 100% !important; /* Set a fixed width */
+    border-radius: 5px; /* Rounded corners */
+    /* object-fit: cover; Ensures the image covers the area without distortion */
+    margin-right: 5px; /* Space between the image and text */
+}
+
+.control-sidebar{
+    background-color: rgb(206, 206, 206) !important;
+    
+}
+
+.nav-item.active .nav-link {
+    background: linear-gradient(to right, rgb(255, 81, 81), rgb(167, 167, 167), white) !important;
+    color: #ffffff !important;
+    border-radius: 5px;
+}
+
+.nav-item .nav-link {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav nav-treeview {
+    display: none; /* Sembunyikan submenu secara default */
+}
+
+.nav nav-treeview.active {
+    display: block; /* Tampilkan submenu ketika aktif */
+}
+
+.menu-open .nav-treeview {
+    display: block;
+}
+
+.nav-link.active,
+.nav-link.active:hover {
+    background-color: #1a1a1a; /* Warna latar belakang yang diinginkan */
+    color: #ffffff !important; /* Warna teks putih untuk kontras */
+}
+
+/* Spesifik hover */
+.nav-link:hover {
+    color: #ffffff !important;
+}

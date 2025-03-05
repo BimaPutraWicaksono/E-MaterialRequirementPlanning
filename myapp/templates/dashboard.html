@@ -1,0 +1,143 @@
+{% extends "base.html" %} {% load static %} {% block content %} {% load user_tags %}
+<div class="container" id="main-content">
+  <h1 class="mb-5 mt-4">MONTHLY PARTS REQUIREMENT</h1>
+
+  <div class="d-flex mb-4">
+    <input
+      type="text"
+      id="searchMachineNumber"
+      placeholder="Search Machine Number"
+      class="form-control col-2"
+    />
+    <input
+      type="text"
+      id="searchName"
+      placeholder="Search Part Name"
+      class="form-control col-2"
+    />
+    <input
+      type="text"
+      id="searchNumber"
+      placeholder="Search Part Number"
+      class="form-control col-2"
+    />
+    <input
+      type="text"
+      id="searchCategory"
+      placeholder="Search Category"
+      class="form-control col-2"
+    />
+    <a href="{% url 'dashboard' %}" class="btn btn-warning">
+      <i class="nav-icon fas fa-redo-alt" style="color: white"></i>
+    </a>
+    <a href="#" class="col-3">
+      <i></i>
+    </a>
+  </div>
+
+  <div class="table-container">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Machine Number</th>
+          <th>Part Name</th>
+          <th>Part Number</th>
+          <th>Level / Marking</th>
+          <th>Category</th>
+          <th>JAN</th>
+          <th>FEB</th>
+          <th>MAR</th>
+          <th>APR</th>
+          <th>MAY</th>
+          <th>JUN</th>
+          <th>JUL</th>
+          <th>AUG</th>
+          <th>SEP</th>
+          <th>OCT</th>
+          <th>NOV</th>
+          <th>DEC</th>
+          <th>Average Parts Requirement</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        {% for item in combinedData %}
+        <tr>
+          <td>{{ item.machineNumber }}</td>
+          <td>{{ item.nameDash }}</td>
+          <td>{{ item.numberDash }}</td>
+          <td>{{ item.levelDash }}</td>
+          <td>{{ item.source }}</td>
+          <td>{{ item.januaryDash }}</td>
+          <td>{{ item.februaryDash }}</td>
+          <td>{{ item.marchDash }}</td>
+          <td>{{ item.aprilDash }}</td>
+          <td>{{ item.mayDash }}</td>
+          <td>{{ item.juneDash }}</td>
+          <td>{{ item.julyDash }}</td>
+          <td>{{ item.augustDash }}</td>
+          <td>{{ item.septemberDash }}</td>
+          <td>{{ item.oktoberDash }}</td>
+          <td>{{ item.novemberDash }}</td>
+          <td>{{ item.decemberDash }}</td>
+          <td>{{ item.averageDash|floatformat:"2" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="18">No results found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-end mt-3">
+    {% if request.user|has_group:"Admin" %}
+    <button type="submit" class="export-btn">
+      <a href="{% url 'export_dashboard' %}"
+        ><i class="nav-icon fas fa-download mr-2"></i>Export</a
+      >
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchMachineNumber = document.getElementById("searchMachineNumber");
+    const searchName = document.getElementById("searchName");
+    const searchNumber = document.getElementById("searchNumber");
+    const searchCategory = document.getElementById("searchCategory");
+    const tableBody = document.getElementById("table-body");
+
+    function filterTable() {
+      const machineNumberFilter = searchMachineNumber.value.toLowerCase();
+      const nameFilter = searchName.value.toLowerCase();
+      const numberFilter = searchNumber.value.toLowerCase();
+      const categoryFilter = searchCategory.value.toLowerCase();
+
+      Array.from(tableBody.getElementsByTagName("tr")).forEach((row) => {
+        const machineNumber = row.cells[0].textContent.toLowerCase();
+        const name = row.cells[1].textContent.toLowerCase();
+        const number = row.cells[2].textContent.toLowerCase();
+        const category = row.cells[4].textContent.toLowerCase();
+
+        const machineNumberMatch = machineNumber.includes(machineNumberFilter);
+        const nameMatch = name.includes(nameFilter);
+        const numberMatch = number.includes(numberFilter);
+        const categoryMatch = category.includes(categoryFilter);
+
+        if (machineNumberMatch && nameMatch && numberMatch && categoryMatch) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    }
+
+    searchMachineNumber.addEventListener("input", filterTable);
+    searchName.addEventListener("input", filterTable);
+    searchNumber.addEventListener("input", filterTable);
+    searchCategory.addEventListener("input", filterTable);
+  });
+</script>
+
+{% endblock %}

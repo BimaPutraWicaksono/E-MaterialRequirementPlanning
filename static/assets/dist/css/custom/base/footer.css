@@ -1,0 +1,6 @@
+.main-footer{
+    background: linear-gradient(45deg, rgb(255, 81, 81), darkgrey, lightgrey);
+    background-size: 600% 600%;
+    animation: gradientAnimation 10s ease infinite;
+    color: white;
+}

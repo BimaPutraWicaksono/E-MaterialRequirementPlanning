@@ -1,0 +1,203 @@
+.swal2-popup{
+    width: 35% !important;
+    height: 70% !important;
+    padding-bottom: 10px !important;
+}
+
+.swal2-title{
+    padding-top: 0px !important;
+}
+
+.swal2-actions{
+    margin-top: 0px !important;
+}
+
+.swal2-icon{
+    margin-top: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+}
+
+.swal2-html-container{
+    margin: 0px !important;
+}   
+
+
+/* style for import excel button */
+.upload-container {
+    background-color: #fff;
+    padding-top: 50px !important;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+}
+
+.upload-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Styling the file upload wrapper */
+.file-upload-wrapper {
+    padding-top: 3px;
+    padding-left: 3px;
+    margin-left: 10px ;
+    margin-right: 10px;
+    position: relative;
+    width: 100%;
+    height: 40px;
+    border: 2px dashed #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.file-upload-wrapper:after {
+    content: attr(data-text);
+    color: #888;
+    font-size: 14px;
+    padding: 10px;
+    display: block;
+    margin-right:20px;
+}
+
+.file-upload-field {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-field:focus {
+    outline: none;
+}
+
+/* Styling the upload button */
+.upload-btn, .export-btn, .reset-btn, .add-btn, .ok-btn {
+    display: inline-block;
+    margin-top: 10px;
+    margin-right: 4px;
+    padding: 7px 20px;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+}
+
+.mcl-btn, .spp-btn{
+    padding-left: 10px; 
+    padding-right: 10px;
+    display: inline-block;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.upload-btn{
+    background-color: #32a0d3;
+    margin-top: 0px;
+}
+
+.export-btn{
+    background-color: #5ad14f;
+}
+
+.reset-btn{
+    background-color: #FF414D;
+    color: white !important;
+}
+
+.add-btn{
+    background-color: #666666;
+}
+
+.ok-btn{
+    background-color: #ffffff;
+    color: rgb(29, 29, 29) !important;
+}
+
+.toggle-btn{
+    padding: 3px;
+    border-radius: 10px;
+    background-color: #c4c4c4;
+    height: 40x;
+    color: #666;
+}
+
+.mcl-btn{
+    background-color: #666666;
+}
+
+.spp-btn{
+    background-color: #666666;
+}
+
+.upload-btn:hover{
+    background-color: #2772c9d7;
+    color: white;
+}
+
+.export-btn:hover{
+    background-color: #5ad14fcc;
+    color: white;
+
+}
+
+.reset-btn:hover{
+    background-color: #ff414ed3;
+    color: white;
+
+}
+
+.add-btn:hover{
+    background-color: #666666d3;
+    color: white;
+}
+
+.ok-btn:hover{
+    background-color: #cacacad3;
+    color: white;
+}
+
+.mcl-btn:hover{
+    background-color: #666666d2;
+}
+
+.spp-btn:hover{
+    background-color: #666666d3;
+}
+
+/* for modal script */
+/* Custom styling for SweetAlert2 modal */
+.custom-swal-popup {
+    background-color: #f5f5f5; /* Ubah warna background */
+    border-radius: 15px !important; /* Ubah radius border */
+    padding: 20px; /* Tambahkan padding */
+  }
+  
+  
+  .custom-swal-confirm-button {
+    background-color: #1AA6B7 !important; /* Ubah warna tombol konfirmasi */
+    color: #fff !important; /* Ubah warna teks tombol */
+    border-radius: 10px !important; /* Ubah radius tombol */
+  }
+  
+  .custom-swal-cancel-button {
+    background-color: #FF414D !important; /* Ubah warna tombol batal */
+    color: #fff !important; /* Ubah warna teks tombol */
+    border-radius: 10px !important; /* Ubah radius tombol */
+  }
+  

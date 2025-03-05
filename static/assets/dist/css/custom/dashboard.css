@@ -1,0 +1,150 @@
+.container {
+    max-width: 108% !important; 
+    width: 100% !important;  
+    margin: 0 auto;
+    margin-top: 2px !important;
+    padding: 20px;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    background-color: #ffffff;
+    border-radius: 4px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    max-height: 450px; /* Atur tinggi maksimal */
+    overflow-y: auto; /* Scroll vertikal */
+    
+}
+
+form {
+    display: inline-block;
+    text-align: left;
+    max-width: 500px;
+    width: 100%;
+}
+
+
+/* Flexbox adjustments for header content */
+.d-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter {
+    flex-direction: column;
+}
+
+hr {
+    margin: 30px 0;
+    border: 0;
+    /* border-top: 1px solid #ddd; */
+    width: 100%;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #343a40;
+    font-size: 1.5em;
+}
+
+th,
+td {
+    padding: 8px 12px;
+    /* border: 1px solid #dee2e6; */
+    font-size: 0.9em;
+    
+}
+
+td{
+    text-align: left;
+}
+
+td.action{
+    text-align: center !important;
+    align-items: center !important ;
+    justify-content: center !important;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+th {
+    background-color: #494949 !important;
+    color: #fff;
+    text-align: center;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.merged-cell {
+    text-align: center;
+    background-color: #6c757d;
+    color: #fff;
+    /* border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6; */
+}
+
+.export-container {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+}
+
+.export-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1em;
+}
+
+.export-btn:hover {
+    background-color: #218838;
+}
+
+.fas fa-sort{
+    color: #f2f2f2 !important;
+}
+
+a{
+    color: #f2f2f2;
+}
+
+a:hover{
+    color: #9a9a9a;
+}
+
+/* sidebar nitip */
+.main-sidebar {
+    display: block !important; /* Pastikan sidebar selalu tampil */
+    visibility: visible !important;
+    position: fixed !important; /* Untuk menjaga sidebar tetap pada posisinya */
+    z-index: 9999 !important; /* Agar tidak tertutup oleh elemen lain */
+}
+
+@media (max-width: 768px) {
+    .main-sidebar {
+      width: 250px !important; /* Sesuaikan lebar sidebar di layar kecil */
+      left: 0 !important; /* Pastikan sidebar muncul di sebelah kiri */
+      top: 0 !important; /* Pastikan sidebar berada di bagian atas */
+      bottom: 0 !important;
+      height: 100% !important; /* Sidebar full height */
+    }
+  
+    /* Memastikan konten utama tidak tertutup oleh sidebar */
+    .content {
+      margin-left: 250px !important; /* Sesuaikan jarak konten dengan sidebar */
+    }
+  }
+  
+  .main-sidebar {
+    z-index: 1000 !important; /* Pastikan z-index lebih tinggi dari elemen lain */
+  }
+  

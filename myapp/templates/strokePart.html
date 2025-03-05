@@ -1,0 +1,349 @@
+{% extends "base.html" %} {% block content %} {% load user_tags %}
+
+<div class="container">
+  <h1 class="mt-3">LIST STROKE PART</h1>
+
+  <!-- Add Stroke Part Form and Search Input in One Row -->
+  <div class="card mt-5">
+    <div class="card-lite">
+      <div class="d-flex justify-content-end mb-3 mt-2">
+        <!-- Search Input -->
+        <div class="col-2 mb-2 mr-2">
+          <input
+            type="text"
+            id="searchApplicator"
+            placeholder="Search Part Name"
+            class="form-control"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Stroke Part Table -->
+    <div>
+      <div class="d-flex justify-content-between">
+        <div class="stroke">
+          <h6>Part Name</h6>
+        </div>
+        <div class="stroke">
+          <h6>Image</h6>
+        </div>
+        <div class="stroke">
+          <h6>Stroke Part</h6>
+        </div>
+        {% if request.user|has_group:"Admin" %}
+        <div class="stroke">
+          <h6>Actions</h6>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="roww col-12">
+        <div class="table-container">
+          <table
+            class="table-stroke"
+            style="border-collapse: collapse; width: 100%"
+          >
+            <tbody>
+              {% for applicator in applicators %}
+              <tr>
+                <td class="text-center col-3">{{ applicator.name }}</td>
+                <td class="text-center col-3">
+                  {% if applicator.image %}
+                  <img
+                    src="{{ applicator.image.url }}"
+                    alt="{{ applicator.name }}"
+                    class="img-thumbnail"
+                  />
+                  {% else %} No Image {% endif %}
+                </td>
+                <td class="text-center col-3">{{ applicator.loading }}</td>
+                {% if request.user|has_group:"Admin" %}
+                <td class="text-center col-3">
+                  <button
+                    class="export-btn"
+                    onclick="openModal('editModal{{ applicator.id }}')"
+                  >
+                    <i class="nav-icon fas fa-edit mr-2"></i>
+                    Edit
+                  </button>
+                  <button
+                    class="reset-btn"
+                    onclick="openModal('deleteModal{{ applicator.id }}')"
+                  >
+                    <i class="nav-icon fas fa-trash-alt mr-2"></i>
+                    Delete
+                  </button>
+                </td>
+                {% endif %}
+              </tr>
+
+              <!-- Edit Modal -->
+              <div id="editModal{{ applicator.id }}" class="modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h2>Edit</h2>
+                    <span
+                      class="close"
+                      style="color: black"
+                      onclick="closeModal('editModal{{ applicator.id }}')"
+                      >&times;</span
+                    >
+                  </div>
+                  <div class="modal-body">
+                    <form method="post" enctype="multipart/form-data">
+                      {% csrf_token %}
+                      <input
+                        type="hidden"
+                        name="applicator_id"
+                        value="{{ applicator.id }}"
+                      />
+                      <div class="mb-3">
+                        <label for="name" class="form-label">Part Name</label>
+                        <input
+                          type="text"
+                          id="partName{{ applicator.id }}"
+                          name="name"
+                          value="{{ applicator.name }}"
+                          required
+                          class="form-control"
+                          placeholder="Part Name must be the same as import in applicator"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="loading" class="form-label">Stroke</label>
+                        <input
+                          type="number"
+                          name="loading"
+                          value="{{ applicator.loading }}"
+                          required
+                          class="form-control"
+                          placeholder="ex: 200000"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="image" class="form-label">Image</label>
+                        <input type="file" name="image" />
+                        {% if applicator.image %}
+                        <img
+                          src="{{ applicator.image.url }}"
+                          alt="{{ applicator.name }}"
+                          class="img-thumbnail mt-2"
+                        />
+                        {% endif %}
+                      </div>
+                      <div class="d-flex justify-content-end">
+                        <button type="submit" name="edit" class="upload-btn">
+                          Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete Modal -->
+              <div id="deleteModal{{ applicator.id }}" class="modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h2>Delete</h2>
+                    <span
+                      class="close"
+                      style="color: black"
+                      onclick="closeModal('deleteModal{{ applicator.id }}')"
+                      >&times;</span
+                    >
+                  </div>
+                  <div class="modal-body">
+                    <p>
+                      Are you sure you want to delete "{{ applicator.name }}"?
+                    </p>
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post">
+                      {% csrf_token %}
+                      <input
+                        type="hidden"
+                        name="applicator_id"
+                        value="{{ applicator.id }}"
+                      />
+                      <button type="submit" name="delete" class="reset-btn">
+                        <i class="nav-icon fas fa-trash-alt mr-2"></i>
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button to Open the Add Modal -->
+    {% if request.user|has_group:"Admin" %}
+    <div class="d-flex justify-content-end mt-3">
+      <button class="upload-btn" onclick="openModal('addModal')">
+        <i class="fas fa-plus mr-1"></i>
+        Add Stroke Part
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add Stroke Part</h2>
+      <span class="close" style="color: black" onclick="closeModal('addModal')"
+        >&times;</span
+      >
+    </div>
+    <div class="modal-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="name" class="form-label">Part Name</label>
+          <input
+            type="text"
+            id="partName"
+            name="name"
+            required
+            class="form-control"
+            placeholder="Part Name must be the same as import in applicator"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="loading" class="form-label">Stroke Part</label>
+          <input
+            type="number"
+            name="loading"
+            required
+            class="form-control"
+            placeholder="ex: 200000"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="image" class="form-label">Image</label>
+          <input type="file" name="image" />
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" name="add" class="upload-btn">
+            <i class="fas fa-plus mr-1"></i>
+            Add
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(modalId) {
+    document.getElementById(modalId).style.display = "block";
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    var modals = document.getElementsByClassName("modal");
+    for (var i = 0; i < modals.length; i++) {
+      if (event.target == modals[i]) {
+        modals[i].style.display = "none";
+      }
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchApplicator");
+    searchInput.addEventListener("keyup", function () {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll(".table-stroke tbody tr");
+
+      rows.forEach((row) => {
+        const applicatorName = row
+          .querySelector("td:first-child")
+          .textContent.toLowerCase();
+
+        // Tampilkan atau sembunyikan baris berdasarkan kecocokan pencarian
+        if (applicatorName.includes(searchTerm)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  });
+
+  // Event listener untuk mengubah input menjadi uppercase
+  document.getElementById("partName").addEventListener("input", function () {
+    this.value = this.value.toUpperCase();
+  });
+
+  // Event listener untuk semua input Part Name berdasarkan applicator.id
+  document.querySelectorAll('[id^="partName"]').forEach(function (inputField) {
+    inputField.addEventListener("input", function () {
+      this.value = this.value.toUpperCase();
+    });
+  });
+</script>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+
+    background-color: rgba(0, 0, 0, 0.5);
+    padding-top: 60px;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    margin: auto;
+    margin-left: 44%;
+    padding: 20px;
+    width: 500px;
+    border-radius: 10px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .img-thumbnail {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-top: 10px;
+  }
+
+  .table-container {
+    overflow-y: auto;
+    max-height: 350px;
+  }
+</style>
+{% endblock %}

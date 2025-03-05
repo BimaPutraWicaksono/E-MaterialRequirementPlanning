@@ -1,0 +1,212 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container">
+  <!-- Title -->
+  <h1 class="mt-3">MACHINE LOADING CALCULATE</h1>
+  <h5>CARLINE: <b>{{ carline.name }}</b></h5>
+
+  <!-- Wrapper for All Tables with Navigation Buttons -->
+  <div class="col-md-12">
+    <!-- Terminal B Table -->
+    <div class="card my-4 table-section" id="table1">
+      <div class="card-header">
+        <h3>Terminal B</h3>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Terminal B</th>
+              <th>JAN</th>
+              <th>FEB</th>
+              <th>MAR</th>
+              <th>APR</th>
+              <th>MAY</th>
+              <th>JUN</th>
+              <th>JUL</th>
+              <th>AUG</th>
+              <th>SEP</th>
+              <th>OCT</th>
+              <th>NOV</th>
+              <th>DEC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for termB, months_data in aggregated_results_termB.items %}
+            <tr>
+              <td>{{ termB }}</td>
+              <td>{{ months_data.JAN|default:"-" }}</td>
+              <td>{{ months_data.FEB|default:"-" }}</td>
+              <td>{{ months_data.MAR|default:"-" }}</td>
+              <td>{{ months_data.APR|default:"-" }}</td>
+              <td>{{ months_data.MAY|default:"-" }}</td>
+              <td>{{ months_data.JUN|default:"-" }}</td>
+              <td>{{ months_data.JUL|default:"-" }}</td>
+              <td>{{ months_data.AUG|default:"-" }}</td>
+              <td>{{ months_data.SEP|default:"-" }}</td>
+              <td>{{ months_data.OCT|default:"-" }}</td>
+              <td>{{ months_data.NOV|default:"-" }}</td>
+              <td>{{ months_data.DEC|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="13">No results found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Terminal A Table -->
+    <div class="card my-4 table-section" id="table2" style="display: none">
+      <div class="card-header">
+        <h3>Terminal A</h3>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Terminal A</th>
+              <th>JAN</th>
+              <th>FEB</th>
+              <th>MAR</th>
+              <th>APR</th>
+              <th>MAY</th>
+              <th>JUN</th>
+              <th>JUL</th>
+              <th>AUG</th>
+              <th>SEP</th>
+              <th>OCT</th>
+              <th>NOV</th>
+              <th>DEC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for termA, months_data in aggregated_results_termA.items %}
+            <tr>
+              <td>{{ termA }}</td>
+              <td>{{ months_data.JAN|default:"-" }}</td>
+              <td>{{ months_data.FEB|default:"-" }}</td>
+              <td>{{ months_data.MAR|default:"-" }}</td>
+              <td>{{ months_data.APR|default:"-" }}</td>
+              <td>{{ months_data.MAY|default:"-" }}</td>
+              <td>{{ months_data.JUN|default:"-" }}</td>
+              <td>{{ months_data.JUL|default:"-" }}</td>
+              <td>{{ months_data.AUG|default:"-" }}</td>
+              <td>{{ months_data.SEP|default:"-" }}</td>
+              <td>{{ months_data.OCT|default:"-" }}</td>
+              <td>{{ months_data.NOV|default:"-" }}</td>
+              <td>{{ months_data.DEC|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="13">No results found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- All Terminal Table -->
+    <div class="card my-4 table-section" id="table3" style="display: none">
+      <div class="card-header">
+        <h3>All Terminal</h3>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>All Terminal</th>
+              <th>JAN</th>
+              <th>FEB</th>
+              <th>MAR</th>
+              <th>APR</th>
+              <th>MAY</th>
+              <th>JUN</th>
+              <th>JUL</th>
+              <th>AUG</th>
+              <th>SEP</th>
+              <th>OCT</th>
+              <th>NOV</th>
+              <th>DEC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for term, months_data in aggregated_results_combined.items %}
+            <tr>
+              <td>{{ term }}</td>
+              <td>{{ months_data.JAN|default:"-" }}</td>
+              <td>{{ months_data.FEB|default:"-" }}</td>
+              <td>{{ months_data.MAR|default:"-" }}</td>
+              <td>{{ months_data.APR|default:"-" }}</td>
+              <td>{{ months_data.MAY|default:"-" }}</td>
+              <td>{{ months_data.JUN|default:"-" }}</td>
+              <td>{{ months_data.JUL|default:"-" }}</td>
+              <td>{{ months_data.AUG|default:"-" }}</td>
+              <td>{{ months_data.SEP|default:"-" }}</td>
+              <td>{{ months_data.OCT|default:"-" }}</td>
+              <td>{{ months_data.NOV|default:"-" }}</td>
+              <td>{{ months_data.DEC|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="13">No results found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Navigation Buttons -->
+    <div class="d-flex justify-content-end">
+      <button class="upload-btn" id="prevBtn">
+        <i class="fas fa-angle-double-left"></i>
+      </button>
+      <button class="upload-btn" id="nextBtn">
+        <i class="fas fa-angle-double-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initial table index
+  let currentTable = 1;
+  const totalTables = 3;
+
+  // Function to show table by index
+  function showTable(index) {
+    // Hide all tables
+    document.querySelectorAll(".table-section").forEach((table) => {
+      table.style.display = "none";
+    });
+
+    // Show the current table
+    document.getElementById(`table${index}`).style.display = "block";
+  }
+
+  // Show the initial table
+  showTable(currentTable);
+
+  // Previous Button Click Event
+  document.getElementById("prevBtn").addEventListener("click", function () {
+    currentTable--;
+    if (currentTable < 1) {
+      currentTable = totalTables;
+    }
+    showTable(currentTable);
+  });
+
+  // Next Button Click Event
+  document.getElementById("nextBtn").addEventListener("click", function () {
+    currentTable++;
+    if (currentTable > totalTables) {
+      currentTable = 1;
+    }
+    showTable(currentTable);
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base.html" %} {% block content %} {% load user_tags %}
+
+<div class="container">
+  <h1 class="mt-4 mb-3">SIX PRODUCTION PLAN [QTY]</h1>
+  <div class="switch d-flex justify-content-between">
+    <h5>CARLINE: <b>{{ carline.name }}</b></h5>
+    <div
+      class="toggle-btn d-flex justify-content-between"
+      onclick="window.location.href='{% url 'machineLoading' name=carline.name %}'"
+    >
+      <div class="toggle ml-1" style="color: #c4c4c4"></div>
+      <div
+        onclick="window.location.href='{% url 'machineLoading' name=carline.name %}'"
+      >
+        MCL
+      </div>
+      <div class="toggle mr-1" style="color: #c4c4c4"></div>
+      <button
+        type="button"
+        class="mcl-btn"
+        onclick="window.location.href='{% url 'machineLoading' name=carline.name %}'"
+      >
+        <b>SPP</b>
+      </button>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="table-container mt-4">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>No Assy</th>
+          <th>JAN</th>
+          <th>FEB</th>
+          <th>MAR</th>
+          <th>APR</th>
+          <th>MAY</th>
+          <th>JUN</th>
+          <th>JUL</th>
+          <th>AUG</th>
+          <th>SEP</th>
+          <th>OCT</th>
+          <th>NOV</th>
+          <th>DEC</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bulan in bulan_list %}
+        <tr>
+          <td>
+            {% if bulan.quantities.exists %}
+            {{bulan.quantities.first.noAssy.noAssy }} {% else %} N/A {% endif %}
+          </td>
+          <td>{{ bulan.JAN|default:"-" }}</td>
+          <td>{{ bulan.FEB|default:"-" }}</td>
+          <td>{{ bulan.MAR|default:"-" }}</td>
+          <td>{{ bulan.APR|default:"-" }}</td>
+          <td>{{ bulan.MAY|default:"-" }}</td>
+          <td>{{ bulan.JUN|default:"-" }}</td>
+          <td>{{ bulan.JUL|default:"-" }}</td>
+          <td>{{ bulan.AUG|default:"-" }}</td>
+          <td>{{ bulan.SEP|default:"-" }}</td>
+          <td>{{ bulan.OCT|default:"-" }}</td>
+          <td>{{ bulan.NOV|default:"-" }}</td>
+          <td>{{ bulan.DEC|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="13">No results found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Form for exporting data and resetting data -->
+  {% if request.user|has_group:"Admin" %}
+  <div class="d-flex gap-3">
+    <!-- Import Form -->
+    <div class="upload-container mt-2 d-inline">
+      <b class="d-flex ml-3 mb-1">Select an Excel file:</b>
+      <div class="d-flex">
+        <form
+          id="uploadForm"
+          class="d-flex"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          {% csrf_token %}
+          <div class="file-upload-wrapper">
+            <input class="mt-3" type="file" name="file" multiple />
+          </div>
+          <button type="submit" name="import" class="upload-btn d-flex">
+            <i class="nav-icon fas fa-upload mr-2"></i> Upload
+          </button>
+        </form>
+      </div>
+      {% if error %}
+      <div class="alert alert-danger mt-3">{{ error }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Export and Reset Form -->
+    <div class="d-flex">
+      <form
+        method="post"
+        style="display: inline"
+        id="resetForm"
+        action="{% url 'reset_sixProductionPlan' carline.name %}"
+      >
+        {% csrf_token %}
+        <button type="button" class="reset-btn" id="reset_spp">
+          <i class="nav-icon fas fa-trash-alt mr-2"></i>Delete
+        </button>
+      </form>
+    </div>
+  </div>
+  {%endif%}
+
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner" class="d-none">
+    <div class="spinner-overlay">
+      <div class="spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .getElementById("uploadForm")
+    .addEventListener("submit", function (event) {
+      document.getElementById("loadingSpinner").classList.remove("d-none"); // Tampilkan spinner saat upload
+    });
+
+  document
+    .getElementById("reset_spp")
+    .addEventListener("click", function (event) {
+      event.preventDefault(); // Prevent form from submitting immediately
+      Swal.fire({
+        title: "Are you sure?",
+        text: "All previous data will be permanently deleted !",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+          cancelButton: "custom-swal-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById("loadingSpinner").classList.remove("d-none"); // Tampilkan spinner saat delete
+          document.getElementById("resetForm").submit(); // Submit the form if confirmed
+        }
+      });
+    });
+</script>
+
+<style>
+  .toggle-btn {
+    cursor: pointer;
+  }
+
+  .toggle,
+  .mcl-btn {
+    cursor: pointer;
+  }
+  .table-container {
+    overflow-y: auto;
+    max-height: 410px;
+  }
+</style>
+
+{% endblock %}
