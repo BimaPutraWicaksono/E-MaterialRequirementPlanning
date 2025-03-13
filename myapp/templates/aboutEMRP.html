@@ -3,7 +3,7 @@
   <div class="main-content">
     <h2>About Us</h2>
     <p>
-      Welcome to <strong>Shin Buhin | Enjin</strong>, your trusted partner in
+      Welcome to <strong>E-MRP</strong>, your trusted partner in
       precision part requirement calculations. We provide advanced tools to
       simplify the process of determining necessary parts for manufacturing. Our
       platform combines sophisticated algorithms with a user-friendly interface,
@@ -55,7 +55,7 @@
         platform works, allowing you to optimize each feature for your specific
         needs. If you have any questions or need further assistance, our support
         team is always here to help. We appreciate your trust in
-        <strong>Shin Buhin | Enjin</strong> and are committed to supporting your
+        <strong>E-MRP</strong> and are committed to supporting your
         success.
       </p>
     </div>
@@ -67,13 +67,6 @@
     <button type="button" class="export-btn" id="manualBookButton">
       <i class="fas fa-book mr-1"></i> Manual Book
     </button>
-
-    <!-- Reset All Button -->
-    {% if request.user|has_group:"Admin" %}
-    <button type="button" class="reset-btn" id="deleteAllButton">
-      <i class="fas fa-trash mr-1"></i> Reset All
-    </button>
-    {% endif %}
 
     <form
       method="POST"

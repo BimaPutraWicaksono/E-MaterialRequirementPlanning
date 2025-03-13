@@ -4,12 +4,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="assets/dist/img/shin.png" type="image/png" />
-    <title>Shin Buhin | Enjin</title>
+    <link rel="icon" href="assets/dist/img/e-MRP.png" type="image/png" />
+    <title>E-MRP</title>
     <link
       rel="icon"
       type="image/png"
-      href="{% static 'assets/dist/img/shin.png' %}"
+      href="{% static 'assets/dist/img/e-MRP.png' %}"
     />
 
     <!-- Google Font: Source Sans Pro -->
@@ -44,11 +44,11 @@
     <!-- Link to Custom CSS -->
     <link
       rel="stylesheet"
-      href="{% static 'assets/dist/css/custom/aboutShinBuhin.css' %}"
+      href="{% static 'assets/dist/css/custom/aboutEMRP.css' %}"
     />
     <link
       rel="stylesheet"
-      href="{% static 'assets/dist/css/custom/base/sidebar.css' %}"
+      href="{% static 'assets/dist/css/custom/base/sidebar.css' %}" 
     />
     <link
       rel="stylesheet"
@@ -100,11 +100,11 @@
       <!-- Site wrapper -->
       <div class="wrapper">
         <!-- Navbar -->
-        {% include 'navbar.html' %} {% include 'sidebar.html' %}
+        {% include 'base/navbar.html' %} {% include 'base/sidebar.html' %}
         <div class="content-wrapper">{% block content %}{% endblock %}</div>
-        {% include 'footer.html' %}
+        {% include 'base/footer.html' %}
         <aside class="control-sidebar control-sidebar-dark">
-          {% include 'profil.html' %}
+          {% include 'base/profil.html' %}
           
         </aside>
       </div>

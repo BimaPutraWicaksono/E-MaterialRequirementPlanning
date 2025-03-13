@@ -443,4 +443,4 @@ def strokePart(request):
 #  about us
 @login_required()
 def about(request):
-    return render(request, 'aboutShinBuhin.html')
+    return render(request, 'aboutEMRP.html')

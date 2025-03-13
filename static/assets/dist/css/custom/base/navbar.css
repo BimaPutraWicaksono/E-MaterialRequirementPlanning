@@ -1,8 +1,9 @@
 .main-header {
     position: relative; /* Diperlukan untuk posisi pseudo-elemen secara absolut */
     height: 100px;
-    background: rgb(238, 238, 238);
+    background-color: #ffffff;
     border: none;
+    z-index: 1000;
 }
 
 .container-navbar{
@@ -10,8 +11,8 @@
     width: 100% !important;
     height: 100% !important;  
     max-height: 108% !important; 
-    background-color: #fff;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #D4A5FF, #A0C4FF) !important;
+    border-radius: 10px;
 }
 
 .user-panel{

@@ -1,119 +1,66 @@
 .main-sidebar {
-    background-color: #ffffff !important;
+    background: linear-gradient(135deg, #C3A1FF, #A5D8FF) !important;
+    z-index: 1000 !important;
+    width: 250px;
+    transition: width 0.3s ease-in-out;
 }
 
 .sidebar {
     padding-top: 20px;
-    background-color: #ffffff !important;
-}
-
-.form-control-sidebar {
-    background-color: #ffffff !important;
-    border: 1px solid #1a1a1a!important;
-    border-radius: 3px;
-}
-
-.btn-sidebar {
-    background-color: #b5b5b5 !important;
-    height: 38px;
-}
-
-.input-group {
-    background-color: #ffffff;
-    display: flex;
-    justify-content: center;
-    width: 250px !important;
-    margin-left: 50px !important;
-    border-radius: 10px !important;
-   
-  }
-
-input[type="file"] {
-    margin-bottom: 20px;
-    font-size: 1em;
-    box-sizing: border-box;
-}
-
-input[type="text"] {
-    border-radius: 10px;
 }
 
 .brand-link {
-    border-bottom: 0 !important;
-    color: dimgrey !important;
     display: flex;
-    padding-top: 35px;
-}
-
-.search-input {
-    color: #333333 !important;
-    background-color: #f0f0f0 !important;
-    border: 1px solid #ccc !important;
-    padding: 10px !important;
-    border-radius: 4px !important;
-}
-
-.form-control-sidebar {
-    color: #333333 !important;
-    padding-left: 10px;
-    width: 190px !important;
-}
-
-p {
-    color: rgb(36, 36, 36) !important;
-}
-
-p:active {
-    color: #f0f0f0 !important; /* Warna putih saat diklik */
-}
-
-a.nav-link:hover {
-    background: linear-gradient(to right, rgb(255, 81, 81), grey, white) !important;
-    color:#f0f0f0;
-    border-radius: 5px;
+    align-items: center;
+    padding-top: 40px;
+    border-bottom: none !important;
 }
 
 .brand-image {
-    height: 100% !important; /* Set a fixed width */
-    border-radius: 5px; /* Rounded corners */
-    /* object-fit: cover; Ensures the image covers the area without distortion */
-    margin-right: 5px; /* Space between the image and text */
-}
-
-.control-sidebar{
-    background-color: rgb(206, 206, 206) !important;
-    
-}
-
-.nav-item.active .nav-link {
-    background: linear-gradient(to right, rgb(255, 81, 81), rgb(167, 167, 167), white) !important;
-    color: #ffffff !important;
+    height: 45px !important; 
+    margin-right: 10px;
     border-radius: 5px;
 }
 
-.nav-item .nav-link {
-    transition: background-color 0.3s, color 0.3s;
+.nav-item {
+    margin-bottom: 5px;
 }
 
-.nav nav-treeview {
-    display: none; /* Sembunyikan submenu secara default */
+.nav-link {
+    color: white !important;
+    padding: 12px 15px;
+    border-radius: 10px !important;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-.nav nav-treeview.active {
-    display: block; /* Tampilkan submenu ketika aktif */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.nav-item.active .nav-link {
+    background: #ffffff !important;
+    color: #A45EE5 !important;
+    font-weight: bold;
+}
+
+.nav-treeview {
+    padding-left: 15px;
+    display: none;
 }
 
 .menu-open .nav-treeview {
     display: block;
 }
 
-.nav-link.active,
-.nav-link.active:hover {
-    background-color: #1a1a1a; /* Warna latar belakang yang diinginkan */
-    color: #ffffff !important; /* Warna teks putih untuk kontras */
+.search-input {
+    background-color: #f0f0f0 !important;
+    border: 1px solid #ccc !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    width: 100%;
 }
 
-/* Spesifik hover */
-.nav-link:hover {
-    color: #ffffff !important;
+.control-sidebar {
+    background-color: #ffffff !important;
 }

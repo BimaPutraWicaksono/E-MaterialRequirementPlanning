@@ -17,8 +17,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # login url
-LOGIN_URL = '/shin-buhin/login/'
-LOGOUT_REDIRECT_URL = '/shin-buhin/login/'
+LOGIN_URL = '/e-mrp/login/'
+LOGOUT_REDIRECT_URL = '/e-mrp/login/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

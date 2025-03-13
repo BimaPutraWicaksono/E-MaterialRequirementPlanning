@@ -25,7 +25,6 @@ urlpatterns = [
     path('reset_sealUnit/', views_sparepart.reset_sealUnit, name='reset_sealUnit'),
     
     # tools
-    path('allSixProductionPlan', views.allSixProductionPlan, name='allSixProductionPlan'),
     
     path('carline/', views.carline_view, name='carline'), # carline
     path('carline/delete/<int:pk>/', views.delete_carline, name='delete_carline'),

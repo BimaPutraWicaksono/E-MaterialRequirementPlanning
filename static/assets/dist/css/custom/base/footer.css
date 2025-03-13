@@ -1,6 +1,24 @@
-.main-footer{
-    background: linear-gradient(45deg, rgb(255, 81, 81), darkgrey, lightgrey);
-    background-size: 600% 600%;
-    animation: gradientAnimation 10s ease infinite;
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.main-footer {
+    padding: 8px !important;  
+    border: 0 !important;
+}
+
+.mid-footer {
+    background: linear-gradient(135deg, #D4A5FF, #A0C4FF, #FFDEE9) !important;
+    background-size: 300% 300%;
+    animation: gradientAnimation 5s ease infinite;
     color: white;
+    border-radius: 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+    padding: 8px;
 }

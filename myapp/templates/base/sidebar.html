@@ -1,17 +1,24 @@
 {% load static %} {% load user_tags %}
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-  <a href="{% url 'dashboard' %}" class="brand-link" style="width: 100%">
+  <a
+    href="{% url 'dashboard' %}"
+    class="brand-link"
+    style="
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    "
+  >
     <img
-      src="{% static 'assets/dist/img/shin.png' %}"
-      class="brand-image img-circle elevation-3 ml-2"
-      data-widget="pushmenu"
-      style="padding: 3px"
+      src="{% static 'assets/dist/img/e-MRP.png' %}"
+      style="width: 120px"
     />
-    <span class="brand-text font-weight-light" id="shinLink"
-      ><b>SHIN BUHIN |</b> ENJIN</span
-    >
   </a>
+
   <div class="sidebar">
     <nav class="mt-2">
       <ul
@@ -20,17 +27,6 @@
         role="menu"
         data-accordion="false"
       >
-        <!-- Dashboard -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-        >
-          <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
-            <i class="nav-icon fas fa-home"></i>
-
-            <p>Dashboard</p>
-          </a>
-        </li>
-
         <!-- Sparepart -->
         <li class="nav-header" style="color: gray">Sparepart</li>
         <!-- Applicator -->
@@ -42,36 +38,9 @@
             <p>Applicator</p>
           </a>
         </li>
-        <!-- Machine -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name == 'machine' %}active{% endif %}"
-        >
-          <a href="{% url 'machine' %}" class="nav-link">
-            <i class="nav-icon fas fa-tools"></i>
-            <p>Machine</p>
-          </a>
-        </li>
-        <!-- Seal Unit -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name == 'sealUnit' %}active{% endif %}"
-        >
-          <a href="{% url 'sealUnit' %}" class="nav-link">
-            <i class="nav-icon fas fa-toolbox"></i>
-            <p>Seal Unit</p>
-          </a>
-        </li>
 
         <!-- Tools -->
-        <li class="nav-header" style="color: gray">Tools</li>
-        <!-- Production Plan -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name == 'allSixProductionPlan' %}active{% endif %}"
-        >
-          <a href="{% url 'allSixProductionPlan' %}" class="nav-link">
-            <i class="nav-icon far fa-list-alt"></i>
-            <p>Six Production Plan</p>
-          </a>
-        </li>
+        <li class="nav-header" style="color: gray">Calculate</li>
         <li
           class="nav-item {% if request.resolver_match.url_name == 'carline' or request.resolver_match.url_name == 'sixProductionPlan' or request.resolver_match.url_name == 'machineLoading' or request.resolver_match.url_name == 'machineLoadingCalculate' or request.resolver_match.url_name == 'requirementPartAllCarline' %}active{% endif %}"
         >
@@ -100,16 +69,18 @@
             <p>Loading Part</p>
           </a>
         </li>
-        <!-- About Us -->
-        <li class="nav-header" style="color: gray">About Us</li>
+        <!-- result -->
         <li
-          class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+          class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
         >
-          <a href="{% url 'about' %}" class="nav-link">
-            <i class="nav-icon far fa-calendar-alt"></i>
-            <p>Shin Buhin</p>
+          <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
+            <i class="nav-icon fas fa-home"></i>
+
+            <p>Result</p>
           </a>
         </li>
+        <!-- About Us -->
+        <li class="nav-header" style="color: gray">About Us</li>
         {% if request.user|has_group:"Admin" %}
         <li
           class="nav-item {% if request.resolver_match.url_name == 'daftar_akun' %}active{% endif %}"
@@ -120,6 +91,14 @@
           </a>
         </li>
         {%endif%}
+        <li
+          class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+        >
+          <a href="{% url 'about' %}" class="nav-link">
+            <i class="nav-icon far fa-calendar-alt"></i>
+            <p>E-MRP</p>
+          </a>
+        </li>
       </ul>
     </nav>
     <!-- Loading Spinner (Initially hidden) -->
