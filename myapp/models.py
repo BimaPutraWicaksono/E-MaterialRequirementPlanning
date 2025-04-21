@@ -8,35 +8,6 @@ class ExcelFile(models.Model):
     class Meta:
         db_table = 'excelTable'
 
-# dashboard [views_sparepart.py]
-class Item(models.Model):
-    
-    machineNumber = models.IntegerField(default=0)
-    nameDash = models.CharField(max_length=100)
-    numberDash = models.IntegerField()
-    levelDash = models.CharField(max_length=100)
-    categoryDash = models.CharField(max_length=100)
-    januaryDash = models.IntegerField(default=0)
-    februaryDash = models.IntegerField(default=0)
-    marchDash = models.IntegerField(default=0)
-    aprilDash = models.IntegerField(default=0)
-    mayDash = models.IntegerField(default=0)
-    juneDash = models.IntegerField(default=0)
-    julyDash = models.IntegerField(default=0)
-    augustDash = models.IntegerField(default=0)
-    septemberDash = models.IntegerField(default=0)
-    octoberDash = models.IntegerField(default=0)
-    novemberDash = models.IntegerField(default=0)
-    decemberDash = models.IntegerField(default=0)
-    averageDash = models.IntegerField(default=0)
-    description = models.TextField()
-
-    class Meta:
-        db_table = 'dashboard'
-        
-    def __str__(self):
-        return self.nameDash
-    
 
 # Applicator [views_sparepart.py]
 
@@ -371,3 +342,32 @@ class ApplicatorPartAvarage(models.Model):
     def __str__(self):
         return f"{self.terminal} - {self.name} - {self.part_number}"
 
+# result [views_sparepart.py]
+class Item(models.Model):
+    
+    machineNumber = models.IntegerField(default=0)
+    nameDash = models.CharField(max_length=100)
+    numberDash = models.IntegerField()
+    levelDash = models.CharField(max_length=100)
+    categoryDash = models.CharField(max_length=100)
+    januaryDash = models.IntegerField(default=0)
+    februaryDash = models.IntegerField(default=0)
+    marchDash = models.IntegerField(default=0)
+    aprilDash = models.IntegerField(default=0)
+    mayDash = models.IntegerField(default=0)
+    juneDash = models.IntegerField(default=0)
+    julyDash = models.IntegerField(default=0)
+    augustDash = models.IntegerField(default=0)
+    septemberDash = models.IntegerField(default=0)
+    octoberDash = models.IntegerField(default=0)
+    novemberDash = models.IntegerField(default=0)
+    decemberDash = models.IntegerField(default=0)
+    averageDash = models.IntegerField(default=0)
+    description = models.TextField()
+
+    class Meta:
+        db_table = 'dashboard'
+        
+    def __str__(self):
+        return self.nameDash
+    
