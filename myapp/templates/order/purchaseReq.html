@@ -1,0 +1,131 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Form Purchase Request</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group mb-3">
+      <label for="carlines">Carline</label>
+      {% for carline in form.carlines %}
+      <div class="form-check">{{ carline.tag }} {{ carline.choice_label }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="registeredNo">Registered No</label>
+      <input
+        type="text"
+        class="form-control"
+        name="registeredNo"
+        value="{{ form.registeredNo.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="deptartemen">Departemen</label>
+      <input
+        type="text"
+        class="form-control"
+        name="deptartemen"
+        value="{{ form.deptartemen.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="section">Section</label>
+      <input
+        type="text"
+        class="form-control"
+        name="section"
+        value="{{ form.section.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="purchaseReqBy">Purchase Requested By</label>
+      <input
+        type="text"
+        class="form-control"
+        name="purchaseReqBy"
+        value="{{ form.purchaseReqBy.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="budgetReqNo">Budget Request No</label>
+      <input
+        type="number"
+        class="form-control"
+        name="budgetReqNo"
+        value="{{ form.budgetReqNo.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="estimatedPrice">Estimated Price</label>
+      <input
+        type="number"
+        step="0.01"
+        class="form-control"
+        name="estimatedPrice"
+        value="{{ form.estimatedPrice.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="amount">Amount</label>
+      <input
+        type="number"
+        step="0.01"
+        class="form-control"
+        name="amount"
+        value="{{ form.amount.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="totalAmount">Total Amount</label>
+      <input
+        type="number"
+        step="0.01"
+        class="form-control"
+        name="totalAmount"
+        value="{{ form.totalAmount.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="machineNumber">Machine Number</label>
+      <input
+        type="number"
+        class="form-control"
+        name="machineNumber"
+        value="{{ form.machineNumber.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="nameDash">Name (Dash)</label>
+      <input
+        type="text"
+        class="form-control"
+        name="nameDash"
+        value="{{ form.nameDash.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="averageDash">Average (Dash)</label>
+      <input
+        type="number"
+        class="form-control"
+        name="averageDash"
+        value="{{ form.averageDash.value|default_if_none:'' }}"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}

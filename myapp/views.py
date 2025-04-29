@@ -920,15 +920,13 @@ def export_dashboard(request):
 
 # untuk menghapus semua isi database
 from django.shortcuts import redirect
-from .models import Item, ExcelFile, Machine, SealUnit, ApplicatorPart, PartDesk, PartName, Carline, Bulan, NoAssy, Quantity, MachineLoading, AssyValue, CalculationResult, CalculationResultLoading, Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, ViewsCalculateLoad, CombinedModel, ApplicatorPartAvarage
+from .models import Item, ExcelFile, ApplicatorPart, PartDesk, PartName, Carline, Bulan, NoAssy, Quantity, MachineLoading, AssyValue, CalculationResult, CalculationResultLoading, Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, ViewsCalculateLoad, CombinedModel, ApplicatorPartAvarage
 
 @login_required()
 def delete_all_data(request):
     # Hapus semua data dari model-model yang diinginkan
     Item.objects.all().delete()
     ExcelFile.objects.all().delete()
-    Machine.objects.all().delete()
-    SealUnit.objects.all().delete()
     ApplicatorPart.objects.all().delete()
     PartDesk.objects.all().delete()
     PartName.objects.all().delete()

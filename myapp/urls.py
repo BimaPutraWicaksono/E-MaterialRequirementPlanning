@@ -1,7 +1,9 @@
 
 from django.urls import path
 from . import views
+from . import views_view
 from . import views_sparepart
+from . import views_order
 from . import views_auth
 
 
@@ -11,6 +13,8 @@ urlpatterns = [
     path('login/', views_auth.user_login, name='login'),
     path('logout/', views_auth.user_logout, name='logout'),
     
+    #home
+    path('home/', views_view.home, name='home'),
     
     # sparepart 
     path('applicator/', views_sparepart.applicator, name='applicator'),
@@ -36,7 +40,7 @@ urlpatterns = [
     path('strokePart/', views_sparepart.strokePart, name='strokePart'),    
     path('loadingPart/', views.loadingPart, name='loadingPart'),
     
-    
+    # about as
     path('about/', views_sparepart.about, name='about'),
     
     # crud account
@@ -46,7 +50,17 @@ urlpatterns = [
    
     # dashboard 
     path('dashboard/', views_sparepart.dashboard, name='dashboard'),
+    
     # export dashboard
     path('export-dashboard/', views.export_dashboard, name='export_dashboard'),
+    
+    #home
+    path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
+    path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
+    path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
+    path('airwayBill/', views_order.airwayBill, name='airwayBill'),
+    path('invoice/', views_order.invoice, name='invoice'),
+    
+    
+    
 ]
-

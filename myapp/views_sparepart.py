@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Machine, SealUnit, PartName, ApplicatorPart, PartDesk, ApplicatorPartAvarage
+from .models import PartName, ApplicatorPart, PartDesk, ApplicatorPartAvarage
 from .form import UploadFileForm
 import openpyxl
 from openpyxl import Workbook
@@ -9,15 +9,13 @@ from django.contrib.auth.decorators import login_required
 
 # views dashboard
 from django.shortcuts import render
-from .models import Machine, SealUnit, ApplicatorPartAvarage, ViewsCalculateLoad  # Ganti dengan nama model yang sesuai
+from .models import ApplicatorPartAvarage, ViewsCalculateLoad  # Ganti dengan nama model yang sesuai
 
 @login_required()
 def dashboard(request):
     # Menghapus data lama dari database jika ada
     ViewsCalculateLoad.objects.all().delete()
 
-    dataMachine = Machine.objects.all()
-    dataSealUnit = SealUnit.objects.all()
     dataApplicatorPartAvarage = ApplicatorPartAvarage.objects.all()
 
     combinedData = []
@@ -77,27 +75,6 @@ def dashboard(request):
             'decemberDash': kwargs.get('december_dash', ''),
             'averageDash': kwargs.get('average_dash', ''),
         })
-
-
-    # Menggabungkan data Machine
-    for a in dataMachine:
-        add_combined_data(
-            machine_number=a.machineNumberMachine,
-            name_dash=a.partNameMachine,
-            number_dash=a.partNumberMachine,
-            level_dash=a.levelMarkingMachine,
-            source='Machine'
-        )
-
-    # Menggabungkan data Seal Unit
-    for b in dataSealUnit:
-        add_combined_data(
-            machine_number=b.machineNumberSealUnit,
-            name_dash=b.partNameSealUnit,
-            number_dash=b.partNumberSealUnit,
-            level_dash=b.levelMarkingSealUnit,
-            source='Seal Unit'
-        )
 
     # Menggabungkan data dari ApplicatorPartAvarage
     for c in dataApplicatorPartAvarage:
@@ -241,165 +218,6 @@ def reset_applicator(request):
     PartName.objects.all().delete()
     ApplicatorPart.objects.all().delete()
     return redirect('applicator')
-
-# Machine
-@login_required()
-def machine(request):
-    error = None
-    data = []
-
-    if request.method == "POST":
-        if "refresh" in request.POST:
-            Machine.objects.all().delete()
-            return redirect('machine')
-        elif "export" in request.POST:
-            wb = export_machine_to_excel()
-            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=machine.xlsx'
-            wb.save(response)
-            return response
-
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            excel_file = request.FILES['file']
-            try:
-                wb = openpyxl.load_workbook(excel_file)
-                sheet = wb.active
-
-                Machine.objects.all().delete()
-                
-                for row in sheet.iter_rows(min_row=3, values_only=True):
-                    if row[0] is not None:
-                        data.append({
-                            'machineNumberMachine': row[0],
-                            'partNameMachine': row[1],
-                            'partNumberMachine': row[2],
-                            'levelMarkingMachine': row[3]
-                        })
-
-                        Machine.objects.create(
-                            machineNumberMachine=row[0],
-                            partNameMachine=row[1],
-                            partNumberMachine=row[2],
-                            levelMarkingMachine=row[3]
-                        )
-
-                for item in data:
-                    print(f"Processing row: {item}")
-
-            except Exception as e:
-                error = f"Error processing file: {e}"
-    else:
-        form = UploadFileForm()
-
-    data = Machine.objects.all()
-
-    return render(request, 'machine.html', {'form': form, 'error': error, 'data': data})
-
-@login_required()
-def export_machine_to_excel():
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Machine Data"
-
-    headers = ["Part Name", "Part Number", "Level/Marking", "Machine Number"]
-    ws.append(headers)
-
-    for seal_unit in Machine.objects.all():
-        row = [
-            seal_unit.partNameMachine,
-            seal_unit.partNumberMachine,
-            seal_unit.levelMarkingMachine,
-            seal_unit.machineNumberMachine
-        ]
-        ws.append(row)
-
-    return wb
-
-@login_required()
-def reset_machine(request):
-    Machine.objects.all().delete()
-    return redirect('machine')
-
-# Seal Unit
-@login_required()
-def sealUnit(request):
-    error = None
-    data = []
-
-    if request.method == "POST":
-        if "refresh" in request.POST:
-            SealUnit.objects.all().delete()
-            return redirect('sealUnit')
-        elif "export" in request.POST:
-            wb = export_seal_unit_to_excel()
-            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=seal_unit_data.xlsx'
-            wb.save(response)
-            return response
-
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            excel_file = request.FILES['file']
-            try:
-                wb = openpyxl.load_workbook(excel_file)
-                sheet = wb.active
-
-                SealUnit.objects.all().delete()
-                
-                for row in sheet.iter_rows(min_row=3, values_only=True):
-                    if row[0] is not None:
-                        data.append({
-                            'machineNumberSealUnit': row[0],
-                            'partNameSealUnit': row[1],
-                            'partNumberSealUnit': row[2],
-                            'levelMarkingSealUnit': row[3]
-                        })
-
-                        SealUnit.objects.create(
-                            machineNumberSealUnit=row[0],
-                            partNameSealUnit=row[1],
-                            partNumberSealUnit=row[2],
-                            levelMarkingSealUnit=row[3]
-                        )
-
-                for item in data:
-                    print(f"Processing row: {item}")
-
-            except Exception as e:
-                error = f"Error processing file: {e}"
-    else:
-        form = UploadFileForm()
-
-    data = SealUnit.objects.all()
-
-    return render(request, 'sealUnit.html', {'form': form, 'error': error, 'data': data})
-
-@login_required()
-def export_seal_unit_to_excel():
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Seal Unit Data"
-
-    headers = ["Part Name", "Part Number", "Level/Marking", "Machine Number"]
-    ws.append(headers)
-
-    for seal_unit in SealUnit.objects.all():
-        row = [
-            seal_unit.partNameSealUnit,
-            seal_unit.partNumberSealUnit,
-            seal_unit.levelMarkingSealUnit,
-            seal_unit.machineNumberSealUnit
-        ]
-        ws.append(row)
-
-    return wb
-
-@login_required()
-def reset_sealUnit(request):
-    SealUnit.objects.all().delete()
-    return redirect('sealUnit')
-
 
 # loading applicator
 from django.shortcuts import render, get_object_or_404, redirect

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Item, ExcelFile, Machine, SealUnit
+from .models import Item, ExcelFile, PurchaseReq
 
 class ItemForm(forms.ModelForm):
     class Meta:
@@ -13,20 +13,6 @@ class ExcelFileForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField(label='Select an Excel file')
-
-class Machine(forms.ModelForm):
-    class Meta:
-        model = Machine
-        fields = [
-             'machineNumberMachine', 'partNameMachine', 'partNumberMachine', 'levelMarkingMachine'
-        ]
-        
-class SealUnit(forms.ModelForm):
-    class Meta:
-        model = SealUnit
-        fields = [
-           'machineNumberSealUnit', 'partNameSealUnit', 'partNumberSealUnit', 'levelMarkingSealUnit'
-        ]
         
 # SPP
 
@@ -54,3 +40,12 @@ class SignupForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+    
+class PurchaseReqForm(forms.ModelForm):
+    class Meta:
+        model = PurchaseReq
+        fields = '__all__'
+        widgets = {
+            'carlines': forms.CheckboxSelectMultiple()
+        }
+

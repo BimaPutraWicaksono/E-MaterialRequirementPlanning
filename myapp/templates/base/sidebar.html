@@ -11,8 +11,8 @@
         
         <!-- dashboard -->
         <li class="nav-item has-treeview">
-            <li class="nav-item {% if request.resolver_match.url_name == 'applicator' %}active{% endif %}">
-              <a href="#" class="nav-link">
+            <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+              <a href="{% url 'home' %}" class="nav-link">
                 <i class="nav-icon fas fa-home"></i>
                 <p>Home</p>
               </a>
@@ -41,9 +41,9 @@
         <!-- Calculate -->
         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline strokePart loadingPart dashboard' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-calculator"></i>
+            <i class="nav-icon fas fa-dumpster"></i>
             <p>
-              Calculate
+              Requirment
               <i class="right fas fa-angle-left"></i>
             </p>
           </a>
@@ -68,8 +68,57 @@
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
               <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
-                <i class="nav-icon fas fa-home"></i>
+                <i class="nav-icon fas fa-calculator"></i>
                 <p>Result</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
+                <i class="nav-icon fas fa-calculator"></i>
+                <p>Stock</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+         <!-- Order -->
+         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd scheduleConf airwayBill invoice' %}menu-open{% endif %}">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-store"></i>
+            <p>
+              Order
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
+              <a href="{% url 'purchaseReq' %}" class="nav-link">
+                <i class="nav-icon fas fa-cart-plus"></i>
+                <p>Purchase Request</p>
+              </a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'purchaseOrd' %}active{% endif %}">
+              <a href="{% url 'purchaseOrd' %}" class="nav-link">
+                <i class="nav-icon fas fa-cart-arrow-down"></i>
+                <p>Purchase Order</p>
+              </a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'scheduleConf' %}active{% endif %}">
+              <a href="{% url 'scheduleConf' %}" class="nav-link">
+                <i class="nav-icon fas fa-calendar-check"></i>
+                <p>Schedule Confirmation</p>
+              </a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'airwayBill' %}active{% endif %}">
+              <a href="{% url 'airwayBill' %}" class="nav-link">
+                <i class="nav-icon fas fa-dolly-flatbed"></i>
+                <p>Airway Bill</p>
+              </a>
+            </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'invoice' %}active{% endif %}">
+              <a href="{% url 'invoice' %}" class="nav-link">
+                <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                <p>Invoice</p>
               </a>
             </li>
           </ul>

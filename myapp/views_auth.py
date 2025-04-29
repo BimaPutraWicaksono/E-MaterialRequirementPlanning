@@ -7,11 +7,8 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 def user_login(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    # if 'next' in request.GET:
-    #     messages.warning(request, 'Anda harus login terlebih dahulu')
-
+        return redirect('home')
+    
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -20,7 +17,7 @@ def user_login(request):
             user = authenticate(request, username=username, password=password)
             if user:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('home')
             else:
                 messages.error(request, 'Incorrect username or password')
     else:

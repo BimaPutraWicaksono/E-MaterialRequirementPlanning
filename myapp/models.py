@@ -34,39 +34,6 @@ class PartDesk(models.Model):
     class Meta:
         db_table = 'partDesk'
 
-# machine[views_sparepart.py]
-
-class Machine(models.Model):
-    
-    partNameMachine = models.CharField (max_length=255, blank=True, null=True)
-    partNumberMachine = models.CharField (max_length=255, blank=True, null=True)
-    levelMarkingMachine = models.CharField (max_length=255, blank=True, null=True)
-    machineNumberMachine = models.CharField (max_length=255, blank=True, null=True)
-    
-   
-    class Meta:
-        db_table = 'machine'
-
-    def __str__(self):
-        return f"{self.partNameMachine} - {self.partNumberMachine}"
-
-# sealUnit [views_sparepart.py]
-
-class SealUnit(models.Model):
-    
-    partNameSealUnit = models.CharField (max_length=255, blank=True, null=True)
-    partNumberSealUnit = models.CharField (max_length=255, blank=True, null=True)
-    levelMarkingSealUnit = models.CharField (max_length=255, blank=True, null=True)
-    machineNumberSealUnit = models.CharField (max_length=255, blank=True, null=True)
-    
-   
-    class Meta:
-        db_table = 'sealUnit'
-
-    def __str__(self):
-        return f"{self.partNameSealUnit} - {self.partNumberSealUnit}"
-        
-
 # CARLINE SPP MCL import [views.py]
 class Carline(models.Model):
     name = models.CharField(max_length=100, unique=True)  # Nama yang unik sebagai primary key
@@ -217,7 +184,6 @@ class CalculationResultLoading(models.Model):
         return f"{self.carline.name} - {self.terminal} ({self.month})"
 
 # Stroke Part
-
 class Load_applicator(models.Model):
     name = models.CharField(max_length=100)
     loading = models.IntegerField()
@@ -371,3 +337,26 @@ class Item(models.Model):
     def __str__(self):
         return self.nameDash
     
+# order [views_order]
+
+class PurchaseReq(models.Model):
+    
+    registeredNo = models.CharField(max_length=100)
+    deptartemen = models.CharField(max_length=100)
+    section = models.CharField(max_length=100)
+    purchaseReqBy = models.CharField(max_length=100)
+    budgetReqNo = models.IntegerField(default=0)
+    estimatedPrice = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    totalAmount = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    machineNumber = models.IntegerField(default=0)
+    nameDash = models.CharField(max_length=100)
+    averageDash = models.IntegerField(default=0)
+    carlines = models.ManyToManyField('Carline', blank=True)
+
+    class Meta:
+        db_table = 'purchaseReq'
+
+    def __str__(self):
+        return self.nameDash
