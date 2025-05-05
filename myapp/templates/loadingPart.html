@@ -10,6 +10,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
+              <th>Carline</th>
               <th>Applicator Number</th>
               <th>Partname</th>
               <th>JAN</th>
@@ -29,6 +30,7 @@
           <tbody>
             {% if grouped_data %} {% for applicator, partnames in grouped_data.items %} {% for partname, months in partnames.items %}
             <tr>
+              <td>{{ carline }}</td>  <!-- Jika disimpan dalam tiap bulan -->
               <td>{{ applicator }}</td>
               <td>{{ partname }}</td>
               <td>{{ months.JAN|floatformat:"2"|default:"-" }}</td>

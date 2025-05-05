@@ -500,85 +500,83 @@ def machineLoadingCalculate(request, name):
 from django.shortcuts import render
 from django.db.models import Sum
 from django.db import transaction
-from .models import CalculationResultLoading, AggregatedResultByTerminal
+from .models import CalculationResultLoading
+from django.contrib.auth.decorators import login_required
 
 @login_required()
 def requirementPartAllCarline(request):
     try:
-        # Memastikan model CalculationResultLoading memiliki field 'terminal', 'month', dan 'result'
-        calculation_fields = [field.name for field in CalculationResultLoading._meta.get_fields()]
-        
-        if 'terminal' in calculation_fields and 'month' in calculation_fields and 'result' in calculation_fields:
-            # Mengambil data dari model CalculationResultLoading
-            raw_results = CalculationResultLoading.objects.filter(
-                terminal__isnull=False,
-                terminal__gt=''  # Mengabaikan terminal yang kosong
-            ).values('terminal', 'month').annotate(
-                total_result=Sum('result')
-            ).order_by('terminal', 'month')
+        # Ambil data dan agregasi berdasarkan carline, terminal, dan bulan
+        raw_results = CalculationResultLoading.objects.filter(
+            terminal__isnull=False,
+            terminal__gt='',
+            carline__isnull=False
+        ).values(
+            'carline__name', 'terminal', 'month'
+        ).annotate(
+            total_result=Sum('result')
+        ).order_by('carline__name', 'terminal', 'month')
 
-            with transaction.atomic():
-                # Update atau buat entri baru di AggregatedResultByTerminal
-                for entry in raw_results:
-                    terminal = entry['terminal']
-                    month = entry['month']
-                    total_result = entry['total_result']
+        # Susun dictionary dengan struktur: carline -> terminal -> month
+        aggregated_results = {}
+        for entry in raw_results:
+            carline = entry['carline__name']
+            terminal = entry['terminal']
+            month = entry['month']
+            total_result = entry['total_result']
 
-                    # Update or create data di AggregatedResultByTerminal
-                    AggregatedResultByTerminal.objects.update_or_create(
-                        terminal=terminal,
-                        month=month,
-                        defaults={'total_result': total_result}
-                    )
+            if (carline, terminal) not in aggregated_results:
+                aggregated_results[(carline, terminal)] = {
+                    'JAN': "", 'FEB': "", 'MAR': "", 'APR': "",
+                    'MAY': "", 'JUN': "", 'JUL': "", 'AUG': "",
+                    'SEP': "", 'OCT': "", 'NOV': "", 'DEC': ""
+                }
 
-            # Mengatur dictionary untuk ditampilkan di template
-            aggregated_results = {}
-            for entry in raw_results:
-                terminal = entry['terminal']
-                month = entry['month']
-                total_result = entry['total_result']
+            aggregated_results[(carline, terminal)][month] = total_result
 
-                # Struktur untuk template
-                if terminal not in aggregated_results:
-                    aggregated_results[terminal] = {
-                        'JAN': "", 'FEB': "", 'MAR': "", 'APR': "",
-                        'MAY': "", 'JUN': "", 'JUL': "", 'AUG': "",
-                        'SEP': "", 'OCT': "", 'NOV': "", 'DEC': ""
-                    }
-                aggregated_results[terminal][month] = total_result
-
-            context = {
-                'aggregated_results': aggregated_results,  # Tabel untuk template
-            }
-        else:
-            context = {
-                'error': "Field 'terminal', 'month', atau 'result' tidak ditemukan di model CalculationResultLoading."
-            }
-
-        return render(request, 'requirementPartAllCarline.html', context)
-
-    except Exception as e:
         context = {
-            'error': f"Terjadi kesalahan saat mengambil data: {str(e)}"
+            'aggregated_results': aggregated_results
         }
         return render(request, 'requirementPartAllCarline.html', context)
 
+    except Exception as e:
+        return render(request, 'requirementPartAllCarline.html', {
+            'error': f'Terjadi kesalahan: {str(e)}'
+        })
 
 
-from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, PartDesk, ApplicatorPartAvarage
+from .models import (
+    Load_applicator,
+    AggregatedResultByTerminal,
+    TerminalNameMapping,
+    LastRoundup,
+    PartDesk,
+    ApplicatorPartAvarage
+)
 import math
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
-@login_required()
+@login_required
 def loadingPart(request):
-    # Part 1: Terminal Name Mapping Logic
+    # Ambil semua data
     load_applicators = Load_applicator.objects.all()
     aggregated_results = AggregatedResultByTerminal.objects.all()
 
-    # Loop and save data for TerminalNameMapping
+    # Simpan mapping terminal
     for applicator in load_applicators:
+        if not applicator.loading or applicator.loading == 0:
+            continue  # Skip jika loading tidak valid
+
         for aggregated_result in aggregated_results:
-            last_loading = aggregated_result.total_result / applicator.loading
+            if not aggregated_result.total_result:
+                continue  # Skip jika total_result None
+
+            try:
+                last_loading = aggregated_result.total_result / applicator.loading
+            except ZeroDivisionError:
+                last_loading = None
+
             mapping, created = TerminalNameMapping.objects.get_or_create(
                 name=applicator,
                 month=aggregated_result,
@@ -592,25 +590,24 @@ def loadingPart(request):
                 mapping.last_loading = last_loading
                 mapping.save()
 
-    # Retrieve TerminalNameMapping data
+    # Ambil mapping
     terminal_mappings = TerminalNameMapping.objects.select_related('terminal', 'month', 'name').all()
 
-    # Prepare terminal data for the template
     terminal_data = {}
     month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     for mapping in terminal_mappings:
-        terminal_name = mapping.terminal.terminal
-        month = mapping.month.month.upper()[:3]  # First three letters of the month
-        total_result = mapping.total_result.total_result
+        if not mapping.terminal or not mapping.month or not mapping.name:
+            continue  # Hindari NoneType error
 
-        if terminal_name not in terminal_data:
-            terminal_data[terminal_name] = {}
+        terminal_name = getattr(mapping.terminal, 'terminal', None)
+        if not terminal_name:
+            continue
 
-        if month not in terminal_data[terminal_name]:
-            terminal_data[terminal_name][month] = []
+        month = mapping.month.month.upper()[:3]
+        total_result = getattr(mapping.total_result, 'total_result', 0)
 
-        terminal_data[terminal_name][month].append({
+        terminal_data.setdefault(terminal_name, {}).setdefault(month, []).append({
             'name': mapping.name.name,
             'loading': mapping.name.loading,
             'image': mapping.name.image.url if mapping.name.image else None,
@@ -618,113 +615,84 @@ def loadingPart(request):
             'last_loading': mapping.last_loading
         })
 
-    # Sort months for terminal data
+    # Sortir bulan
     for terminal in terminal_data:
         sorted_months = dict(sorted(terminal_data[terminal].items(), key=lambda x: month_order.index(x[0])))
         terminal_data[terminal] = sorted_months
 
-    # Group data for LastRoundup
+    # Kelompokkan untuk LastRoundup
     grouped_data = {}
     grouped_data_ceil = {}
 
     for entry in terminal_mappings:
-        applicator = entry.terminal.terminal  # Applicator Number
-        partname = entry.name.name  # Partname
-        
-        if applicator not in grouped_data:
-            grouped_data[applicator] = {}
-            grouped_data_ceil[applicator] = {}
+        if not entry.terminal or not entry.name or not entry.month:
+            continue
 
-        if partname not in grouped_data[applicator]:
-            grouped_data[applicator][partname] = {month: None for month in month_order}
-            grouped_data_ceil[applicator][partname] = {month: None for month in month_order}
-
-        # Fill the corresponding month with the last_loading value
-        month = entry.month.month.upper()[:3]  # First three letters of the month
+        applicator = entry.terminal.terminal
+        partname = entry.name.name
+        month = entry.month.month.upper()[:3]
         last_loading = entry.last_loading
         rounded_loading = math.ceil(last_loading) if last_loading is not None else None
 
-        # Store the last_loading in grouped_data
-        grouped_data[applicator][partname][month] = last_loading
-
-        # Store the rounded value in grouped_data_ceil and save to LastRoundup table
-        grouped_data_ceil[applicator][partname][month] = rounded_loading
+        grouped_data.setdefault(applicator, {}).setdefault(partname, {}).update({month: last_loading})
+        grouped_data_ceil.setdefault(applicator, {}).setdefault(partname, {}).update({month: rounded_loading})
 
         if rounded_loading is not None:
-            # Simpan sebagai string agar tidak ada koma
-            rounded_loading_str = str(rounded_loading)
-
-            # Save rounded values in LastRoundup
             LastRoundup.objects.update_or_create(
                 terminal=entry.terminal,
                 name=entry.name,
                 month=entry.month,
-                defaults={'rounded_loading': rounded_loading_str}
+                defaults={'rounded_loading': str(rounded_loading)}
             )
 
-
-    # Part 2: Combined Data View Logic
-    # Clear old data from ApplicatorPartAvarage
+    # Bersihkan data lama
     ApplicatorPartAvarage.objects.all().delete()
 
-    # Fetch data from LastRoundup and PartDesk
-    last_roundups = LastRoundup.objects.all().order_by('terminal__terminal', 'name__name', 'month__month')
-    part_desks = PartDesk.objects.all().order_by('applicatorNumber__applicatorNumber', 'partName__partName')
+    last_roundups = LastRoundup.objects.select_related('terminal', 'name', 'month').all()
+    part_desks = PartDesk.objects.select_related('applicatorNumber', 'partName').all()
 
-    # Dictionary to store combined results
     combined_results = {}
 
-    # Loop through data in LastRoundup and PartDesk
     for last_roundup in last_roundups:
         for part_desk in part_desks:
-            # If terminal and applicatorNumber match
-            if last_roundup.terminal.terminal == part_desk.applicatorNumber.applicatorNumber:
-                # If name matches
-                if last_roundup.name.name == part_desk.partName.partName:
-                    key = (part_desk.applicatorNumber.applicatorNumber, part_desk.partName.partName)
+            if not (last_roundup.terminal and last_roundup.name):
+                continue
 
-                    # Initialize dictionary for months if it doesn't exist
-                    if key not in combined_results:
-                        combined_results[key] = {
-                            'terminal': last_roundup.terminal.terminal,
-                            'name': last_roundup.name.name,
-                            'part_number': part_desk.partNumber,
-                            'part_code': part_desk.partCode,
-                            'level': part_desk.level,
-                            'marking': part_desk.marking,
-                            'months': {month: None for month in month_order}
-                        }
+            if last_roundup.terminal.terminal == part_desk.applicatorNumber.applicatorNumber and \
+               last_roundup.name.name == part_desk.partName.partName:
 
-                    # Assign the rounded_loading to the correct month
-                    month = last_roundup.month.month.upper()
-                    if month in combined_results[key]['months']:
-                        combined_results[key]['months'][month] = str(last_roundup.rounded_loading)
+                key = (part_desk.applicatorNumber.applicatorNumber, part_desk.partName.partName)
 
-    # Calculate the average and save to ApplicatorPartAvarage model
+                if key not in combined_results:
+                    combined_results[key] = {
+                        'terminal': last_roundup.terminal.terminal,
+                        'name': last_roundup.name.name,
+                        'part_number': part_desk.partNumber,
+                        'part_code': part_desk.partCode,
+                        'level': part_desk.level,
+                        'marking': part_desk.marking,
+                        'months': {month: None for month in month_order}
+                    }
+
+                month = last_roundup.month.month.upper()[:3]
+                if month in combined_results[key]['months']:
+                    combined_results[key]['months'][month] = str(last_roundup.rounded_loading)
+
+    def convert_to_str(value):
+        try:
+            if value is None or value == "":
+                return "-"
+            return str(int(float(value)))
+        except (ValueError, TypeError):
+            return str(value)
+
     for key, data in combined_results.items():
         months_data = data['months']
-        
-        # Calculate average as float
-        valid_values = [float(value) for value in months_data.values() if value is not None]
-        average = sum(valid_values) / len(valid_values) if valid_values else 0
-        data['average'] = round(average, 2)
+        valid_values = [float(v) for v in months_data.values() if v not in [None, "-"]]
 
-        # Convert numeric values to string without decimal points for months
-        def convert_to_str(value):
-            try:
-                if value is None or value == "":  # If the value is None or empty string, return "-"
-                    return "-"
-                # Handle conversion of numeric values to int if possible, otherwise leave as string
-                float_val = float(value)
-                int_val = int(float_val)  # Safely convert float to int
-                return str(int_val)  # Convert int to string
-            except (ValueError, TypeError):
-                # If it's not a numeric value (like '-') or can't be converted, just return it as a string
-                return str(value)
+        average = round(sum(valid_values) / len(valid_values), 2) if valid_values else 0
+        data['average'] = average
 
-
-
-        # Save combined data into ApplicatorPartAvarage
         ApplicatorPartAvarage.objects.update_or_create(
             terminal=data['terminal'],
             name=data['name'],
@@ -733,23 +701,22 @@ def loadingPart(request):
                 'part_code': data['part_code'],
                 'level': data['level'],
                 'marking': data['marking'],
-                'jan': convert_to_str(data['months'].get('JAN', None)),
-                'feb': convert_to_str(data['months'].get('FEB', None)),
-                'mar': convert_to_str(data['months'].get('MAR', None)),
-                'apr': convert_to_str(data['months'].get('APR', None)),
-                'may': convert_to_str(data['months'].get('MAY', None)),
-                'jun': convert_to_str(data['months'].get('JUN', None)),
-                'jul': convert_to_str(data['months'].get('JUL', None)),
-                'aug': convert_to_str(data['months'].get('AUG', None)),
-                'sep': convert_to_str(data['months'].get('SEP', None)),
-                'oct': convert_to_str(data['months'].get('OCT', None)),
-                'nov': convert_to_str(data['months'].get('NOV', None)),
-                'dec': convert_to_str(data['months'].get('DEC', None)),
-                'average': data['average']  # Average stays as float
+                'jan': convert_to_str(months_data.get('JAN')),
+                'feb': convert_to_str(months_data.get('FEB')),
+                'mar': convert_to_str(months_data.get('MAR')),
+                'apr': convert_to_str(months_data.get('APR')),
+                'may': convert_to_str(months_data.get('MAY')),
+                'jun': convert_to_str(months_data.get('JUN')),
+                'jul': convert_to_str(months_data.get('JUL')),
+                'aug': convert_to_str(months_data.get('AUG')),
+                'sep': convert_to_str(months_data.get('SEP')),
+                'oct': convert_to_str(months_data.get('OCT')),
+                'nov': convert_to_str(months_data.get('NOV')),
+                'dec': convert_to_str(months_data.get('DEC')),
+                'average': data['average']
             }
         )
 
-    # Combine data from both parts
     context = {
         'terminal_data': terminal_data,
         'grouped_data': grouped_data,

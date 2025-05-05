@@ -11,6 +11,7 @@
       <table class="table table-bordered">
         <thead>
           <tr>
+            <th>Carline</th>
             <th>Applicator</th>
             <th>JAN</th>
             <th>FEB</th>
@@ -27,9 +28,10 @@
           </tr>
         </thead>
         <tbody>
-          {% for terminal, months_data in aggregated_results.items %}
+          {% for pair, months_data in aggregated_results.items %}
           <tr>
-            <td>{{ terminal }}</td>
+            <td>{{ pair.0 }}</td> {# carline #}
+            <td>{{ pair.1 }}</td> {# terminal #}                
             <td>{{ months_data.JAN|floatformat:"0"|default:"-" }}</td>
             <td>{{ months_data.FEB|floatformat:"0"|default:"-" }}</td>
             <td>{{ months_data.MAR|floatformat:"0"|default:"-" }}</td>

@@ -16,6 +16,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
+              <th>Carline</th>
               <th>Terminal B</th>
               <th>JAN</th>
               <th>FEB</th>
@@ -34,6 +35,7 @@
           <tbody>
             {% for termB, months_data in aggregated_results_termB.items %}
             <tr>
+              <td>{{ carline }}</td>
               <td>{{ termB }}</td>
               <td>{{ months_data.JAN|default:"-" }}</td>
               <td>{{ months_data.FEB|default:"-" }}</td>
@@ -67,6 +69,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
+              <th>Carline</th>
               <th>Terminal A</th>
               <th>JAN</th>
               <th>FEB</th>
@@ -85,6 +88,7 @@
           <tbody>
             {% for termA, months_data in aggregated_results_termA.items %}
             <tr>
+              <td>{{ carline }}</td>
               <td>{{ termA }}</td>
               <td>{{ months_data.JAN|default:"-" }}</td>
               <td>{{ months_data.FEB|default:"-" }}</td>
@@ -118,6 +122,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
+              <th>Carline</th>
               <th>All Terminal</th>
               <th>JAN</th>
               <th>FEB</th>
@@ -136,6 +141,7 @@
           <tbody>
             {% for term, months_data in aggregated_results_combined.items %}
             <tr>
+              <td>{{ carline }}</td>
               <td>{{ term }}</td>
               <td>{{ months_data.JAN|default:"-" }}</td>
               <td>{{ months_data.FEB|default:"-" }}</td>
