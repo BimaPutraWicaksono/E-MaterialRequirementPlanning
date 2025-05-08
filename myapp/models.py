@@ -197,26 +197,26 @@ class Load_applicator(models.Model):
         
 # model calculation part 3
 class AggregatedResultByTerminal(models.Model):
+    calculation_result = models.ForeignKey(CalculationResultLoading, null=True, on_delete=models.SET_NULL)
     terminal = models.CharField(max_length=50)
     month = models.CharField(max_length=3)
     total_result = models.FloatField()
     
     class Meta:
-        db_table = 'aggregated_result_Terminal'
+        db_table = 'aggregated_result_terminal'
         ordering = ['terminal', 'month']
 
     def __str__(self):
         return f'{self.terminal} - {self.month}: {self.total_result}'
 
-
-
 # hitung load appclicator X AggregatedResultByTerminal
 class TerminalNameMapping(models.Model):
+    calculation_result = models.ForeignKey(CalculationResultLoading, on_delete=models.CASCADE, null=True)
     terminal = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='terminal_mapping', null=True)
     name = models.ForeignKey(Load_applicator, on_delete=models.CASCADE, related_name='applicator_mapping', null=True)
     month = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='month_mapping', null=True)
     total_result = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='aggregate', null=True)
-    last_loading = models.FloatField(null=True, blank=True)  # New field for last_loading
+    last_loading = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'terminal_name_mapping'
@@ -225,17 +225,17 @@ class TerminalNameMapping(models.Model):
         return f"{self.terminal.terminal} - {self.name.name} - {self.month.month}"
 
 class LastRoundup(models.Model):
+    calculation_result = models.ForeignKey(CalculationResultLoading, on_delete=models.CASCADE, null=True)
     terminal = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='terminal_roundup', null=True)
     name = models.ForeignKey(Load_applicator, on_delete=models.CASCADE, related_name='applicator_roundup', null=True)
     month = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='month_roundup', null=True)
-    rounded_loading = models.FloatField(null=True, blank=True)  # Rounded-up value of last_loading
+    rounded_loading = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'last_roundup'
 
     def __str__(self):
         return f"{self.terminal.terminal} - {self.name.name} - {self.month.month}"
-
 
 # views calculate in dashboard
 
@@ -282,6 +282,7 @@ class CombinedModel(models.Model):
 from django.db import models
 
 class ApplicatorPartAvarage(models.Model):
+    carline = models.ForeignKey(Carline, on_delete=models.CASCADE, related_name='carline_avarage', null=True)
     terminal = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     part_number = models.CharField(max_length=100)

@@ -1,4 +1,5 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% load custom_filters %} {% block content %} 
+
 <div class="container mt-4">
   <!-- Table for Original Values -->
   <div class="card my-4 table-section" id="table1">
@@ -28,28 +29,36 @@
             </tr>
           </thead>
           <tbody>
-            {% if grouped_data %} {% for applicator, partnames in grouped_data.items %} {% for partname, months in partnames.items %}
-            <tr>
-              <td>{{ carline }}</td>  <!-- Jika disimpan dalam tiap bulan -->
-              <td>{{ applicator }}</td>
-              <td>{{ partname }}</td>
-              <td>{{ months.JAN|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.FEB|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.MAR|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.APR|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.MAY|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.JUN|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.JUL|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.AUG|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.SEP|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.OCT|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.NOV|floatformat:"2"|default:"-" }}</td>
-              <td>{{ months.DEC|floatformat:"2"|default:"-" }}</td>
-            </tr>
-            {% endfor %} {% endfor %} {% else %}
-            <tr>
-              <td colspan="14">No results found</td>
-            </tr>
+            {% if grouped_data %} 
+              {% for applicator, partnames in grouped_data.items %}
+                {% for partname, months in partnames.items %}
+                  {% with first_month=months.JAN|default:months.FEB|default:months.MAR %}
+                  <tr>
+                    <td>
+                      {{ terminal_data|get_applicator_carline:applicator }}
+                    </td>
+                    <td>{{ applicator }}</td>
+                    <td>{{ partname }}</td>
+                    <td>{{ months.JAN|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.FEB|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.MAR|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.APR|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.MAY|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.JUN|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.JUL|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.AUG|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.SEP|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.OCT|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.NOV|floatformat:"2"|default:"-" }}</td>
+                    <td>{{ months.DEC|floatformat:"2"|default:"-" }}</td>
+                  </tr>
+                  {% endwith %}
+                {% endfor %}
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="15">No results found</td>
+              </tr>
             {% endif %}
           </tbody>
         </table>

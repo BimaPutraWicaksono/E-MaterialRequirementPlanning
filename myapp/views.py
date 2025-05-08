@@ -543,34 +543,21 @@ def requirementPartAllCarline(request):
         return render(request, 'requirementPartAllCarline.html', {
             'error': f'Terjadi kesalahan: {str(e)}'
         })
-
-
-from .models import (
-    Load_applicator,
-    AggregatedResultByTerminal,
-    TerminalNameMapping,
-    LastRoundup,
-    PartDesk,
-    ApplicatorPartAvarage
-)
+ 
 import math
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def loadingPart(request):
-    # Ambil semua data
+        
+# Loading Part
+def process_terminal_mappings():
     load_applicators = Load_applicator.objects.all()
-    aggregated_results = AggregatedResultByTerminal.objects.all()
+    aggregated_results = AggregatedResultByTerminal.objects.select_related('calculation_result').all()
 
-    # Simpan mapping terminal
     for applicator in load_applicators:
         if not applicator.loading or applicator.loading == 0:
-            continue  # Skip jika loading tidak valid
+            continue
 
         for aggregated_result in aggregated_results:
             if not aggregated_result.total_result:
-                continue  # Skip jika total_result None
+                continue
 
             try:
                 last_loading = aggregated_result.total_result / applicator.loading
@@ -590,15 +577,17 @@ def loadingPart(request):
                 mapping.last_loading = last_loading
                 mapping.save()
 
-    # Ambil mapping
-    terminal_mappings = TerminalNameMapping.objects.select_related('terminal', 'month', 'name').all()
+    terminal_mappings = TerminalNameMapping.objects.select_related(
+        'terminal__calculation_result', 'month', 'name'
+    ).all()
 
     terminal_data = {}
-    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     for mapping in terminal_mappings:
         if not mapping.terminal or not mapping.month or not mapping.name:
-            continue  # Hindari NoneType error
+            continue
 
         terminal_name = getattr(mapping.terminal, 'terminal', None)
         if not terminal_name:
@@ -606,21 +595,26 @@ def loadingPart(request):
 
         month = mapping.month.month.upper()[:3]
         total_result = getattr(mapping.total_result, 'total_result', 0)
+        carline = getattr(mapping.terminal.calculation_result, 'carline', 'N/A') if mapping.terminal.calculation_result else 'N/A'
 
         terminal_data.setdefault(terminal_name, {}).setdefault(month, []).append({
             'name': mapping.name.name,
             'loading': mapping.name.loading,
             'image': mapping.name.image.url if mapping.name.image else None,
             'total_result': total_result,
-            'last_loading': mapping.last_loading
+            'last_loading': mapping.last_loading,
+            'carline': carline,
         })
 
-    # Sortir bulan
     for terminal in terminal_data:
         sorted_months = dict(sorted(terminal_data[terminal].items(), key=lambda x: month_order.index(x[0])))
         terminal_data[terminal] = sorted_months
 
-    # Kelompokkan untuk LastRoundup
+    return terminal_data
+
+# Roundup Loading
+def process_last_roundup():
+    terminal_mappings = TerminalNameMapping.objects.select_related('terminal', 'name', 'month').all()
     grouped_data = {}
     grouped_data_ceil = {}
 
@@ -645,13 +639,17 @@ def loadingPart(request):
                 defaults={'rounded_loading': str(rounded_loading)}
             )
 
-    # Bersihkan data lama
-    ApplicatorPartAvarage.objects.all().delete()
+    return grouped_data, grouped_data_ceil
 
+# Applicator Part
+def process_part_average():
+    ApplicatorPartAvarage.objects.all().delete()
     last_roundups = LastRoundup.objects.select_related('terminal', 'name', 'month').all()
     part_desks = PartDesk.objects.select_related('applicatorNumber', 'partName').all()
 
     combined_results = {}
+    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     for last_roundup in last_roundups:
         for part_desk in part_desks:
@@ -717,6 +715,14 @@ def loadingPart(request):
             }
         )
 
+    return combined_results
+
+@login_required
+def loadingPart(request):
+    terminal_data = process_terminal_mappings()
+    grouped_data, grouped_data_ceil = process_last_roundup()
+    combined_results = process_part_average()
+
     context = {
         'terminal_data': terminal_data,
         'grouped_data': grouped_data,
@@ -725,6 +731,8 @@ def loadingPart(request):
     }
 
     return render(request, 'loadingPart.html', context)
+
+
 
 # views.py
 import openpyxl
