@@ -28,14 +28,16 @@
               <th>DEC</th>
             </tr>
           </thead>
-          <tbody>
+                    <tbody>
             {% if grouped_data %} 
               {% for applicator, partnames in grouped_data.items %}
                 {% for partname, months in partnames.items %}
                   {% with first_month=months.JAN|default:months.FEB|default:months.MAR %}
                   <tr>
                     <td>
-                      {{ terminal_data|get_applicator_carline:applicator }}
+                      {% with first_month=months.JAN|default:months.FEB|default:months.MAR %}
+                        {{ first_month.0.carline }}
+                      {% endwith %}
                     </td>
                     <td>{{ applicator }}</td>
                     <td>{{ partname }}</td>

@@ -197,9 +197,9 @@ class Load_applicator(models.Model):
         
 # model calculation part 3
 class AggregatedResultByTerminal(models.Model):
-    calculation_result = models.ForeignKey(CalculationResultLoading, null=True, on_delete=models.SET_NULL)
-    terminal = models.CharField(max_length=50)
-    month = models.CharField(max_length=3)
+    calculation_result = models.ForeignKey(CalculationResultLoading, on_delete=models.SET_NULL, null=True, blank=True)
+    terminal = models.CharField(max_length=100)
+    month = models.CharField(max_length=10)
     total_result = models.FloatField()
     
     class Meta:
@@ -307,7 +307,7 @@ class ApplicatorPartAvarage(models.Model):
         db_table = 'applicator_part_average'
 
     def __str__(self):
-        return f"{self.terminal} - {self.name} - {self.part_number}"
+        return f"{self.terminal} - {self.name} - {self.part_number}" 
 
 # result [views_sparepart.py]
 class Item(models.Model):

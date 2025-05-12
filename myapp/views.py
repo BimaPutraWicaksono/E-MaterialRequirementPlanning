@@ -547,6 +547,9 @@ def requirementPartAllCarline(request):
 import math
         
 # Loading Part
+import math
+from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, CalculationResultLoading
+
 def process_terminal_mappings():
     load_applicators = Load_applicator.objects.all()
     aggregated_results = AggregatedResultByTerminal.objects.select_related('calculation_result').all()
@@ -558,6 +561,16 @@ def process_terminal_mappings():
         for aggregated_result in aggregated_results:
             if not aggregated_result.total_result:
                 continue
+
+            # Cari CalculationResultLoading yang cocok berdasarkan terminal dan bulan
+            if not aggregated_result.calculation_result:
+                related_result = CalculationResultLoading.objects.filter(
+                    terminal=aggregated_result.terminal,
+                    month=aggregated_result.month
+                ).first()
+                if related_result:
+                    aggregated_result.calculation_result = related_result
+                    aggregated_result.save()
 
             try:
                 last_loading = aggregated_result.total_result / applicator.loading
@@ -595,7 +608,13 @@ def process_terminal_mappings():
 
         month = mapping.month.month.upper()[:3]
         total_result = getattr(mapping.total_result, 'total_result', 0)
-        carline = getattr(mapping.terminal.calculation_result, 'carline', 'N/A') if mapping.terminal.calculation_result else 'N/A'
+
+        # Ambil carline jika ada relasi calculation_result
+        carline = (
+            mapping.terminal.calculation_result.carline.name
+            if mapping.terminal.calculation_result and mapping.terminal.calculation_result.carline
+            else 'N/A'
+        )
 
         terminal_data.setdefault(terminal_name, {}).setdefault(month, []).append({
             'name': mapping.name.name,
@@ -607,7 +626,10 @@ def process_terminal_mappings():
         })
 
     for terminal in terminal_data:
-        sorted_months = dict(sorted(terminal_data[terminal].items(), key=lambda x: month_order.index(x[0])))
+        sorted_months = dict(sorted(
+            terminal_data[terminal].items(),
+            key=lambda x: month_order.index(x[0])
+        ))
         terminal_data[terminal] = sorted_months
 
     return terminal_data
@@ -731,7 +753,6 @@ def loadingPart(request):
     }
 
     return render(request, 'loadingPart.html', context)
-
 
 
 # views.py
