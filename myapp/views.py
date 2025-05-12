@@ -543,9 +543,7 @@ def requirementPartAllCarline(request):
         return render(request, 'requirementPartAllCarline.html', {
             'error': f'Terjadi kesalahan: {str(e)}'
         })
- 
-import math
-        
+         
 # Loading Part
 import math
 from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, CalculationResultLoading
@@ -562,7 +560,7 @@ def process_terminal_mappings():
             if not aggregated_result.total_result:
                 continue
 
-            # Cari CalculationResultLoading yang cocok berdasarkan terminal dan bulan
+            # Cari calculation_result jika belum ada
             if not aggregated_result.calculation_result:
                 related_result = CalculationResultLoading.objects.filter(
                     terminal=aggregated_result.terminal,
@@ -609,34 +607,129 @@ def process_terminal_mappings():
         month = mapping.month.month.upper()[:3]
         total_result = getattr(mapping.total_result, 'total_result', 0)
 
-        # Ambil carline jika ada relasi calculation_result
+        # Ambil carline dari calculation_result jika tersedia
         carline = (
             mapping.terminal.calculation_result.carline.name
             if mapping.terminal.calculation_result and mapping.terminal.calculation_result.carline
             else 'N/A'
         )
 
-        terminal_data.setdefault(terminal_name, {}).setdefault(month, []).append({
+        terminal_data.setdefault(carline, {}).setdefault(month, []).append({
             'name': mapping.name.name,
             'loading': mapping.name.loading,
             'image': mapping.name.image.url if mapping.name.image else None,
             'total_result': total_result,
             'last_loading': mapping.last_loading,
-            'carline': carline,
+            'terminal': terminal_name  # terminal disertakan di dalam dictionary
         })
 
-    for terminal in terminal_data:
+    # Urutkan berdasarkan bulan
+    for carline in terminal_data:
         sorted_months = dict(sorted(
-            terminal_data[terminal].items(),
+            terminal_data[carline].items(),
             key=lambda x: month_order.index(x[0])
         ))
-        terminal_data[terminal] = sorted_months
+        terminal_data[carline] = sorted_months
 
     return terminal_data
 
 # Roundup Loading
+import math
+from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, CalculationResultLoading
+
+def process_terminal_mappings():
+    load_applicators = Load_applicator.objects.all()
+    aggregated_results = AggregatedResultByTerminal.objects.select_related('calculation_result').all()
+
+    for applicator in load_applicators:
+        if not applicator.loading or applicator.loading == 0:
+            continue
+
+        for aggregated_result in aggregated_results:
+            if not aggregated_result.total_result:
+                continue
+
+            # Cari calculation_result jika belum ada
+            if not aggregated_result.calculation_result:
+                related_result = CalculationResultLoading.objects.filter(
+                    terminal=aggregated_result.terminal,
+                    month=aggregated_result.month
+                ).first()
+                if related_result:
+                    aggregated_result.calculation_result = related_result
+                    aggregated_result.save()
+
+            try:
+                last_loading = aggregated_result.total_result / applicator.loading
+            except ZeroDivisionError:
+                last_loading = None
+
+            mapping, created = TerminalNameMapping.objects.get_or_create(
+                name=applicator,
+                month=aggregated_result,
+                defaults={
+                    'terminal': aggregated_result,
+                    'total_result': aggregated_result,
+                    'last_loading': last_loading
+                }
+            )
+            if not created:
+                mapping.last_loading = last_loading
+                mapping.save()
+
+    terminal_mappings = TerminalNameMapping.objects.select_related(
+        'terminal__calculation_result', 'month', 'name'
+    ).all()
+
+    terminal_data = {}
+    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    for mapping in terminal_mappings:
+        if not mapping.terminal or not mapping.month or not mapping.name:
+            continue
+
+        terminal_name = getattr(mapping.terminal, 'terminal', None)
+        if not terminal_name:
+            continue
+
+        month = mapping.month.month.upper()[:3]
+        total_result = getattr(mapping.total_result, 'total_result', 0)
+
+        # Ambil carline dari calculation_result jika tersedia
+        carline = (
+            mapping.terminal.calculation_result.carline.name
+            if mapping.terminal.calculation_result and mapping.terminal.calculation_result.carline
+            else 'N/A'
+        )
+
+        terminal_data.setdefault(carline, {}).setdefault(month, []).append({
+            'name': mapping.name.name,
+            'loading': mapping.name.loading,
+            'image': mapping.name.image.url if mapping.name.image else None,
+            'total_result': total_result,
+            'last_loading': mapping.last_loading,
+            'terminal': terminal_name  # terminal disertakan di dalam dictionary
+        })
+
+    # Urutkan berdasarkan bulan
+    for carline in terminal_data:
+        sorted_months = dict(sorted(
+            terminal_data[carline].items(),
+            key=lambda x: month_order.index(x[0])
+        ))
+        terminal_data[carline] = sorted_months
+
+    return terminal_data
+
+# Roundup Loading
+import math
+from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, CalculationResultLoading
 def process_last_roundup():
-    terminal_mappings = TerminalNameMapping.objects.select_related('terminal', 'name', 'month').all()
+    terminal_mappings = TerminalNameMapping.objects.select_related(
+        'terminal__calculation_result__carline', 'name', 'month'
+    ).all()
+
     grouped_data = {}
     grouped_data_ceil = {}
 
@@ -644,14 +737,26 @@ def process_last_roundup():
         if not entry.terminal or not entry.name or not entry.month:
             continue
 
-        applicator = entry.terminal.terminal
+        terminal_name = getattr(entry.terminal, 'terminal', 'N/A')
         partname = entry.name.name
         month = entry.month.month.upper()[:3]
         last_loading = entry.last_loading
         rounded_loading = math.ceil(last_loading) if last_loading is not None else None
 
-        grouped_data.setdefault(applicator, {}).setdefault(partname, {}).update({month: last_loading})
-        grouped_data_ceil.setdefault(applicator, {}).setdefault(partname, {}).update({month: rounded_loading})
+        carline = (
+            entry.terminal.calculation_result.carline.name
+            if entry.terminal.calculation_result and entry.terminal.calculation_result.carline
+            else 'N/A'
+        )
+
+        # Siapkan struktur: carline > partname > terminal > month
+        grouped_data.setdefault(carline, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
+            'last_loading': last_loading
+        }
+
+        grouped_data_ceil.setdefault(carline, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
+            'rounded_loading': rounded_loading
+        }
 
         if rounded_loading is not None:
             LastRoundup.objects.update_or_create(
@@ -662,7 +767,6 @@ def process_last_roundup():
             )
 
     return grouped_data, grouped_data_ceil
-
 # Applicator Part
 def process_part_average():
     ApplicatorPartAvarage.objects.all().delete()
@@ -739,21 +843,39 @@ def process_part_average():
 
     return combined_results
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Carline
+
 @login_required
 def loadingPart(request):
+    # Ambil data terminal jika dibutuhkan di template
     terminal_data = process_terminal_mappings()
+    
+    # Ambil grouped_data dan grouped_data_ceil (sudah termasuk last_loading dan terminal per part)
     grouped_data, grouped_data_ceil = process_last_roundup()
+    
+    # Ambil hasil perhitungan rata-rata part
     combined_results = process_part_average()
 
+    # Daftar bulan yang digunakan di tabel
+    months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+              "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+    # Ambil semua carline dari model, meskipun tidak digunakan secara eksplisit di template
+    # Jika memang tidak dibutuhkan, bisa dihapus
+    # carline_data = Carline.objects.all()
+
     context = {
-        'terminal_data': terminal_data,
-        'grouped_data': grouped_data,
-        'grouped_data_ceil': grouped_data_ceil,
-        'combined_results': combined_results
+        # "carline_data": carline_data,  # Dihapus karena tidak digunakan di template
+        "terminal_data": terminal_data,  # jika kamu butuh data mapping terminal secara global
+        "grouped_data": grouped_data,
+        "grouped_data_ceil": grouped_data_ceil,
+        "combined_results": combined_results,
+        "months": months,
     }
 
     return render(request, 'loadingPart.html', context)
-
 
 # views.py
 import openpyxl

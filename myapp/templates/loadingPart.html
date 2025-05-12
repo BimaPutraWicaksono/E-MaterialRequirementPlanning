@@ -1,227 +1,122 @@
-{% extends "base.html" %} {% load custom_filters %} {% block content %} 
+{% extends "base.html" %}
+{% load custom_filters %}
 
+{% block content %}
 <div class="container mt-4">
-  <!-- Table for Original Values -->
-  <div class="card my-4 table-section" id="table1">
+  <!-- Combined Data (Last Roundup + Rounded Loading) -->
+  <div class="card my-4 table-section" id="table3">
     <div class="card-header">
-      <h3>Loading Part</h3>
+      <h2 class="mb-0">LOADING PART</h2>
     </div>
     <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered">
+      {% if grouped_data %}
+        {% for carline, part_data in grouped_data.items %}
+          <div class="mb-4">
+            <h4>
+              {{ carline }}
+              <button class="btn btn-link" onclick="toggleTable('{{ carline }}')"><i class="fas fa-list-ul"></i></button>
+            </h4>
+            <div id="table-{{ carline }}" class="table-container" style="display:none;">
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr>
+                    <th>Part Name</th>
+                    <th>Terminal</th>
+                    {% for month in months %}
+                      <th>{{ month }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for partname, terminal_data in part_data.items %}
+                    {% for terminal, month_data in terminal_data.items %}
+                      <tr>
+                        <td>{{ partname }}</td>
+                        <td>{{ terminal }}</td>
+                        {% for month in months %}
+                          <td>
+                            {% with info=month_data|get_item:month %}
+                              {% if info %}
+                                {{ info.last_loading|floatformat:2 }}<br>
+                                <b>↑ {{ grouped_data_ceil|get_item:carline|get_item:partname|get_item:terminal|get_item:month|get_item:"rounded_loading" }}</b>
+                              {% else %}
+                                -
+                              {% endif %}
+                            {% endwith %}
+                          </td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No data available.</p>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- Applicator Part Averages -->
+  <div class="card my-4 table-section" id="table4">
+    <div class="card-header">
+      <h2 class="mb-0">Applicator Part Averages</h2>
+    </div>
+    <div class="card-body">
+      {% if combined_results %}
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Carline</th>
-              <th>Applicator Number</th>
-              <th>Partname</th>
-              <th>JAN</th>
-              <th>FEB</th>
-              <th>MAR</th>
-              <th>APR</th>
-              <th>MAY</th>
-              <th>JUN</th>
-              <th>JUL</th>
-              <th>AUG</th>
-              <th>SEP</th>
-              <th>OCT</th>
-              <th>NOV</th>
-              <th>DEC</th>
-            </tr>
-          </thead>
-                    <tbody>
-            {% if grouped_data %} 
-              {% for applicator, partnames in grouped_data.items %}
-                {% for partname, months in partnames.items %}
-                  {% with first_month=months.JAN|default:months.FEB|default:months.MAR %}
-                  <tr>
-                    <td>
-                      {% with first_month=months.JAN|default:months.FEB|default:months.MAR %}
-                        {{ first_month.0.carline }}
-                      {% endwith %}
-                    </td>
-                    <td>{{ applicator }}</td>
-                    <td>{{ partname }}</td>
-                    <td>{{ months.JAN|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.FEB|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.MAR|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.APR|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.MAY|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.JUN|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.JUL|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.AUG|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.SEP|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.OCT|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.NOV|floatformat:"2"|default:"-" }}</td>
-                    <td>{{ months.DEC|floatformat:"2"|default:"-" }}</td>
-                  </tr>
-                  {% endwith %}
-                {% endfor %}
-              {% endfor %}
-            {% else %}
-              <tr>
-                <td colspan="15">No results found</td>
-              </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Table for Rounded Values -->
-  <div class="card my-4 table-section" id="table2">
-    <div class="card-header">
-      <h3>Roundup Loading</h3>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Applicator Number</th>
-              <th>Partname</th>
-              <th>JAN</th>
-              <th>FEB</th>
-              <th>MAR</th>
-              <th>APR</th>
-              <th>MAY</th>
-              <th>JUN</th>
-              <th>JUL</th>
-              <th>AUG</th>
-              <th>SEP</th>
-              <th>OCT</th>
-              <th>NOV</th>
-              <th>DEC</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% if grouped_data_ceil %} {% for applicator, partnames in grouped_data_ceil.items %} {% for partname, months in partnames.items %}
-            <tr>
-              <td>{{ applicator }}</td>
-              <td>{{ partname }}</td>
-              <td>{{ months.JAN|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.FEB|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.MAR|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.APR|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.MAY|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.JUN|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.JUL|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.AUG|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.SEP|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.OCT|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.NOV|floatformat:"0"|default:"-" }}</td>
-              <td>{{ months.DEC|floatformat:"0"|default:"-" }}</td>
-            </tr>
-            {% endfor %} {% endfor %} {% else %}
-            <tr>
-              <td colspan="14">No results found</td>
-            </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Table for Combined Data -->
-  <div class="card my-4 table-section" id="table3">
-    <div class="card-header">
-      <h3>Applicator Part</h3>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Machine Number</th>
               <th>Part Name</th>
               <th>Part Number</th>
-              <th>Level / Marking</th>
-              <th>JAN</th>
-              <th>FEB</th>
-              <th>MAR</th>
-              <th>APR</th>
-              <th>MAY</th>
-              <th>JUN</th>
-              <th>JUL</th>
-              <th>AUG</th>
-              <th>SEP</th>
-              <th>OCT</th>
-              <th>NOV</th>
-              <th>DEC</th>
+              <th>Part Code</th>
+              <th>Level</th>
+              <th>Marking</th>
+              {% for month in months %}
+                <th>{{ month }}</th>
+              {% endfor %}
               <th>Average</th>
             </tr>
           </thead>
           <tbody>
-            {% if combined_results %} {% for key, data in combined_results.items %}
-            <tr>
-              <td>{{ data.terminal }}</td>
-              <td>{{ data.name }}</td>
-              <td>{{ data.part_number }} {{ data.part_code }}</td>
-              <td>{{ data.level }} {{ data.marking|floatformat:"0" }}</td>
-              <td>{{ data.months.JAN|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.FEB|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.MAR|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.APR|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.MAY|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.JUN|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.JUL|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.AUG|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.SEP|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.OCT|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.NOV|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.months.DEC|floatformat:"0"|default:"" }}</td>
-              <td>{{ data.average|floatformat:"2" }}</td>
-            </tr>
-            {% endfor %} {% else %}
-            <tr>
-              <td colspan="17">No results found</td>
-            </tr>
-            {% endif %}
+            {% for key, data in combined_results.items %}
+              <tr>
+                <td>{{ data.carline }}</td>
+                <td>{{ data.name }}</td>
+                <td>{{ data.part_number }}</td>
+                <td>{{ data.part_code }}</td>
+                <td>{{ data.level }}</td>
+                <td>{{ data.marking }}</td>
+                {% for month in months %}
+                  <td>{{ data.months|default_if_none:''|dict_get:month }}</td>
+                {% endfor %}
+                <td>{{ data.average }}</td>
+              </tr>
+            {% endfor %}
           </tbody>
         </table>
-      </div>
+      {% else %}
+        <p>No combined results available.</p>
+      {% endif %}
     </div>
-  </div>
-
-  <!-- Navigation Buttons -->
-  <div class="d-flex justify-content-end">
-    <button class="upload-btn" id="prevBtn">
-      <i class="fas fa-angle-double-left"></i>
-    </button>
-    <button class="upload-btn" id="nextBtn">
-      <i class="fas fa-angle-double-right"></i>
-    </button>
   </div>
 </div>
 
-<!-- Filtering and Navigation Script -->
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    let currentTableIndex = 0;
-    const tableSections = document.querySelectorAll(".table-section");
-
-    // Function to show the current table and hide others
-    function showTable(index) {
-      tableSections.forEach((section, i) => {
-        section.style.display = i === index ? "block" : "none";
-      });
+  function toggleTable(carline) {
+    var table = document.getElementById('table-' + carline);
+    var isVisible = table.style.display === 'block';
+    
+    // Toggle the table visibility
+    if (isVisible) {
+      table.style.display = 'none';
+    } else {
+      table.style.display = 'block';
     }
-
-    // Show the first table by default
-    showTable(currentTableIndex);
-
-    // Navigation buttons functionality
-    document.getElementById("prevBtn").addEventListener("click", () => {
-      currentTableIndex =
-        (currentTableIndex - 1 + tableSections.length) % tableSections.length;
-      showTable(currentTableIndex);
-    });
-
-    document.getElementById("nextBtn").addEventListener("click", () => {
-      currentTableIndex = (currentTableIndex + 1) % tableSections.length;
-      showTable(currentTableIndex);
-    });
-  });
+  }
 </script>
+
 {% endblock %}

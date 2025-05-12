@@ -10,3 +10,23 @@ def get_applicator_carline(terminal_data, applicator):
                 if isinstance(item, dict) and item.get("name") == applicator:
                     return item.get("carline", "")
     return ""
+
+
+@register.filter
+def dict_get(d, key):
+    if d and key in d:
+        return d.get(key)
+    return ''
+
+@register.filter
+def dict_get(dictionary, key):
+    try:
+        return dictionary[key]
+    except KeyError:
+        return None
+
+@register.filter
+def get_item(dictionary, key):
+    if dictionary:
+        return dictionary.get(key)
+    return None
