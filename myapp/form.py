@@ -1,11 +1,6 @@
 from django import forms
-from .models import Item, ExcelFile, PurchaseReq
-
-class ItemForm(forms.ModelForm):
-    class Meta:
-        model = Item
-        fields = ['nameDash', 'numberDash', 'levelDash', 'categoryDash', 'januaryDash', 'februaryDash', 'marchDash', 'aprilDash', 'mayDash', 'juneDash', 'julyDash', 'augustDash', 'septemberDash', 'octoberDash', 'novemberDash', 'decemberDash', 'averageDash']
-       
+from .models import ExcelFile
+     
 class ExcelFileForm(forms.ModelForm):
     class Meta:
         model = ExcelFile
@@ -40,12 +35,3 @@ class SignupForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
-    
-class PurchaseReqForm(forms.ModelForm):
-    class Meta:
-        model = PurchaseReq
-        fields = '__all__'
-        widgets = {
-            'carlines': forms.CheckboxSelectMultiple()
-        }
-

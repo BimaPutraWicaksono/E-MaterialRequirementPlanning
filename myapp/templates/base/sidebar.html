@@ -1,7 +1,7 @@
 {% load static %} {% load user_tags %}
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-  <a href="{% url 'dashboard' %}" class="brand-link" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+  <a href="{% url 'home' %}" class="brand-link" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
     <img src="{% static 'assets/dist/img/e-MRP.png' %}" style="width: 120px" />
   </a>
 
@@ -9,7 +9,7 @@
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         
-        <!-- dashboard -->
+        <!-- Home -->
         <li class="nav-item has-treeview">
             <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
               <a href="{% url 'home' %}" class="nav-link">
@@ -39,7 +39,7 @@
         </li>
 
         <!-- Calculate -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline strokePart loadingPart dashboard' %}menu-open{% endif %}">
+        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline strokePart loadingPart' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-dumpster"></i>
             <p>
@@ -64,18 +64,6 @@
               <a href="{% url 'loadingPart' %}" class="nav-link" id="loadingPartLink">
                 <i class="nav-icon fas fa-spinner"></i>
                 <p>Loading Part</p>
-              </a>
-            </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-              <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
-                <i class="nav-icon fas fa-calculator"></i>
-                <p>Result</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'dashboard' %}" class="nav-link" id="dashboardLink">
-                <i class="nav-icon fas fa-calculator"></i>
-                <p>Stock</p>
               </a>
             </li>
           </ul>
@@ -179,10 +167,6 @@
 
     // Spinner Loading
     document.getElementById("loadingPartLink").addEventListener("click", function () {
-      document.getElementById("loadingSpinner").classList.remove("d-none");
-    });
-
-    document.getElementById("dashboardLink").addEventListener("click", function () {
       document.getElementById("loadingSpinner").classList.remove("d-none");
     });
   });

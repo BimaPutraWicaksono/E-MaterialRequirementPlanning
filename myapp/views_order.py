@@ -1,20 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .form import PurchaseReqForm
 
 # purchase request
 @login_required()
 def purchaseReq(request):
-    if request.method == 'POST':
-        form = PurchaseReqForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('purchaseReq')  # redirect ke form lagi setelah submit
-    else:
-        form = PurchaseReqForm()
-    
-    return render(request, 'order/purchaseReq.html', {'form': form})
-
+    return render(request, 'order/purchaseReq.html')
 
 # purchase order
 @login_required()

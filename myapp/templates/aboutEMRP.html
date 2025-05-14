@@ -67,15 +67,6 @@
     <button type="button" class="export-btn" id="manualBookButton">
       <i class="fas fa-book mr-1"></i> Manual Book
     </button>
-
-    <form
-      method="POST"
-      action="{% url 'delete_all_data' %}"
-      id="deleteAllForm"
-      style="display: none"
-    >
-      {% csrf_token %}
-    </form>
   </div>
 </div>
 

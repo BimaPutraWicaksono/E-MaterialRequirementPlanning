@@ -1,108 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import PartName, ApplicatorPart, PartDesk, ApplicatorPartAvarage
+from .models import PartName, ApplicatorPart, PartDesk
 from .form import UploadFileForm
 import openpyxl
 from openpyxl import Workbook
 import pandas as pd
 from django.contrib.auth.decorators import login_required
-
-# views dashboard
-from django.shortcuts import render
-from .models import ApplicatorPartAvarage, ViewsCalculateLoad  # Ganti dengan nama model yang sesuai
-
-@login_required()
-def dashboard(request):
-    # Menghapus data lama dari database jika ada
-    ViewsCalculateLoad.objects.all().delete()
-
-    dataApplicatorPartAvarage = ApplicatorPartAvarage.objects.all()
-
-    combinedData = []
-
-    def add_combined_data(machine_number, name_dash, number_dash, level_dash, source, **kwargs):
-        # Function to return string or None for CharField conversion
-        def get_valid_string(value):
-            return str(value) if value not in [None, 'None', '', '-'] else None
-
-        # Function to return float or None for FloatField conversion
-        def get_valid_float(value):
-            try:
-                return float(value) if value not in [None, 'None', '', '-'] else None
-            except ValueError:
-                return None
-
-        # Create the object, converting the values as needed
-        ViewsCalculateLoad.objects.create(
-            machine_number=machine_number,
-            name_dash=name_dash,
-            number_dash=number_dash,
-            level_dash=level_dash,
-            source=source,
-            january_dash=get_valid_string(kwargs.get('january_dash')),
-            february_dash=get_valid_string(kwargs.get('february_dash')),
-            march_dash=get_valid_string(kwargs.get('march_dash')),
-            april_dash=get_valid_string(kwargs.get('april_dash')),
-            may_dash=get_valid_string(kwargs.get('may_dash')),
-            june_dash=get_valid_string(kwargs.get('june_dash')),
-            july_dash=get_valid_float(kwargs.get('july_dash')),
-            august_dash=get_valid_float(kwargs.get('august_dash')),
-            september_dash=get_valid_float(kwargs.get('september_dash')),
-            oktober_dash=get_valid_float(kwargs.get('oktober_dash')),
-            november_dash=get_valid_float(kwargs.get('november_dash')),
-            december_dash=get_valid_float(kwargs.get('december_dash')),
-            average_dash=get_valid_float(kwargs.get('average_dash'))  # Only average_dash as float
-        )
-            
-        # Append to combinedData (if needed for template)
-        combinedData.append({
-            'machineNumber': machine_number,
-            'nameDash': name_dash,
-            'numberDash': number_dash,
-            'levelDash': level_dash,
-            'source': source,
-            'januaryDash': kwargs.get('january_dash', ''),
-            'februaryDash': kwargs.get('february_dash', ''),
-            'marchDash': kwargs.get('march_dash', ''),
-            'aprilDash': kwargs.get('april_dash', ''),
-            'mayDash': kwargs.get('may_dash', ''),
-            'juneDash': kwargs.get('june_dash', ''),
-            'julyDash': kwargs.get('july_dash', ''),
-            'augustDash': kwargs.get('august_dash', ''),
-            'septemberDash': kwargs.get('september_dash', ''),
-            'oktoberDash': kwargs.get('oktober_dash', ''),
-            'novemberDash': kwargs.get('november_dash', ''),
-            'decemberDash': kwargs.get('december_dash', ''),
-            'averageDash': kwargs.get('average_dash', ''),
-        })
-
-    # Menggabungkan data dari ApplicatorPartAvarage
-    for c in dataApplicatorPartAvarage:
-        add_combined_data(
-            machine_number=c.terminal,
-            name_dash=c.name,
-            number_dash=f"{c.part_number} {c.part_code}" if c.part_code else c.part_number,
-            level_dash=f"{c.level} {c.marking}" if c.marking else c.level,
-            source='Applicator',
-            january_dash=c.jan if c.jan is not None else '',
-            february_dash=c.feb if c.feb is not None else '',
-            march_dash=c.mar if c.mar is not None else '',
-            april_dash=c.apr if c.apr is not None else '',
-            may_dash=c.may if c.may is not None else '',
-            june_dash=c.jun if c.jun is not None else '',
-            july_dash=c.jul if c.jul is not None else '',
-            august_dash=c.aug if c.aug is not None else '',
-            september_dash=c.sep if c.sep is not None else '',
-            oktober_dash=c.oct if c.oct is not None else '',
-            november_dash=c.nov if c.nov is not None else '',
-            december_dash=c.dec if c.dec is not None else '',
-            average_dash=c.average if c.average is not None else ''
-        )
-
-    # Pass combinedData to the template
-    context = {'combinedData': combinedData}
-    return render(request, 'dashboard.html', context)
-
 
 # Applicator 
 @login_required()

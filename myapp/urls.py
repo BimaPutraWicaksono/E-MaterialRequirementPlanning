@@ -46,21 +46,12 @@ urlpatterns = [
     # crud account
     path('account', views_auth.daftar_akun, name='daftar_akun'),
     path('deleteAccount/', views_auth.hapus_akun, name='hapus_akun'),
-    path('delete-all/', views.delete_all_data, name='delete_all_data'), #menghapus semua database (WARNING!)
-   
-    # dashboard 
-    path('dashboard/', views_sparepart.dashboard, name='dashboard'),
-    
-    # export dashboard
-    path('export-dashboard/', views.export_dashboard, name='export_dashboard'),
-    
+     
     #home
     path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
-    
-    
     
 ]
