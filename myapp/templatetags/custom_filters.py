@@ -30,3 +30,19 @@ def get_item(dictionary, key):
     if dictionary:
         return dictionary.get(key)
     return None
+
+@register.filter
+def get_item_by_month(value, month):
+    for item in value:
+        if item.month == month:
+            return item
+    return None
+
+@register.filter
+def deep_get(data, path):
+    try:
+        for key in path:
+            data = data[key]
+        return data
+    except (KeyError, TypeError):
+        return None

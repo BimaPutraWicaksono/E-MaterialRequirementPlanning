@@ -40,6 +40,7 @@
 
 .nav-item.active .nav-link {
     background: #ffffff !important;
+    opacity: 0.7;
     color: #A45EE5 !important;
     font-weight: bold;
 }
@@ -63,4 +64,10 @@
 
 .control-sidebar {
     background-color: #ffffff !important;
+}
+
+
+.nav-sidebar .nav-treeview .nav-link {
+    font-size: 14px !important; /* lebih kecil dari default */
+    padding-left: 2rem !important; /* menjorok ke kanan */
 }

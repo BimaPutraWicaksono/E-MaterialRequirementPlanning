@@ -237,6 +237,20 @@ class LastRoundup(models.Model):
     def __str__(self):
         return f"{self.terminal.terminal} - {self.name.name} - {self.month.month}"
 
+class LoadingPartResult(models.Model):
+    carline = models.ForeignKey(Carline, on_delete=models.CASCADE)
+    part_name = models.CharField(max_length=255)
+    terminal = models.CharField(max_length=255)
+    month = models.CharField(max_length=10)  # e.g., "JAN", "FEB"
+    last_loading = models.FloatField(null=True, blank=True)
+    rounded_loading = models.FloatField(null=True, blank=True)
+    average = models.FloatField(null=True, blank=True)
+    partdesk = models.ForeignKey('PartDesk', null=True, blank=True, on_delete=models.SET_NULL)  # Tambahan
+
+    class Meta:
+        db_table = 'loading_part_result'
+        unique_together = ('carline', 'part_name', 'terminal', 'month')
+
 # views calculate in dashboard
 
 class ViewsCalculateLoad(models.Model):

@@ -3,7 +3,6 @@
 
 {% block content %}
 <div class="container mt-4">
-  <!-- Combined Data (Last Roundup + Rounded Loading) -->
   <div class="card my-4 table-section" id="table3">
     <div class="card-header">
       <h2 class="mb-0">LOADING PART</h2>
@@ -14,7 +13,9 @@
           <div class="mb-4">
             <h4>
               {{ carline }}
-              <button class="btn btn-link" onclick="toggleTable('{{ carline }}')"><i class="fas fa-list-ul"></i></button>
+              <button class="btn btn-link" onclick="toggleTable('{{ carline }}')">
+                <i class="fas fa-list-ul"></i>
+              </button>
             </h4>
             <div id="table-{{ carline }}" class="table-container" style="display:none;">
               <table class="table table-bordered table-sm">
@@ -22,17 +23,29 @@
                   <tr>
                     <th>Part Name</th>
                     <th>Terminal</th>
+                    <th>Part Number</th>
+                    <th>Level/Marking</th>
                     {% for month in months %}
                       <th>{{ month }}</th>
                     {% endfor %}
+                    <th>Average</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for partname, terminal_data in part_data.items %}
                     {% for terminal, month_data in terminal_data.items %}
+                      {% with result=loading_results|get_item:carline|get_item:partname|get_item:terminal %}
                       <tr>
                         <td>{{ partname }}</td>
                         <td>{{ terminal }}</td>
+
+                        {% if result.partdesk %}
+                          <td>{{ result.partdesk.partNumber|default:"-" }} {{ result.partdesk.partCode|default:"-" }}</td>
+                          <td>{{ result.partdesk.level|default:"-" }} {{ result.partdesk.marking|default:"-" }}</td>
+                        {% else %}
+                          <td colspan="4" class="text-muted text-center">No PartDesk Info</td>
+                        {% endif %}
+
                         {% for month in months %}
                           <td>
                             {% with info=month_data|get_item:month %}
@@ -45,7 +58,9 @@
                             {% endwith %}
                           </td>
                         {% endfor %}
+                        <td>{{ result.average|default:"-"|floatformat:2 }}</td>
                       </tr>
+                      {% endwith %}
                     {% endfor %}
                   {% endfor %}
                 </tbody>
@@ -58,65 +73,12 @@
       {% endif %}
     </div>
   </div>
-  
-  <!-- Applicator Part Averages -->
-  <div class="card my-4 table-section" id="table4">
-    <div class="card-header">
-      <h2 class="mb-0">Applicator Part Averages</h2>
-    </div>
-    <div class="card-body">
-      {% if combined_results %}
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Carline</th>
-              <th>Part Name</th>
-              <th>Part Number</th>
-              <th>Part Code</th>
-              <th>Level</th>
-              <th>Marking</th>
-              {% for month in months %}
-                <th>{{ month }}</th>
-              {% endfor %}
-              <th>Average</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for key, data in combined_results.items %}
-              <tr>
-                <td>{{ data.carline }}</td>
-                <td>{{ data.name }}</td>
-                <td>{{ data.part_number }}</td>
-                <td>{{ data.part_code }}</td>
-                <td>{{ data.level }}</td>
-                <td>{{ data.marking }}</td>
-                {% for month in months %}
-                  <td>{{ data.months|default_if_none:''|dict_get:month }}</td>
-                {% endfor %}
-                <td>{{ data.average }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>No combined results available.</p>
-      {% endif %}
-    </div>
-  </div>
 </div>
 
 <script>
   function toggleTable(carline) {
     var table = document.getElementById('table-' + carline);
-    var isVisible = table.style.display === 'block';
-    
-    // Toggle the table visibility
-    if (isVisible) {
-      table.style.display = 'none';
-    } else {
-      table.style.display = 'block';
-    }
+    table.style.display = table.style.display === 'block' ? 'none' : 'block';
   }
 </script>
-
 {% endblock %}

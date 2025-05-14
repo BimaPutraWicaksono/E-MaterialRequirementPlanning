@@ -68,7 +68,6 @@ def reset_carline_all(request):
         return redirect(reverse('carline'))  # Redirect ke halaman setelah data dihapus
     return redirect(reverse('carline'))  # Redirect jika metode bukan POST
 
-
 # import excel SPP(six produc plan)
 @login_required()
 def sixProductionPlan(request, name):
@@ -112,11 +111,11 @@ def sixProductionPlan(request, name):
 
                         for index, row in df.iterrows():
                             no_assy_value = row.iloc[no_assy_column_index] if no_assy_column_index < len(row) else None
-                            if no_assy_value is None or pd.isna(no_assy_value) or str(no_assy_value).strip() == "":
-                                messages.error(request, f"Empty or missing noAssy at row {index}. Stopping import.")
-                                break
+                            # if no_assy_value is None or pd.isna(no_assy_value) or str(no_assy_value).strip() == "":
+                            #     messages.error(request, f"Empty or missing noAssy at row {index}. Stopping import.")
+                            #     break
 
-                            no_assy, created = NoAssy.objects.get_or_create(noAssy=no_assy_value)
+                            # no_assy, created = NoAssy.objects.get_or_create(noAssy=no_assy_value)
 
                             bulan_data = {month: None for month in month_map.keys()}
 
@@ -571,96 +570,7 @@ def process_terminal_mappings():
                     aggregated_result.save()
 
             try:
-                last_loading = aggregated_result.total_result / applicator.loading
-            except ZeroDivisionError:
-                last_loading = None
-
-            mapping, created = TerminalNameMapping.objects.get_or_create(
-                name=applicator,
-                month=aggregated_result,
-                defaults={
-                    'terminal': aggregated_result,
-                    'total_result': aggregated_result,
-                    'last_loading': last_loading
-                }
-            )
-            if not created:
-                mapping.last_loading = last_loading
-                mapping.save()
-
-    terminal_mappings = TerminalNameMapping.objects.select_related(
-        'terminal__calculation_result', 'month', 'name'
-    ).all()
-
-    terminal_data = {}
-    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-
-    for mapping in terminal_mappings:
-        if not mapping.terminal or not mapping.month or not mapping.name:
-            continue
-
-        terminal_name = getattr(mapping.terminal, 'terminal', None)
-        if not terminal_name:
-            continue
-
-        month = mapping.month.month.upper()[:3]
-        total_result = getattr(mapping.total_result, 'total_result', 0)
-
-        # Ambil carline dari calculation_result jika tersedia
-        carline = (
-            mapping.terminal.calculation_result.carline.name
-            if mapping.terminal.calculation_result and mapping.terminal.calculation_result.carline
-            else 'N/A'
-        )
-
-        terminal_data.setdefault(carline, {}).setdefault(month, []).append({
-            'name': mapping.name.name,
-            'loading': mapping.name.loading,
-            'image': mapping.name.image.url if mapping.name.image else None,
-            'total_result': total_result,
-            'last_loading': mapping.last_loading,
-            'terminal': terminal_name  # terminal disertakan di dalam dictionary
-        })
-
-    # Urutkan berdasarkan bulan
-    for carline in terminal_data:
-        sorted_months = dict(sorted(
-            terminal_data[carline].items(),
-            key=lambda x: month_order.index(x[0])
-        ))
-        terminal_data[carline] = sorted_months
-
-    return terminal_data
-
-# Roundup Loading
-import math
-from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, CalculationResultLoading
-
-def process_terminal_mappings():
-    load_applicators = Load_applicator.objects.all()
-    aggregated_results = AggregatedResultByTerminal.objects.select_related('calculation_result').all()
-
-    for applicator in load_applicators:
-        if not applicator.loading or applicator.loading == 0:
-            continue
-
-        for aggregated_result in aggregated_results:
-            if not aggregated_result.total_result:
-                continue
-
-            # Cari calculation_result jika belum ada
-            if not aggregated_result.calculation_result:
-                related_result = CalculationResultLoading.objects.filter(
-                    terminal=aggregated_result.terminal,
-                    month=aggregated_result.month
-                ).first()
-                if related_result:
-                    aggregated_result.calculation_result = related_result
-                    aggregated_result.save()
-
-            try:
-                last_loading = aggregated_result.total_result / applicator.loading
+                last_loading = round(aggregated_result.total_result / applicator.loading, 3)
             except ZeroDivisionError:
                 last_loading = None
 
@@ -767,112 +677,95 @@ def process_last_roundup():
             )
 
     return grouped_data, grouped_data_ceil
-# Applicator Part
-def process_part_average():
-    ApplicatorPartAvarage.objects.all().delete()
-    last_roundups = LastRoundup.objects.select_related('terminal', 'name', 'month').all()
-    part_desks = PartDesk.objects.select_related('applicatorNumber', 'partName').all()
 
-    combined_results = {}
-    month_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-
-    for last_roundup in last_roundups:
-        for part_desk in part_desks:
-            if not (last_roundup.terminal and last_roundup.name):
-                continue
-
-            if last_roundup.terminal.terminal == part_desk.applicatorNumber.applicatorNumber and \
-               last_roundup.name.name == part_desk.partName.partName:
-
-                key = (part_desk.applicatorNumber.applicatorNumber, part_desk.partName.partName)
-
-                if key not in combined_results:
-                    combined_results[key] = {
-                        'terminal': last_roundup.terminal.terminal,
-                        'name': last_roundup.name.name,
-                        'part_number': part_desk.partNumber,
-                        'part_code': part_desk.partCode,
-                        'level': part_desk.level,
-                        'marking': part_desk.marking,
-                        'months': {month: None for month in month_order}
-                    }
-
-                month = last_roundup.month.month.upper()[:3]
-                if month in combined_results[key]['months']:
-                    combined_results[key]['months'][month] = str(last_roundup.rounded_loading)
-
-    def convert_to_str(value):
-        try:
-            if value is None or value == "":
-                return "-"
-            return str(int(float(value)))
-        except (ValueError, TypeError):
-            return str(value)
-
-    for key, data in combined_results.items():
-        months_data = data['months']
-        valid_values = [float(v) for v in months_data.values() if v not in [None, "-"]]
-
-        average = round(sum(valid_values) / len(valid_values), 2) if valid_values else 0
-        data['average'] = average
-
-        ApplicatorPartAvarage.objects.update_or_create(
-            terminal=data['terminal'],
-            name=data['name'],
-            part_number=data['part_number'],
-            defaults={
-                'part_code': data['part_code'],
-                'level': data['level'],
-                'marking': data['marking'],
-                'jan': convert_to_str(months_data.get('JAN')),
-                'feb': convert_to_str(months_data.get('FEB')),
-                'mar': convert_to_str(months_data.get('MAR')),
-                'apr': convert_to_str(months_data.get('APR')),
-                'may': convert_to_str(months_data.get('MAY')),
-                'jun': convert_to_str(months_data.get('JUN')),
-                'jul': convert_to_str(months_data.get('JUL')),
-                'aug': convert_to_str(months_data.get('AUG')),
-                'sep': convert_to_str(months_data.get('SEP')),
-                'oct': convert_to_str(months_data.get('OCT')),
-                'nov': convert_to_str(months_data.get('NOV')),
-                'dec': convert_to_str(months_data.get('DEC')),
-                'average': data['average']
-            }
-        )
-
-    return combined_results
-
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required 
 from django.shortcuts import render
-from .models import Carline
-
+from .models import Carline, LoadingPartResult, PartDesk
+from django.db.models import Avg
 @login_required
 def loadingPart(request):
-    # Ambil data terminal jika dibutuhkan di template
-    terminal_data = process_terminal_mappings()
-    
-    # Ambil grouped_data dan grouped_data_ceil (sudah termasuk last_loading dan terminal per part)
-    grouped_data, grouped_data_ceil = process_last_roundup()
-    
-    # Ambil hasil perhitungan rata-rata part
-    combined_results = process_part_average()
+    from django.db.models import Q
 
-    # Daftar bulan yang digunakan di tabel
+    terminal_data = process_terminal_mappings()
+    grouped_data, grouped_data_ceil = process_last_roundup()
     months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
               "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
-    # Ambil semua carline dari model, meskipun tidak digunakan secara eksplisit di template
-    # Jika memang tidak dibutuhkan, bisa dihapus
-    # carline_data = Carline.objects.all()
+    carline_cache = {c.name: c for c in Carline.objects.all()}
+    temp_storage = {}
+
+    for carline, parts in grouped_data.items():
+        for part_name, terminals in parts.items():
+            for terminal, month_values in terminals.items():
+                key = (carline, part_name, terminal)
+                temp_storage.setdefault(key, [])
+
+                # Temukan PartDesk yang cocok berdasarkan partName dan applicatorNumber
+                matched_partdesk = PartDesk.objects.filter(
+                    partName__partName=part_name,
+                    applicatorNumber__applicatorNumber=terminal
+                ).first()
+
+                for month, value in month_values.items():
+                    last_loading = value.get('last_loading')
+                    rounded_loading = (
+                        grouped_data_ceil
+                        .get(carline, {})
+                        .get(part_name, {})
+                        .get(terminal, {})
+                        .get(month, {})
+                        .get('rounded_loading')
+                    )
+
+                    if last_loading is not None and rounded_loading is not None:
+                        temp_storage[key].append(rounded_loading)
+
+                        carline_obj = carline_cache[carline]
+
+                        obj, created = LoadingPartResult.objects.get_or_create(
+                            carline=carline_obj,
+                            part_name=part_name,
+                            terminal=terminal,
+                            month=month,
+                            defaults={
+                                'last_loading': last_loading,
+                                'rounded_loading': rounded_loading,
+                                'partdesk': matched_partdesk
+                            }
+                        )
+
+                        if not created:
+                            obj.last_loading = last_loading
+                            obj.rounded_loading = rounded_loading
+                            obj.partdesk = matched_partdesk
+                            obj.save()
+
+    # Update nilai rata-rata hanya sekali per kombinasi part
+    for (carline, part_name, terminal), values in temp_storage.items():
+        if values:
+            avg_val = round(sum(values) / len(values), 3)
+            carline_obj = carline_cache[carline]
+            LoadingPartResult.objects.filter(
+                carline=carline_obj,
+                part_name=part_name,
+                terminal=terminal
+            ).update(average=avg_val)
+
+    # Siapkan hasil loading ke dalam dictionary
+    all_results = LoadingPartResult.objects.select_related(
+        'carline', 'partdesk', 'partdesk__partName', 'partdesk__applicatorNumber'
+    )
+
+    loading_results = {}
+    for result in all_results:
+        loading_results.setdefault(result.carline.name, {}).setdefault(result.part_name, {})[result.terminal] = result
 
     context = {
-        # "carline_data": carline_data,  # Dihapus karena tidak digunakan di template
-        "terminal_data": terminal_data,  # jika kamu butuh data mapping terminal secara global
+        "terminal_data": terminal_data,
         "grouped_data": grouped_data,
         "grouped_data_ceil": grouped_data_ceil,
-        "combined_results": combined_results,
         "months": months,
+        "loading_results": loading_results,
     }
 
     return render(request, 'loadingPart.html', context)
