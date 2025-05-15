@@ -734,6 +734,7 @@ def loadingPart(request):
                         rounded_loading = (
                             grouped_data_ceil
                             .get(carline, {})
+                            .get(year, {})
                             .get(part_name, {})
                             .get(terminal, {})
                             .get(month, {})
@@ -779,8 +780,7 @@ def loadingPart(request):
                 average_round=avg_ceil  # ➕ Update field baru
             )
 
-
-    # Siapkan hasil loading ke dalam dictionary
+   # Siapkan hasil loading ke dalam dictionary
     all_results = LoadingPartResult.objects.select_related(
         'carline', 'partdesk', 'partdesk__partName', 'partdesk__applicatorNumber'
     )
@@ -800,6 +800,7 @@ def loadingPart(request):
                 "average_round": result.average_round,
                 "partdesk": result.partdesk,
             }
+
 
     context = {
         "terminal_data": terminal_data,
