@@ -35,6 +35,12 @@
                 <p>Applicator</p>
               </a>
             </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'strokePart' %}active{% endif %}">
+              <a href="{% url 'strokePart' %}" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Stroke Part</p>
+              </a>
+            </li>
           </ul>
         </li>
 
@@ -52,12 +58,6 @@
               <a href="{% url 'carline' %}" class="nav-link">
                 <i class="nav-icon fas fa-truck-loading"></i>
                 <p>Carline</p>
-              </a>
-            </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'strokePart' %}active{% endif %}">
-              <a href="{% url 'strokePart' %}" class="nav-link">
-                <i class="nav-icon fas fa-cogs"></i>
-                <p>Stroke Part</p>
               </a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'loadingPart' %}active{% endif %}">

@@ -12,13 +12,13 @@
         {% for carline, year_data in grouped_data.items %}
           {% for year, part_data in year_data.items %}
             <div class="mb-4">
-              <h4>
-                {{ carline }} - {{ year }}
+              <h5>
+                CARLINE: {{ carline }} - {{ year }}
                 <button class="btn btn-link" onclick="toggleTable('{{ carline }}-{{ year }}')">
                   <i class="fas fa-list-ul"></i>
                 </button>
-              </h4>
-              <div id="table-{{ carline }}-{{ year }}" class="table-container" style="{% if forloop.parentloop.first and forloop.first %}display:block;{% else %}display:none;{% endif %}">
+              </h5>
+              <div id="table-{{ carline }}-{{ year }}" class="table-container" style="display:none;">
                 <table class="table table-bordered table-sm">
                   <thead>
                     <tr>
