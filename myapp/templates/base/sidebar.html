@@ -111,9 +111,8 @@
             </li>
           </ul>
         </li>
-
         <!-- About Us -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about' %}menu-open{% endif %}">
+        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about departement' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-info-circle"></i>
             <p>
@@ -136,6 +135,14 @@
                 <p>E-MRP</p>
               </a>
             </li>
+            {% if request.user|has_group:"Admin" %}
+            <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
+              <a href="{% url 'master_departement_section' %}" class="nav-link">
+                <i class="nav-icon fas fa-user-cog"></i>
+                <p>Dept/Sect</p>
+              </a>
+            </li>
+            {% endif %}
           </ul>
         </li>
       </ul>

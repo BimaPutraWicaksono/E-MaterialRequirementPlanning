@@ -46,12 +46,19 @@ urlpatterns = [
     # crud account
     path('account', views_auth.daftar_akun, name='daftar_akun'),
     path('deleteAccount/', views_auth.hapus_akun, name='hapus_akun'),
+    
+    # departement
+    path('master/departement-section/', views_order.master_departement_section, name='master_departement_section'),
+    path('master/departement/create/', views_order.create_departement, name='create_departement'),
+    path('master/section/create/', views_order.create_section, name='create_section'),
      
-    #home
+    #order
     path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
+    
+    
     
 ]

@@ -256,3 +256,39 @@ class LoadingPartResult(models.Model):
     class Meta:
         db_table = 'loading_part_result'
         unique_together = ('carline', 'part_name', 'terminal', 'month')
+
+from datetime import datetime
+
+class Departement(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class Section(models.Model):
+    name = models.CharField(max_length=255)
+    departement = models.ForeignKey(Departement, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+class PurchaseRequest(models.Model):
+    date = models.DateField(auto_now_add=True)  # Tanggal saat insert
+    registered_no = models.CharField(max_length=100, unique=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    purchase_by = models.CharField(max_length=255)
+    budget_ref_no = models.CharField(max_length=100)
+    part_order = models.ForeignKey(LoadingPartResult, on_delete=models.CASCADE)
+    estimated_price = models.IntegerField()
+    amount = models.IntegerField()
+    total_amount = models.IntegerField()
+    deadline = models.DateTimeField()
+    requested = models.BooleanField(default=False)
+    spv_approved = models.BooleanField(default=False)
+    sspv_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Request {self.registered_no} by {self.purchase_by}"
+
+    class Meta:
+        db_table = 'purchase_request'

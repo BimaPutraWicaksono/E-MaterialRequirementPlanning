@@ -7,6 +7,7 @@
 
 .sidebar {
     padding-top: 20px;
+    overflow-y: auto !important;
 }
 
 .brand-link {
