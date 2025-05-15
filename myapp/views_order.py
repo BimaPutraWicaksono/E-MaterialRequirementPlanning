@@ -35,9 +35,33 @@ def create_section(request):
     return redirect('master_departement_section')
 
 # purchase request
-@login_required()
+from django.db.models import Avg
+from .form import PurchaseRequestForm
+from .models import LoadingPartResult
+@login_required
 def purchaseReq(request):
-    return render(request, 'order/purchaseReq.html')
+    if request.method == 'POST':
+        form = PurchaseRequestForm(request.POST)
+        if form.is_valid():
+            pr = form.save(commit=False)
+            carlines = form.cleaned_data['part_order']
+
+            loading_parts = LoadingPartResult.objects.filter(carline__in=carlines)
+            avg = loading_parts.aggregate(Avg('average_round'))['average_round__avg'] or 0
+
+            pr.amount = int(avg * pr.estimated_price)
+            pr.total_amount = None
+            pr.save()
+            pr.part_order.set(carlines)
+            return redirect('purchaseReq')
+        else:
+            # Tampilkan error di console/log
+            print(form.errors)
+    else:
+        form = PurchaseRequestForm()
+
+    return render(request, 'order/purchaseReq.html', {'form': form})
+
 
 # purchase order
 @login_required()

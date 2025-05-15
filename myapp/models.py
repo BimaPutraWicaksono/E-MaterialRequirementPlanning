@@ -278,7 +278,7 @@ class PurchaseRequest(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     purchase_by = models.CharField(max_length=255)
     budget_ref_no = models.CharField(max_length=100)
-    part_order = models.ForeignKey(LoadingPartResult, on_delete=models.CASCADE)
+    part_order = models.ManyToManyField(Carline)
     estimated_price = models.IntegerField()
     amount = models.IntegerField()
     total_amount = models.IntegerField()

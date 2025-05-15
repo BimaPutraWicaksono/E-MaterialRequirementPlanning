@@ -38,3 +38,31 @@ class LoginForm(forms.Form):
 
 
 # request order
+from .models import PurchaseRequest, LoadingPartResult
+
+class PurchaseRequestForm(forms.ModelForm):
+    part_order = forms.ModelMultipleChoiceField(
+        queryset=Carline.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label="Carline (pilih salah satu atau beberapa)"
+    )
+
+    class Meta:
+        model = PurchaseRequest
+        fields = [
+            'registered_no',
+            'section',
+            'purchase_by',
+            'budget_ref_no',
+            'part_order',
+            'estimated_price',
+            'deadline',
+            'requested',
+        ]
+        widgets = {
+            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.fields['deadline'].input_formats = ['%Y-%m-%dT%H:%M']
