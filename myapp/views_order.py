@@ -38,30 +38,42 @@ def create_section(request):
 from django.db.models import Avg
 from .form import PurchaseRequestForm
 from .models import LoadingPartResult
+from .models import PurchaseRequest
+
 @login_required
 def purchaseReq(request):
+    purchase_requests = PurchaseRequest.objects.all().order_by('-date')  # Ambil semua PR terbaru
+
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
             pr = form.save(commit=False)
             carlines = form.cleaned_data['part_order']
 
-            loading_parts = LoadingPartResult.objects.filter(carline__in=carlines)
-            avg = loading_parts.aggregate(Avg('average_round'))['average_round__avg'] or 0
+            total_amount = 0
+            amount = 0
 
-            pr.amount = int(avg * pr.estimated_price)
-            pr.total_amount = None
+            for carline in carlines:
+                loading_parts = LoadingPartResult.objects.filter(carline=carline)
+                avg = loading_parts.aggregate(Avg('average_round'))['average_round__avg'] or 0
+                part_amount = int(avg * pr.estimated_price)
+                total_amount += part_amount
+                amount += part_amount
+
+            pr.amount = amount
+            pr.total_amount = total_amount
             pr.save()
             pr.part_order.set(carlines)
             return redirect('purchaseReq')
         else:
-            # Tampilkan error di console/log
             print(form.errors)
     else:
         form = PurchaseRequestForm()
 
-    return render(request, 'order/purchaseReq.html', {'form': form})
-
+    return render(request, 'order/purchaseReq.html', {
+        'form': form,
+        'purchase_requests': purchase_requests
+    })
 
 # purchase order
 @login_required()

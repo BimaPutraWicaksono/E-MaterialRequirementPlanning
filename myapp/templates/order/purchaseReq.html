@@ -1,27 +1,97 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
-  <h2>Purchase Request Form</h2> <br>
 
-  {% if form.errors %}
-    <div style="color:red;">
-      <ul>
-      {% for field in form %}
-        {% for error in field.errors %}
-          <li>{{ field.label }}: {{ error }}</li>
-        {% endfor %}
-      {% endfor %}
-      {% for error in form.non_field_errors %}
-        <li>{{ error }}</li>
-      {% endfor %}
-      </ul>
+<div class="container">
+
+  <!-- Form Section -->
+  <div class="card mt-5">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between mb-3 mt-2">
+        <div class="card-header">
+          <h3>Purchase Request Form</h3>
+        </div>
+      </div>
+
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+      </form>
+
     </div>
-  {% endif %}
+  </div>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-  </form>
+  <!-- Data Table Section -->
+  <div class="card mt-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Daftar Purchase Requests</h4>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th>Registered No</th>
+              <th>Date</th>
+              <th>Purchase By</th>
+              <th>Total Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pr in purchase_requests %}
+            <tr>
+              <td>{{ pr.registered_no }}</td>
+              <td>{{ pr.date }}</td>
+              <td>{{ pr.purchase_by }}</td>
+              <td>{{ pr.total_amount }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="toggleDetails('{{ pr.id }}')">Detail</button>
+              </td>
+            </tr>
+            <tr id="detail-{{ pr.id }}" style="display: none; background-color: #f9f9f9;">
+              <td colspan="5">
+                <strong>Section:</strong> {{ pr.section.name }} <br>
+                <strong>Budget Ref No:</strong> {{ pr.budget_ref_no }} <br>
+                <strong>Estimated Price:</strong> {{ pr.estimated_price }} <br>
+                <strong>Amount:</strong> {{ pr.amount }} <br>
+                <strong>Deadline:</strong> {{ pr.deadline }} <br>
+                <strong>Part Order:</strong>
+                <ul>
+                  {% for carline in pr.part_order.all %}
+                    <li>{{ carline.name }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDetails(id) {
+    const row = document.getElementById('detail-' + id);
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  }
+</script>
 
 {% endblock %}

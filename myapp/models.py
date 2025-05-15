@@ -291,4 +291,4 @@ class PurchaseRequest(models.Model):
         return f"Request {self.registered_no} by {self.purchase_by}"
 
     class Meta:
-        db_table = 'purchase_request'
+        db_table = 'purchase_request' 

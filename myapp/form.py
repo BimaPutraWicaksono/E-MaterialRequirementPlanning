@@ -66,3 +66,4 @@ class PurchaseRequestForm(forms.ModelForm):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.fields['deadline'].input_formats = ['%Y-%m-%dT%H:%M']
+ 
