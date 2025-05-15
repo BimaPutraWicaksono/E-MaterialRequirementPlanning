@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block content %}
 <div class="container">
-  <h1 class="mt-3 mb-3">REQUIREMENT PART ALL CARLINE</h1>
+  <h1 class="mt-3 mb-3">REQUIREMENT PRODUCT ALL CARLINE</h1>
 
   <!-- Table 1: Aggregated Results by Month -->
   <div class="card my-4">
@@ -25,6 +25,7 @@
             <th>OCT</th>
             <th>NOV</th>
             <th>DEC</th>
+            <th>Year</th>
           </tr>
         </thead>
         <tbody>
@@ -44,6 +45,7 @@
             <td>{{ months_data.OCT|floatformat:"0"|default:"-" }}</td>
             <td>{{ months_data.NOV|floatformat:"0"|default:"-" }}</td>
             <td>{{ months_data.DEC|floatformat:"0"|default:"-" }}</td>
+            <td>{{ pair.2 }}</td> {# year #}
           </tr>
           {% empty %}
           <tr>

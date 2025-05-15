@@ -77,17 +77,28 @@ def sixProductionPlan(request, name):
         if 'import' in request.POST:
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
-                files = request.FILES.getlist('file')  # Ambil beberapa file dari request
+                files = request.FILES.getlist('file')
                 sheet_name = form.cleaned_data.get('sheet_name')
 
-                for file in files:  # Loop melalui setiap file yang diunggah
+                for file in files:
                     try:
+                        # Baca data utama (mulai dari baris 13 karena header=[12,13])
                         if sheet_name:
                             df = pd.read_excel(file, sheet_name=sheet_name, header=[12, 13])
+                            sheet_for_year = pd.read_excel(file, sheet_name=sheet_name, header=None, nrows=8)
                         else:
                             df = pd.read_excel(file, header=[12, 13])
-                            
-                        months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+                            sheet_for_year = pd.read_excel(file, header=None, nrows=8)
+
+                        # Ambil tahun dari sel E8 (baris ke-7, kolom ke-4)
+                        try:
+                            year_cell = sheet_for_year.iloc[7, 4]  # E8
+                            year = int(str(year_cell).strip()) if pd.notna(year_cell) else None
+                        except Exception:
+                            year = None
+
+                        months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                                  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
                         prod_columns = [(month, 'Prod') for month in months if (month, 'Prod') in df.columns]
 
                         if not prod_columns:
@@ -101,11 +112,7 @@ def sixProductionPlan(request, name):
                         combined_prod_values = sum(prod_values, [])
 
                         headers = df.columns.tolist()
-                        month_map = {
-                            'JAN': 'JAN', 'FEB': 'FEB', 'MAR': 'MAR', 'APR': 'APR',
-                            'MAY': 'MAY', 'JUN': 'JUN', 'JUL': 'JUL', 'AUG': 'AUG',
-                            'SEP': 'SEP', 'OCT': 'OCT', 'NOV': 'NOV', 'DEC': 'DEC'
-                        }
+                        month_map = {month: month for month in months}
 
                         no_assy_column_index = 4
 
@@ -115,7 +122,7 @@ def sixProductionPlan(request, name):
                                 messages.error(request, f"Empty or missing noAssy at row {index}. Stopping import.")
                                 break
 
-                            no_assy, created = NoAssy.objects.get_or_create(noAssy=no_assy_value)
+                            no_assy, _ = NoAssy.objects.get_or_create(noAssy=no_assy_value)
                             bulan_data = {month: None for month in month_map.keys()}
 
                             for (month, prod_col) in prod_columns:
@@ -126,17 +133,26 @@ def sixProductionPlan(request, name):
                                     except ValueError:
                                         bulan_data[month_map[month]] = None
 
-                            bulan, created = Bulan.objects.get_or_create(carline=carline, **bulan_data)
+                            bulan, _ = Bulan.objects.get_or_create(carline=carline, year=year, **bulan_data)
 
                             for month in bulan_data.keys():
                                 value = bulan_data[month]
                                 if value is not None:
                                     quantity_exists = Quantity.objects.filter(
-                                        bulan=bulan, noAssy=no_assy, month=month
+                                        bulan=bulan,
+                                        noAssy=no_assy,
+                                        month=month,
+                                        carline=carline,
+                                        year=year
                                     ).exists()
                                     if not quantity_exists:
                                         Quantity.objects.create(
-                                            bulan=bulan, noAssy=no_assy, month=month, value=value, carline=carline
+                                            bulan=bulan,
+                                            noAssy=no_assy,
+                                            month=month,
+                                            value=value,
+                                            carline=carline,
+                                            year=year
                                         )
 
                     except Exception as e:
@@ -146,13 +162,14 @@ def sixProductionPlan(request, name):
 
         elif 'reset' in request.POST:
             Bulan.objects.filter(carline=carline).delete()
-            Quantity.objects.filter(carline=carline).delete()  # Menghapus Quantity yang terkait dengan carline
+            Quantity.objects.filter(carline=carline).delete()
             NoAssy.objects.filter(id__in=Quantity.objects.filter(carline=carline).values_list('noAssy_id', flat=True)).delete()
             messages.success(request, f"Data untuk carline {carline.name} telah direset.")
             return redirect('sixProductionPlan', name=carline.name)
 
     bulan_list = Bulan.objects.filter(carline=carline)
-    months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     columns = {month: bulan_list.filter(**{month: None}).count() == 0 for month in months}
 
     context = {
@@ -162,7 +179,6 @@ def sixProductionPlan(request, name):
         'columns': columns
     }
     return render(request, 'sixProductionPlan.html', context)
-
 
 @login_required()
 def reset_sixProductionPlan(request, name):
@@ -310,45 +326,55 @@ from .models import Carline, MachineLoading, AssyValue, Quantity, CalculationRes
 
 @login_required()
 def machineLoadingCalculate(request, name):
-    # Get carline based on name
     carline = get_object_or_404(Carline, name=name)
 
-    # Cek apakah data sudah ada di tabel CalculationResultLoading
-    if CalculationResultLoading.objects.filter(carline=carline).exists():
-        # Jika data sudah ada, langsung ambil dari database
+    # Ambil semua tahun yang tersedia dari Quantity untuk carline ini
+    available_years = Quantity.objects.filter(carline=carline).values_list('year', flat=True).distinct().order_by('year')
+
+    # Gunakan tahun terakhir sebagai default (jika ada)
+    year = available_years.last() if available_years else None
+
+    # Jika year tidak ditemukan, munculkan pesan
+    if not year:
+        messages.error(request, "Data Quantity untuk carline ini belum tersedia.")
+        return redirect('sixProductionPlan', name=carline.name)
+
+    # Cek apakah data sudah ada di tabel CalculationResultLoading untuk carline dan tahun tertentu
+    if CalculationResultLoading.objects.filter(carline=carline, year=year).exists():
         aggregated_results_termB = {}
         aggregated_results_termA = {}
         aggregated_results_combined = {}
 
-        # Ambil semua hasil perhitungan dari CalculationResultLoading
-        calculation_results_loading = CalculationResultLoading.objects.filter(carline=carline)
+        calculation_results_loading = CalculationResultLoading.objects.filter(carline=carline, year=year)
 
         for result in calculation_results_loading:
             terminal = result.terminal
             month = result.month
 
-            # Agregasi hasil untuk Term B
+            # Agregasi Term B
             if terminal not in aggregated_results_termB:
                 aggregated_results_termB[terminal] = {}
             if month not in aggregated_results_termB[terminal]:
                 aggregated_results_termB[terminal][month] = 0
             aggregated_results_termB[terminal][month] += result.result
 
-            # Agregasi hasil untuk Term A
+            # Agregasi Term A
             if terminal not in aggregated_results_termA:
                 aggregated_results_termA[terminal] = {}
             if month not in aggregated_results_termA[terminal]:
                 aggregated_results_termA[terminal][month] = 0
             aggregated_results_termA[terminal][month] += result.result
 
-            # Menggabungkan Term B dan Term A
+            # Gabungan
             if terminal not in aggregated_results_combined:
                 aggregated_results_combined[terminal] = {}
             if month not in aggregated_results_combined[terminal]:
                 aggregated_results_combined[terminal][month] = 0
-            aggregated_results_combined[terminal][month] = aggregated_results_termB[terminal][month] + aggregated_results_termA[terminal][month]
+            aggregated_results_combined[terminal][month] = (
+                aggregated_results_termB[terminal][month] +
+                aggregated_results_termA[terminal][month]
+            )
 
-        # Mengurutkan hasil agar lebih mudah dibaca
         def sort_key(item):
             return item if isinstance(item, str) else ""
 
@@ -356,90 +382,73 @@ def machineLoadingCalculate(request, name):
         aggregated_results_termA = OrderedDict(sorted(aggregated_results_termA.items(), key=lambda x: sort_key(x[0])))
         aggregated_results_combined = OrderedDict(sorted(aggregated_results_combined.items(), key=lambda x: sort_key(x[0])))
 
-        # Render hasil tanpa perhitungan ulang
         return render(request, 'machineLoadingCalculate.html', {
             'carline': carline,
-            'result_summary': {},  # Kosongkan result_summary karena kita tidak menghitung ulang
+            'result_summary': {},
             'months_order': ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
             'aggregated_results_termB': aggregated_results_termB,
             'aggregated_results_termA': aggregated_results_termA,
             'aggregated_results_combined': aggregated_results_combined,
+            'year': year,
         })
 
-    # Jika data belum ada, lakukan perhitungan ulang seperti biasa
-    CalculationResult.objects.filter(carline=carline).delete()
-    CalculationResultLoading.objects.filter(carline=carline).delete()
+    CalculationResult.objects.filter(carline=carline, year=year).delete()
+    CalculationResultLoading.objects.filter(carline=carline, year=year).delete()
 
-    # Get all MachineLoading records related to this carline
     machine_loadings = MachineLoading.objects.filter(carline=carline)
-
-    # Dictionary to store the sum results based on noControl and month
     result_summary = {}
-
-    # List of months in the desired order
     months_order = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
-    # Iterate over each MachineLoading
     for machine_loading in machine_loadings:
         no_control = machine_loading.noControl
         term_b = machine_loading.termB or '-'
         term_a = machine_loading.termA or '-'
 
-        # Initialize result_summary for each noControl if not already done
         if no_control not in result_summary:
             result_summary[no_control] = {'termB': term_b, 'termA': term_a, **{month: 0 for month in months_order}}
 
-        # Get all AssyValue related to this noControl
         assy_values = AssyValue.objects.filter(noControl=machine_loading)
 
         for assy_value in assy_values:
-            # Get the corresponding quantities based on noAssy and carline
-            quantities = Quantity.objects.filter(noAssy__noAssy=assy_value.noAssy, carline=carline)
+            quantities = Quantity.objects.filter(noAssy__noAssy=assy_value.noAssy, carline=carline, year=year)
 
             for quantity in quantities:
-                # Validasi bahwa carline dari Quantity cocok dengan carline yang diproses
                 if quantity.carline != carline:
-                    continue  # Jika tidak cocok, lewati perhitungan untuk record ini
+                    continue
 
                 month = quantity.month
                 quantity_value = quantity.value
 
-                # Multiply the value from AssyValue with the Quantity value
                 try:
                     value_assy = int(assy_value.value)
                 except ValueError:
                     value_assy = 0
 
                 result = quantity_value * value_assy
-
-                # Add the result to the correct month in result_summary
                 result_summary[no_control][month] += result
 
-                # Save or update the result in CalculationResult
                 CalculationResult.objects.update_or_create(
                     carline=carline,
                     noControl=machine_loading,
-                    termB=machine_loading, 
-                    termA=machine_loading, 
+                    termB=machine_loading,
+                    termA=machine_loading,
                     month=month,
+                    year=year,
                     defaults={'result': result_summary[no_control][month]},
                 )
 
-    # Start aggregating results
     aggregated_results_termB = {}
     aggregated_results_termA = {}
     aggregated_results_combined = {}
 
-    calculation_results = CalculationResult.objects.filter(carline=carline)
+    calculation_results = CalculationResult.objects.filter(carline=carline, year=year)
 
     for result in calculation_results:
         termB_name = result.termB.termB if result.termB else None
         termA_name = result.termA.termA if result.termA else None
         month = result.month
 
-        # Skip processing if termB_name or termA_name is None
         if termB_name:
-            # Agregasi untuk Term B
             if termB_name not in aggregated_results_termB:
                 aggregated_results_termB[termB_name] = {}
             if month not in aggregated_results_termB[termB_name]:
@@ -447,34 +456,28 @@ def machineLoadingCalculate(request, name):
             aggregated_results_termB[termB_name][month] += result.result
 
         if termA_name:
-            # Agregasi untuk Term A
             if termA_name not in aggregated_results_termA:
                 aggregated_results_termA[termA_name] = {}
             if month not in aggregated_results_termA[termA_name]:
                 aggregated_results_termA[termA_name][month] = 0
             aggregated_results_termA[termA_name][month] += result.result
 
-    # Menggabungkan Term A dan Term B
     for term in set(aggregated_results_termB.keys()).union(set(aggregated_results_termA.keys())):
         if term:
             aggregated_results_combined[term] = {}
-
-            for month in set(aggregated_results_termB.get(term, {}).keys()).union(set(aggregated_results_termA.get(term, {}).keys())):
+            for month in set(aggregated_results_termB.get(term, {}).keys()).union(aggregated_results_termA.get(term, {}).keys()):
                 combined_result = aggregated_results_termB.get(term, {}).get(month, 0) + aggregated_results_termA.get(term, {}).get(month, 0)
                 aggregated_results_combined[term][month] = combined_result
 
-                # Pengecekan apakah data sudah ada di tabel CalculationResultLoading
-                if not CalculationResultLoading.objects.filter(carline=carline, terminal=term, month=month).exists():
-                    # Jika belum ada, simpan data ke tabel CalculationResultLoading
-                    if term and term.strip():  # Memastikan term tidak kosong
-                        CalculationResultLoading.objects.create(
-                            carline=carline,
-                            terminal=term,
-                            month=month,
-                            result=combined_result
-                        )
+                if not CalculationResultLoading.objects.filter(carline=carline, terminal=term, month=month, year=year).exists():
+                    CalculationResultLoading.objects.create(
+                        carline=carline,
+                        terminal=term,
+                        month=month,
+                        year=year,
+                        result=combined_result
+                    )
 
-    # Mengurutkan hasil agar lebih mudah dibaca
     def sort_key(item):
         return item if isinstance(item, str) else ""
 
@@ -482,7 +485,6 @@ def machineLoadingCalculate(request, name):
     aggregated_results_termA = OrderedDict(sorted(aggregated_results_termA.items(), key=lambda x: sort_key(x[0])))
     aggregated_results_combined = OrderedDict(sorted(aggregated_results_combined.items(), key=lambda x: sort_key(x[0])))
 
-    # Render results
     return render(request, 'machineLoadingCalculate.html', {
         'carline': carline,
         'result_summary': result_summary,
@@ -490,10 +492,8 @@ def machineLoadingCalculate(request, name):
         'aggregated_results_termB': aggregated_results_termB,
         'aggregated_results_termA': aggregated_results_termA,
         'aggregated_results_combined': aggregated_results_combined,
+        'year': year,
     })
-
-
-# CARLINE - MachineLoading Fiture - SUM ALL CARLINE
 
 from django.shortcuts import render
 from django.db.models import Sum
@@ -504,33 +504,36 @@ from django.contrib.auth.decorators import login_required
 @login_required()
 def requirementPartAllCarline(request):
     try:
-        # Ambil data dan agregasi berdasarkan carline, terminal, dan bulan
+        # Ambil data dan agregasi berdasarkan carline, terminal, bulan, dan tahun
         raw_results = CalculationResultLoading.objects.filter(
             terminal__isnull=False,
             terminal__gt='',
             carline__isnull=False
         ).values(
-            'carline__name', 'terminal', 'month'
+            'carline__name', 'terminal', 'month', 'year'  # ✅ Tambah year
         ).annotate(
             total_result=Sum('result')
-        ).order_by('carline__name', 'terminal', 'month')
+        ).order_by('carline__name', 'terminal', 'year', 'month')  # ✅ Urutkan juga by year
 
-        # Susun dictionary dengan struktur: carline -> terminal -> month
+        # Susun dictionary: (carline, terminal, year) -> month -> result
         aggregated_results = {}
         for entry in raw_results:
             carline = entry['carline__name']
             terminal = entry['terminal']
             month = entry['month']
+            year = entry['year']
             total_result = entry['total_result']
 
-            if (carline, terminal) not in aggregated_results:
-                aggregated_results[(carline, terminal)] = {
+            key = (carline, terminal, year)
+
+            if key not in aggregated_results:
+                aggregated_results[key] = {
                     'JAN': "", 'FEB': "", 'MAR': "", 'APR': "",
                     'MAY': "", 'JUN': "", 'JUL': "", 'AUG': "",
                     'SEP': "", 'OCT': "", 'NOV': "", 'DEC': ""
                 }
 
-            aggregated_results[(carline, terminal)][month] = total_result
+            aggregated_results[key][month] = total_result
 
         context = {
             'aggregated_results': aggregated_results
@@ -541,6 +544,7 @@ def requirementPartAllCarline(request):
         return render(request, 'requirementPartAllCarline.html', {
             'error': f'Terjadi kesalahan: {str(e)}'
         })
+
          
 # Loading Part
 import math
@@ -612,7 +616,12 @@ def process_terminal_mappings():
             else 'N/A'
         )
 
-        terminal_data.setdefault(carline, {}).setdefault(month, []).append({
+        year = (
+            mapping.terminal.calculation_result.year
+            if mapping.terminal.calculation_result else 'N/A'
+        )
+
+        terminal_data.setdefault(carline, {}).setdefault(year, {}).setdefault(month, []).append({
             'name': mapping.name.name,
             'loading': mapping.name.loading,
             'image': mapping.name.image.url if mapping.name.image else None,
@@ -623,11 +632,13 @@ def process_terminal_mappings():
 
     # Urutkan berdasarkan bulan
     for carline in terminal_data:
-        sorted_months = dict(sorted(
-            terminal_data[carline].items(),
-            key=lambda x: month_order.index(x[0])
-        ))
-        terminal_data[carline] = sorted_months
+        for year in terminal_data[carline]:
+            sorted_months = dict(sorted(
+                terminal_data[carline][year].items(),
+                key=lambda x: month_order.index(x[0])
+            ))
+            terminal_data[carline][year] = sorted_months
+
 
     return terminal_data
 
@@ -657,23 +668,33 @@ def process_last_roundup():
             if entry.terminal.calculation_result and entry.terminal.calculation_result.carline
             else 'N/A'
         )
+        
+        year = (
+            entry.terminal.calculation_result.year
+            if entry.terminal.calculation_result else 'N/A'
+        )
 
         # Siapkan struktur: carline > partname > terminal > month
-        grouped_data.setdefault(carline, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
+        grouped_data.setdefault(carline, {}).setdefault(year, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
             'last_loading': last_loading
         }
 
-        grouped_data_ceil.setdefault(carline, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
+        grouped_data_ceil.setdefault(carline, {}).setdefault(year, {}).setdefault(partname, {}).setdefault(terminal_name, {})[month] = {
             'rounded_loading': rounded_loading
         }
+
 
         if rounded_loading is not None:
             LastRoundup.objects.update_or_create(
                 terminal=entry.terminal,
                 name=entry.name,
                 month=entry.month,
-                defaults={'rounded_loading': str(rounded_loading)}
+                defaults={
+                    'rounded_loading': str(rounded_loading),
+                    'year': year
+                }
             )
+
 
     return grouped_data, grouped_data_ceil
 
@@ -681,6 +702,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import Carline, LoadingPartResult, PartDesk
 from django.db.models import Avg
+import math
+
 @login_required
 def loadingPart(request):
     from django.db.models import Q
@@ -693,62 +716,69 @@ def loadingPart(request):
     carline_cache = {c.name: c for c in Carline.objects.all()}
     temp_storage = {}
 
-    for carline, parts in grouped_data.items():
-        for part_name, terminals in parts.items():
-            for terminal, month_values in terminals.items():
-                key = (carline, part_name, terminal)
-                temp_storage.setdefault(key, [])
+    for carline, years in grouped_data.items():
+        for year, parts in years.items():
+            for part_name, terminals in parts.items():
+                for terminal, month_values in terminals.items():
+                    key = (carline, part_name, terminal)
+                    temp_storage.setdefault(key, [])
 
-                # Temukan PartDesk yang cocok berdasarkan partName dan applicatorNumber
-                matched_partdesk = PartDesk.objects.filter(
-                    partName__partName=part_name,
-                    applicatorNumber__applicatorNumber=terminal
-                ).first()
+                    # Temukan PartDesk yang cocok berdasarkan partName dan applicatorNumber
+                    matched_partdesk = PartDesk.objects.filter(
+                        partName__partName=part_name,
+                        applicatorNumber__applicatorNumber=terminal
+                    ).first()
 
-                for month, value in month_values.items():
-                    last_loading = value.get('last_loading')
-                    rounded_loading = (
-                        grouped_data_ceil
-                        .get(carline, {})
-                        .get(part_name, {})
-                        .get(terminal, {})
-                        .get(month, {})
-                        .get('rounded_loading')
-                    )
-
-                    if last_loading is not None and rounded_loading is not None:
-                        temp_storage[key].append(rounded_loading)
-
-                        carline_obj = carline_cache[carline]
-
-                        obj, created = LoadingPartResult.objects.get_or_create(
-                            carline=carline_obj,
-                            part_name=part_name,
-                            terminal=terminal,
-                            month=month,
-                            defaults={
-                                'last_loading': last_loading,
-                                'rounded_loading': rounded_loading,
-                                'partdesk': matched_partdesk
-                            }
+                    for month, value in month_values.items():
+                        last_loading = value.get('last_loading')
+                        rounded_loading = (
+                            grouped_data_ceil
+                            .get(carline, {})
+                            .get(part_name, {})
+                            .get(terminal, {})
+                            .get(month, {})
+                            .get('rounded_loading')
                         )
 
-                        if not created:
-                            obj.last_loading = last_loading
-                            obj.rounded_loading = rounded_loading
-                            obj.partdesk = matched_partdesk
-                            obj.save()
+                        if last_loading is not None and rounded_loading is not None:
+                            temp_storage[key].append(rounded_loading)
+
+                            carline_obj = carline_cache[carline]
+
+                            obj, created = LoadingPartResult.objects.get_or_create(
+                                carline=carline_obj,
+                                part_name=part_name,
+                                terminal=terminal,
+                                month=month,
+                                year=year,
+                                defaults={
+                                    'last_loading': last_loading,
+                                    'rounded_loading': rounded_loading,
+                                    'partdesk': matched_partdesk
+                                }
+                            )
+
+                            if not created:
+                                obj.last_loading = last_loading
+                                obj.rounded_loading = rounded_loading
+                                obj.partdesk = matched_partdesk
+                                obj.save()
 
     # Update nilai rata-rata hanya sekali per kombinasi part
     for (carline, part_name, terminal), values in temp_storage.items():
         if values:
             avg_val = round(sum(values) / len(values), 3)
+            avg_ceil = math.ceil(avg_val)  # ➕ Pembulatan ke atas
             carline_obj = carline_cache[carline]
             LoadingPartResult.objects.filter(
                 carline=carline_obj,
                 part_name=part_name,
                 terminal=terminal
-            ).update(average=avg_val)
+            ).update(
+                average=avg_val,
+                average_round=avg_ceil  # ➕ Update field baru
+            )
+
 
     # Siapkan hasil loading ke dalam dictionary
     all_results = LoadingPartResult.objects.select_related(
@@ -757,7 +787,19 @@ def loadingPart(request):
 
     loading_results = {}
     for result in all_results:
-        loading_results.setdefault(result.carline.name, {}).setdefault(result.part_name, {})[result.terminal] = result
+        carline_name = result.carline.name
+        year = result.year
+        part_name = result.part_name
+        terminal = result.terminal
+
+        loading_results \
+            .setdefault(carline_name, {}) \
+            .setdefault(year, {}) \
+            .setdefault(part_name, {})[terminal] = {
+                "average": result.average,
+                "average_round": result.average_round,
+                "partdesk": result.partdesk,
+            }
 
     context = {
         "terminal_data": terminal_data,

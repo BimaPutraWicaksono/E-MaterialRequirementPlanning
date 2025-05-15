@@ -57,13 +57,15 @@ class Bulan(models.Model):
     SEP = models.IntegerField(null=True, blank=True)
     OCT = models.IntegerField(null=True, blank=True)
     NOV = models.IntegerField(null=True, blank=True)
-    DEC = models.IntegerField(null=True, blank=True)    
+    DEC = models.IntegerField(null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True) 
 
     class Meta:
-        db_table = 'janDec'
+        db_table = 'bulan'
 
     def __str__(self):
-        return f"Bulan {self.id}"
+        return f"{self.carline.name} - {self.year}"
+
     
 class NoAssy(models.Model):
     noAssy = models.CharField(max_length=255, blank=True, null=True)
@@ -92,14 +94,14 @@ class Quantity(models.Model):
         ('NOV', 'November'),
         ('DEC', 'December')
     ])
+    year = models.IntegerField(null=True, blank=True)  # <<--- Tambahan baru
     value = models.IntegerField()
 
     class Meta:
-        db_table = 'isiBulan'  # Sesuaikan nama tabel jika perlu
+        db_table = 'isiBulan'
 
     def __str__(self):
-        return f"{self.bulan} - {self.month}: {self.value}"
-
+        return f"{self.bulan} - {self.month} {self.year}: {self.value}"
 
 # mcl
 
@@ -136,8 +138,8 @@ class AssyValue(models.Model):
     def __str__(self):
         return f"{self.noAssy} - {self.value}"
 
-
 # model calculation part 1
+from datetime import datetime
 
 class CalculationResult(models.Model):
     carline = models.ForeignKey(Carline, on_delete=models.CASCADE, related_name='calculation_results', null=True)
@@ -159,15 +161,15 @@ class CalculationResult(models.Model):
         ('NOV', 'November'),
         ('DEC', 'December')
     ])
-    
+    year = models.IntegerField(default=datetime.now().year)
     result = models.IntegerField()
 
     class Meta:
         db_table = 'calculation_result'
-        unique_together = ('carline', 'noControl', 'month')  # Kombinasi carline, noControl, dan month harus unik
+        unique_together = ('carline', 'noControl', 'month', 'year')  # Unik berdasarkan carline, noControl, bulan, tahun
 
     def __str__(self):
-        return f"Result for {self.carline.name} - {self.noControl} ({self.month}): {self.result}"
+        return f"{self.carline.name} - {self.noControl} ({self.month} {self.year}): {self.result}"
 
 # model calculation part 2
 
@@ -175,6 +177,7 @@ class CalculationResultLoading(models.Model):
     carline = models.ForeignKey(Carline, on_delete=models.CASCADE, related_name='calculation_results_loading', null=True)
     terminal = models.CharField(max_length=255)
     month = models.CharField(max_length=10)
+    year = models.IntegerField(default=datetime.now().year)
     result = models.FloatField()
 
     class Meta:
@@ -230,6 +233,7 @@ class LastRoundup(models.Model):
     name = models.ForeignKey(Load_applicator, on_delete=models.CASCADE, related_name='applicator_roundup', null=True)
     month = models.ForeignKey(AggregatedResultByTerminal, on_delete=models.CASCADE, related_name='month_roundup', null=True)
     rounded_loading = models.FloatField(null=True, blank=True)
+    year = models.IntegerField(default=datetime.now().year)
 
     class Meta:
         db_table = 'last_roundup'
@@ -245,7 +249,9 @@ class LoadingPartResult(models.Model):
     last_loading = models.FloatField(null=True, blank=True)
     rounded_loading = models.FloatField(null=True, blank=True)
     average = models.FloatField(null=True, blank=True)
-    partdesk = models.ForeignKey('PartDesk', null=True, blank=True, on_delete=models.SET_NULL)  # Tambahan
+    average_round = models.FloatField(null=True, blank=True)  # ➕ Tambahan
+    partdesk = models.ForeignKey('PartDesk', null=True, blank=True, on_delete=models.SET_NULL)
+    year = models.IntegerField(default=datetime.now().year)
 
     class Meta:
         db_table = 'loading_part_result'

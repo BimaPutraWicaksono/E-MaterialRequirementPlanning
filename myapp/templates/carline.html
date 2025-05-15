@@ -87,29 +87,6 @@
       <div></div>
       {% endif %}
     </div>
-
-    <!-- Summarize All Calculation Button -->
-
-    {% comment %} <div class="d-flex justify-content-end mt-3">
-      {% if request.user|has_group:"Admin" %}
-      <div>
-        <form
-          method="post"
-          style="display: inline"
-          id="resetForm"
-          action="{% url 'reset_carline'%}"
-        >
-          {% csrf_token %}
-          <button type="button" class="reset-btn" id="resetCarlineButton">
-            <i class="nav-icon fas fa-trash-alt mr-2"></i>Delete All
-          </button>
-        </form>
-        <button type="button" class="ok-btn" id="requirementPartButton">
-          <b>Requirement Part All Carline</b>
-        </button>
-      </div>
-      {%endif%}
-    </div> {% endcomment %}
     <div class="d-flex justify-content-end mt-3">
       <div>
         {% if request.user|has_group:"Admin" %}
