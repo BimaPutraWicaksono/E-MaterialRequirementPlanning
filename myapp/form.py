@@ -67,3 +67,12 @@ class PurchaseRequestForm(forms.ModelForm):
             super().__init__(*args, **kwargs)
             self.fields['deadline'].input_formats = ['%Y-%m-%dT%H:%M']
  
+from .models import RequestForm
+class RequestFormForm(forms.ModelForm):
+    class Meta:
+        model = RequestForm
+        fields = ['date', 'registered_no', 'section', 'purchase_by', 'carlines', 'requested', 'spv_approved', 'sspv_approved']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'carlines': forms.CheckboxSelectMultiple(),
+        }

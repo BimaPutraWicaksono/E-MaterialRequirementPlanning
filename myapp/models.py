@@ -264,6 +264,9 @@ class Departement(models.Model):
 
     def __str__(self):
         return self.name
+        
+    class Meta:
+        db_table = 'departement' 
 
 class Section(models.Model):
     name = models.CharField(max_length=255)
@@ -271,6 +274,9 @@ class Section(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        db_table = 'section' 
 
 class PurchaseRequest(models.Model):
     date = models.DateField(auto_now_add=True)  # Tanggal saat insert
@@ -292,3 +298,36 @@ class PurchaseRequest(models.Model):
 
     class Meta:
         db_table = 'purchase_request' 
+        
+class RequestForm(models.Model):
+    date = models.DateField()
+    registered_no = models.CharField(max_length=100)
+    section = models.CharField(max_length=100)
+    purchase_by = models.CharField(max_length=100)
+    carlines = models.ManyToManyField('Carline')
+    requested = models.BooleanField(default=False)
+    spv_approved = models.CharField(max_length=100, blank=True, null=True)
+    sspv_approved = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"Request {self.registered_no} by {self.purchase_by}"
+
+    class Meta:
+        db_table = 'request_form'
+
+
+class RequestItem(models.Model):
+    request_form = models.ForeignKey(RequestForm, on_delete=models.CASCADE, related_name='items')
+    loading_part_result = models.ForeignKey('LoadingPartResult', on_delete=models.CASCADE)
+    budget_ref_no = models.CharField(max_length=100)
+    result_average_round = models.IntegerField()
+    estimated_price = models.DecimalField(max_digits=15, decimal_places=2)
+    amount = models.DecimalField(max_digits=20, decimal_places=2)
+    deadline = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"Item {self.budget_ref_no} for Request {self.request_form.registered_no}"
+
+    class Meta:
+        db_table = 'request_item'
+

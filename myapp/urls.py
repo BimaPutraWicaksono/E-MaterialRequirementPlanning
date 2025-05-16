@@ -54,6 +54,8 @@ urlpatterns = [
      
     #order
     path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
+    path('purchase-request/', views_order.create_request_form, name='purchase_request'),
+    
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),

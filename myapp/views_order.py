@@ -74,6 +74,44 @@ def purchaseReq(request):
         'form': form,
         'purchase_requests': purchase_requests
     })
+    
+from django.shortcuts import render, redirect
+from .form import RequestFormForm
+from .models import RequestForm, RequestItem, LoadingPartResult, Carline
+
+def create_request_form(request):
+    if request.method == 'POST':
+        form = RequestFormForm(request.POST)
+        if form.is_valid():
+            request_form = form.save()
+            selected_carlines = form.cleaned_data['carlines']
+            for carline in selected_carlines:
+                parts = LoadingPartResult.objects.filter(carline=carline)
+                for part in parts:
+                    item = RequestItem.objects.create(
+                        request_form=request_form,
+                        loading_part_result=part,
+                        budget_ref_no='manual',  # default
+                        result_average_round=0,  # user edit manual setelah submit
+                        estimated_price=0,       # user edit manual setelah submit
+                        amount=0,
+                        deadline='isi sendiri',
+                    )
+            return redirect('request_success')
+    else:
+        form = RequestFormForm()
+        selected_carlines = request.GET.getlist('carlines')
+        carlines = Carline.objects.all()
+        parts_per_carline = {}
+        for carline in carlines:
+            parts_per_carline[carline] = LoadingPartResult.objects.filter(carline=carline)
+        return render(request, 'purchaseReq.html', {
+            'form': form,
+            'parts_per_carline': parts_per_carline
+        })
+
+    return render(request, 'purchaseReq.html', {'form': form})
+
 
 # purchase order
 @login_required()

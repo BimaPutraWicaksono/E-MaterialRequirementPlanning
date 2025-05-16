@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'e-mrp-new',  # Ganti dengan nama database Anda
+        'NAME': 'e-mrp3',  # Ganti dengan nama database Anda
         'USER': 'postgres',       # Ganti dengan nama pengguna PostgreSQL Anda
         'PASSWORD': 'bima123456', # Ganti dengan kata sandi PostgreSQL Anda
         'HOST': 'localhost',      # Biasanya 'localhost' untuk database lokal
