@@ -34,47 +34,79 @@ def create_section(request):
             messages.error(request, 'Semua field Section harus diisi.')
     return redirect('master_departement_section')
 
-# purchase request
-from django.db.models import Avg
+from django.shortcuts import render, redirect
+from .models import PurchaseRequest, LoadingPartResult, RequestForm, RequestItem
 from .form import PurchaseRequestForm
-from .models import LoadingPartResult
-from .models import PurchaseRequest
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
-@login_required
 def purchaseReq(request):
-    purchase_requests = PurchaseRequest.objects.all().order_by('-date')  # Ambil semua PR terbaru
+    loading_parts = []
 
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
+            selected_carlines = form.cleaned_data['part_order']
+            estimated_price = form.cleaned_data['estimated_price']
+            deadline = form.cleaned_data['deadline']
+            budget_ref_no = form.cleaned_data['budget_ref_no']
+
             pr = form.save(commit=False)
-            carlines = form.cleaned_data['part_order']
-
             total_amount = 0
-            amount = 0
 
-            for carline in carlines:
-                loading_parts = LoadingPartResult.objects.filter(carline=carline)
-                avg = loading_parts.aggregate(Avg('average_round'))['average_round__avg'] or 0
-                part_amount = int(avg * pr.estimated_price)
-                total_amount += part_amount
-                amount += part_amount
+            pr.amount = 0
+            pr.total_amount = 0
+            pr.save()
+            pr.part_order.set(selected_carlines)
 
-            pr.amount = amount
+            rf = RequestForm.objects.create(
+                date=pr.date,
+                registered_no=pr.registered_no,
+                section=pr.section.name,
+                purchase_by=pr.purchase_by,
+                requested=pr.requested,
+            )
+            rf.carlines.set(selected_carlines)
+
+            for carline in selected_carlines:
+                parts = LoadingPartResult.objects.filter(carline=carline)
+                for part in parts:
+                    result_avg = part.average_round or 0
+                    amount = result_avg * (estimated_price or 0)
+                    total_amount += amount
+
+                    RequestItem.objects.create(
+                        request_form=rf,
+                        loading_part_result=part,
+                        budget_ref_no=budget_ref_no,
+                        result_average_round=result_avg,
+                        estimated_price=estimated_price,
+                        amount=amount,
+                        deadline=deadline.strftime('%Y-%m-%d %H:%M:%S')
+                    )
+
+            pr.amount = total_amount
             pr.total_amount = total_amount
             pr.save()
-            pr.part_order.set(carlines)
+
             return redirect('purchaseReq')
-        else:
-            print(form.errors)
     else:
         form = PurchaseRequestForm()
 
     return render(request, 'order/purchaseReq.html', {
         'form': form,
-        'purchase_requests': purchase_requests
+        'loading_parts': loading_parts,
     })
-    
+
+def ajax_get_loading_parts(request):
+    if request.method == 'POST':
+        carline_ids = request.POST.getlist('carline_ids[]')
+        loading_parts = LoadingPartResult.objects.filter(carline__id__in=carline_ids)
+        table_html = render_to_string('partials/loading_parts_table.html', {
+            'loading_parts': loading_parts
+        })
+        return JsonResponse({'table': table_html})
+
 from django.shortcuts import render, redirect
 from .form import RequestFormForm
 from .models import RequestForm, RequestItem, LoadingPartResult, Carline
@@ -105,13 +137,13 @@ def create_request_form(request):
         parts_per_carline = {}
         for carline in carlines:
             parts_per_carline[carline] = LoadingPartResult.objects.filter(carline=carline)
-        return render(request, 'purchaseReq.html', {
+        return render(request, 'order/purchaseOrd.html', {
             'form': form,
             'parts_per_carline': parts_per_carline
         })
 
-    return render(request, 'purchaseReq.html', {'form': form})
-
+    return render(request, 'order/purchaseOrd.html', {'form': form})
+ 
 
 # purchase order
 @login_required()

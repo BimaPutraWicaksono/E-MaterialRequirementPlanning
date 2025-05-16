@@ -1,0 +1,34 @@
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Carline</th>
+      <th>Terminal</th>
+      <th>Part Name</th>
+      <th>Part Desk / Part Number</th>
+      <th>Result Avg Round</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in loading_parts %}
+    <tr>
+      <td>{{ item.carline.name }}</td>
+      <td>{{ item.terminal }}</td>
+      <td>{{ item.part_name }}</td>
+      <td>
+        {% if item.partdesk %}
+            {{ item.partdesk.partName.name }}
+            {{ item.partdesk.applicatorNumber.code }}
+            {{ item.partdesk.partNumber }}
+        {% else %}
+            -
+        {% endif %}
+      </td>
+      <td>{{ item.average_round|default:"0" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">Tidak ada data loading part.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

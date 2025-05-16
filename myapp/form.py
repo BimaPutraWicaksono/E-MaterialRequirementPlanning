@@ -38,13 +38,14 @@ class LoginForm(forms.Form):
 
 
 # request order
-from .models import PurchaseRequest, LoadingPartResult
+from django import forms
+from .models import PurchaseRequest, Carline
 
 class PurchaseRequestForm(forms.ModelForm):
     part_order = forms.ModelMultipleChoiceField(
         queryset=Carline.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        label="Carline (pilih salah satu atau beberapa)"
+        label="Pilih Carline"
     )
 
     class Meta:
@@ -54,18 +55,14 @@ class PurchaseRequestForm(forms.ModelForm):
             'section',
             'purchase_by',
             'budget_ref_no',
-            'part_order',
             'estimated_price',
             'deadline',
             'requested',
         ]
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.fields['deadline'].input_formats = ['%Y-%m-%dT%H:%M']
  
 from .models import RequestForm
 class RequestFormForm(forms.ModelForm):

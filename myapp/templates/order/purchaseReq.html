@@ -1,36 +1,44 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<h2>Form Purchase Request</h2>
+<div class="container mt-4">
+  <h2>Form Pengajuan Purchase Request</h2>
+  <form method="POST" id="purchase-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
+  <div id="loading-parts-table-container" class="mt-4"></div>
+</div>
 
-  <h3>Daftar Part Berdasarkan Carline</h3>
-  {% for carline, parts in parts_per_carline.items %}
-    <div style="margin-bottom: 20px;">
-      <h4>{{ carline.name }}</h4>
-      <table border="1" cellpadding="5">
-        <thead>
-          <tr>
-            <th>Terminal</th>
-            <th>Part Name</th>
-            <th>Part Number</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for part in parts %}
-          <tr>
-            <td>{{ part.terminal }}</td>
-            <td>{{ part.partname }}</td>
-            <td>{{ part.partdesk_partNumber }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% endfor %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("input[name='part_order']").change(function () {
+      let carlineIds = [];
+      $("input[name='part_order']:checked").each(function () {
+        carlineIds.push($(this).val());
+      });
 
-  <button type="submit">Submit</button>
-</form>
+      if (carlineIds.length > 0) {
+        $.ajax({
+          url: "{% url 'ajax_get_loading_parts' %}",
+          type: "POST",
+          data: {
+            'carline_ids[]': carlineIds,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          success: function (response) {
+            $('#loading-parts-table-container').html(response.table);
+          },
+          error: function (xhr, status, error) {
+            console.error("AJAX error:", error);
+          }
+        });
+      } else {
+        $('#loading-parts-table-container').html('');
+      }
+    });
+  });
+</script>
 {% endblock %}

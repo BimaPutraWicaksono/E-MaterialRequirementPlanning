@@ -53,8 +53,9 @@ urlpatterns = [
     path('master/section/create/', views_order.create_section, name='create_section'),
      
     #order
-    path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
-    path('purchase-request/', views_order.create_request_form, name='purchase_request'),
+    path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'), 
+    path('ajax/get-loading-parts/', views_order.ajax_get_loading_parts, name='ajax_get_loading_parts'),
+    path('purchase-request/', views_order.create_request_form, name='purchase_request'), 
     
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
