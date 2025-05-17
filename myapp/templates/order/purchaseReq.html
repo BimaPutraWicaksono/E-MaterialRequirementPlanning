@@ -2,15 +2,43 @@
 {% block content %}
 <div class="container mt-4">
   <h2>Form Pengajuan Purchase Request</h2>
+
+  <!-- FORM MULAI -->
   <form method="POST" id="purchase-form">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
 
-  <div id="loading-parts-table-container" class="mt-4"></div>
+    <!-- Field tetap dari form -->
+    <div class="mb-3">
+      <label for="id_registered_no" class="form-label">Registered No</label>
+      {{ form.registered_no }}
+    </div>
+    <div class="mb-3">
+      <label for="id_section" class="form-label">Section</label>
+      {{ form.section }}
+    </div>
+    <div class="mb-3">
+      <label for="id_purchase_by" class="form-label">Purchase By</label>
+      {{ form.purchase_by }}
+    </div>
+    <div class="mb-3">
+      <label for="id_requested" class="form-label">Requested</label>
+      {{ form.requested }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Pilih Carline</label>
+      {{ form.part_order }}
+    </div>
+
+    <!-- AJAX target container -->
+    <div id="loading-parts-table-container" class="mt-4"></div>
+
+    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+  </form>
+  <!-- FORM SELESAI -->
+
 </div>
 
+<!-- AJAX script -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {

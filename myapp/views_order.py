@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from myapp.models import Departement, Section
 
+@login_required()
 def master_departement_section(request):
     departements = Departement.objects.all()
     sections = Section.objects.select_related('departement').all()
@@ -11,7 +12,7 @@ def master_departement_section(request):
         'sections': sections,
     })
 
-
+@login_required()
 def create_departement(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -22,6 +23,7 @@ def create_departement(request):
             messages.error(request, 'Nama Departement tidak boleh kosong.')
     return redirect('master_departement_section')
 
+@login_required()
 def create_section(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -40,6 +42,7 @@ from .form import PurchaseRequestForm
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
+@login_required()
 def purchaseReq(request):
     loading_parts = []
 
@@ -47,13 +50,8 @@ def purchaseReq(request):
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
             selected_carlines = form.cleaned_data['part_order']
-            estimated_price = form.cleaned_data['estimated_price']
-            deadline = form.cleaned_data['deadline']
-            budget_ref_no = form.cleaned_data['budget_ref_no']
 
             pr = form.save(commit=False)
-            total_amount = 0
-
             pr.amount = 0
             pr.total_amount = 0
             pr.save()
@@ -68,28 +66,59 @@ def purchaseReq(request):
             )
             rf.carlines.set(selected_carlines)
 
-            for carline in selected_carlines:
-                parts = LoadingPartResult.objects.filter(carline=carline)
-                for part in parts:
-                    result_avg = part.average_round or 0
-                    amount = result_avg * (estimated_price or 0)
-                    total_amount += amount
+            # Ambil total item dari input hidden di template
+            total_items = int(request.POST.get('total_items', 0))
+            total_amount = 0
 
-                    RequestItem.objects.create(
-                        request_form=rf,
-                        loading_part_result=part,
-                        budget_ref_no=budget_ref_no,
-                        result_average_round=result_avg,
-                        estimated_price=estimated_price,
-                        amount=amount,
-                        deadline=deadline.strftime('%Y-%m-%d %H:%M:%S')
+            for i in range(total_items):
+                # Ambil data dari tiap baris
+                carline_id = request.POST.get(f'carline_id_{i}')
+                terminal = request.POST.get(f'terminal_{i}')
+                part_name = request.POST.get(f'part_name_{i}')
+                partdesk_id = request.POST.get(f'partdesk_id_{i}', None)
+                average_round = request.POST.get(f'average_round_{i}', 0)
+                budget_ref_no = request.POST.get(f'budget_ref_no_{i}')
+                estimated_price = request.POST.get(f'estimated_price_{i}')
+                deadline = request.POST.get(f'deadline_{i}')
+
+                try:
+                    average_round = float(average_round)
+                except (TypeError, ValueError):
+                    average_round = 0
+
+                try:
+                    estimated_price = float(estimated_price)
+                except (TypeError, ValueError):
+                    estimated_price = 0
+
+                amount = average_round * estimated_price
+                total_amount += amount
+
+                try:
+                    part_result = LoadingPartResult.objects.get(
+                        carline_id=carline_id,
+                        terminal=terminal,
+                        part_name=part_name
                     )
+                except LoadingPartResult.DoesNotExist:
+                    continue  # skip jika tidak ditemukan
+
+                RequestItem.objects.create(
+                    request_form=rf,
+                    loading_part_result=part_result,
+                    budget_ref_no=budget_ref_no,
+                    result_average_round=average_round,
+                    estimated_price=estimated_price,
+                    amount=amount,
+                    deadline=deadline
+                )
 
             pr.amount = total_amount
             pr.total_amount = total_amount
             pr.save()
 
             return redirect('purchaseReq')
+
     else:
         form = PurchaseRequestForm()
 
@@ -98,6 +127,7 @@ def purchaseReq(request):
         'loading_parts': loading_parts,
     })
 
+@login_required()
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
         carline_ids = request.POST.getlist('carline_ids[]')
@@ -110,7 +140,7 @@ def ajax_get_loading_parts(request):
 from django.shortcuts import render, redirect
 from .form import RequestFormForm
 from .models import RequestForm, RequestItem, LoadingPartResult, Carline
-
+@login_required()
 def create_request_form(request):
     if request.method == 'POST':
         form = RequestFormForm(request.POST)
@@ -144,7 +174,6 @@ def create_request_form(request):
 
     return render(request, 'order/purchaseOrd.html', {'form': form})
  
-
 # purchase order
 @login_required()
 def purchaseOrd(request):

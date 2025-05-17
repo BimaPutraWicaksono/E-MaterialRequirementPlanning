@@ -54,11 +54,9 @@ class PurchaseRequestForm(forms.ModelForm):
             'registered_no',
             'section',
             'purchase_by',
-            'budget_ref_no',
-            'estimated_price',
-            'deadline',
             'requested',
         ]
+
         widgets = {
             'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }

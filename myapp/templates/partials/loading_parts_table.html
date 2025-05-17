@@ -5,30 +5,55 @@
       <th>Terminal</th>
       <th>Part Name</th>
       <th>Part Desk / Part Number</th>
-      <th>Result Avg Round</th>
+      <th>Quantity</th>
+      <th>Budget Ref No</th>
+      <th>Estimated Price</th>
+      <th>Deadline</th>
     </tr>
   </thead>
   <tbody>
     {% for item in loading_parts %}
     <tr>
-      <td>{{ item.carline.name }}</td>
-      <td>{{ item.terminal }}</td>
-      <td>{{ item.part_name }}</td>
+      <!-- Informasi yang ditampilkan -->
+      <td>
+        {{ item.carline.name }}
+        <input type="hidden" name="carline_id_{{ forloop.counter0 }}" value="{{ item.carline.id }}">
+      </td>
+      <td>
+        {{ item.terminal }}
+        <input type="hidden" name="terminal_{{ forloop.counter0 }}" value="{{ item.terminal }}">
+      </td>
+      <td>
+        {{ item.part_name }}
+        <input type="hidden" name="part_name_{{ forloop.counter0 }}" value="{{ item.part_name }}">
+      </td>
       <td>
         {% if item.partdesk %}
-            {{ item.partdesk.partName.name }}
-            {{ item.partdesk.applicatorNumber.code }}
-            {{ item.partdesk.partNumber }}
+          {{ item.partdesk.partName.name }}
+          {{ item.partdesk.applicatorNumber.code }}
+          {{ item.partdesk.partNumber }}
+          <input type="hidden" name="partdesk_id_{{ forloop.counter0 }}" value="{{ item.partdesk.id }}">
         {% else %}
-            -
+          -
         {% endif %}
       </td>
-      <td>{{ item.average_round|default:"0" }}</td>
+      <td>
+        {{ item.average_round|default:"0" }}
+        <input type="hidden" name="average_round_{{ forloop.counter0 }}" value="{{ item.average_round|default:"0" }}">
+      </td>
+
+      <!-- Input tambahan -->
+      <td><input type="text" name="budget_ref_no_{{ forloop.counter0 }}" class="form-control" required></td>
+      <td><input type="number" name="estimated_price_{{ forloop.counter0 }}" class="form-control" step="0.01" required></td>
+      <td><input type="datetime-local" name="deadline_{{ forloop.counter0 }}" class="form-control" required></td>
     </tr>
     {% empty %}
     <tr>
-      <td colspan="5">Tidak ada data loading part.</td>
+      <td colspan="8">Tidak ada data loading part.</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<!-- Tambahkan jumlah total item tersembunyi agar bisa dibaca di views -->
+<input type="hidden" name="total_items" value="{{ loading_parts|length }}">
