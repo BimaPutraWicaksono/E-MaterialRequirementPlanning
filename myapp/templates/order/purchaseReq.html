@@ -2,12 +2,9 @@
 {% block content %}
 <div class="container mt-4">
   <h2>Form Pengajuan Purchase Request</h2>
-
-  <!-- FORM MULAI -->
   <form method="POST" id="purchase-form">
     {% csrf_token %}
 
-    <!-- Field tetap dari form -->
     <div class="mb-3">
       <label for="id_registered_no" class="form-label">Registered No</label>
       {{ form.registered_no }}
@@ -29,16 +26,18 @@
       {{ form.part_order }}
     </div>
 
-    <!-- AJAX target container -->
     <div id="loading-parts-table-container" class="mt-4"></div>
+
+    <div class="mt-3">
+      <h5>Total Amount: <span id="total-amount-display">0</span></h5>
+    </div>
+
+    <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
 
     <button type="submit" class="btn btn-primary mt-3">Submit</button>
   </form>
-  <!-- FORM SELESAI -->
-
 </div>
 
-<!-- AJAX script -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
@@ -67,6 +66,25 @@
         $('#loading-parts-table-container').html('');
       }
     });
+
+    $(document).on('input', '.est-price', function () {
+      updateAmounts();
+    });
+
+    function updateAmounts() {
+      let total = 0;
+      $('.part-row').each(function () {
+        let avg = parseFloat($(this).find('.avg-round').val()) || 0;
+        let est = parseFloat($(this).find('.est-price').val()) || 0;
+        let amount = avg * est;
+        $(this).find('.amount').val(amount.toFixed(2));
+        total += amount;
+      });
+      $('#total-amount-display').text(total.toFixed(2));
+      $('#total-amount-hidden').val(total.toFixed(2));
+    }
+
+    $(document).on('input', '.est-price', updateAmounts);
   });
 </script>
 {% endblock %}

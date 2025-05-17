@@ -42,6 +42,13 @@ from .form import PurchaseRequestForm
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
+from django.shortcuts import render, redirect
+from .models import PurchaseRequest, LoadingPartResult, RequestForm, RequestItem
+from .form import PurchaseRequestForm
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
+
 @login_required()
 def purchaseReq(request):
     loading_parts = []
@@ -50,10 +57,19 @@ def purchaseReq(request):
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
             selected_carlines = form.cleaned_data['part_order']
+            budget_ref_no = request.POST.getlist('budget_ref_no')
+            estimated_prices = request.POST.getlist('estimated_price')
+            deadlines = request.POST.getlist('deadline')
+            total_amount_hidden = request.POST.get('total_amount_hidden')
+
+            try:
+                total_amount = float(total_amount_hidden)
+            except (TypeError, ValueError):
+                total_amount = 0
 
             pr = form.save(commit=False)
-            pr.amount = 0
-            pr.total_amount = 0
+            pr.amount = total_amount
+            pr.total_amount = total_amount
             pr.save()
             pr.part_order.set(selected_carlines)
 
@@ -63,62 +79,39 @@ def purchaseReq(request):
                 section=pr.section.name,
                 purchase_by=pr.purchase_by,
                 requested=pr.requested,
+                total_amount=total_amount
             )
             rf.carlines.set(selected_carlines)
 
-            # Ambil total item dari input hidden di template
-            total_items = int(request.POST.get('total_items', 0))
-            total_amount = 0
+            index = 0
+            for carline in selected_carlines:
+                parts = LoadingPartResult.objects.filter(carline=carline)
+                for part in parts:
+                    try:
+                        budget = budget_ref_no[index]
+                        est_price = float(estimated_prices[index])
+                        dl = deadlines[index]
+                    except (IndexError, ValueError):
+                        budget = ""
+                        est_price = 0
+                        dl = ""
 
-            for i in range(total_items):
-                # Ambil data dari tiap baris
-                carline_id = request.POST.get(f'carline_id_{i}')
-                terminal = request.POST.get(f'terminal_{i}')
-                part_name = request.POST.get(f'part_name_{i}')
-                partdesk_id = request.POST.get(f'partdesk_id_{i}', None)
-                average_round = request.POST.get(f'average_round_{i}', 0)
-                budget_ref_no = request.POST.get(f'budget_ref_no_{i}')
-                estimated_price = request.POST.get(f'estimated_price_{i}')
-                deadline = request.POST.get(f'deadline_{i}')
+                    result_avg = part.average_round or 0
+                    amount = result_avg * est_price
 
-                try:
-                    average_round = float(average_round)
-                except (TypeError, ValueError):
-                    average_round = 0
-
-                try:
-                    estimated_price = float(estimated_price)
-                except (TypeError, ValueError):
-                    estimated_price = 0
-
-                amount = average_round * estimated_price
-                total_amount += amount
-
-                try:
-                    part_result = LoadingPartResult.objects.get(
-                        carline_id=carline_id,
-                        terminal=terminal,
-                        part_name=part_name
+                    RequestItem.objects.create(
+                        request_form=rf,
+                        loading_part_result=part,
+                        budget_ref_no=budget,
+                        result_average_round=result_avg,
+                        estimated_price=est_price,
+                        amount=amount,
+                        deadline=dl
                     )
-                except LoadingPartResult.DoesNotExist:
-                    continue  # skip jika tidak ditemukan
 
-                RequestItem.objects.create(
-                    request_form=rf,
-                    loading_part_result=part_result,
-                    budget_ref_no=budget_ref_no,
-                    result_average_round=average_round,
-                    estimated_price=estimated_price,
-                    amount=amount,
-                    deadline=deadline
-                )
-
-            pr.amount = total_amount
-            pr.total_amount = total_amount
-            pr.save()
+                    index += 1
 
             return redirect('purchaseReq')
-
     else:
         form = PurchaseRequestForm()
 
@@ -136,6 +129,7 @@ def ajax_get_loading_parts(request):
             'loading_parts': loading_parts
         })
         return JsonResponse({'table': table_html})
+
 
 from django.shortcuts import render, redirect
 from .form import RequestFormForm

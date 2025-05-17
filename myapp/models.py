@@ -306,6 +306,7 @@ class RequestForm(models.Model):
     purchase_by = models.CharField(max_length=100)
     carlines = models.ManyToManyField(Carline)
     requested = models.BooleanField(default=False)
+    total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     spv_approved = models.CharField(max_length=100, blank=True, null=True)
     sspv_approved = models.CharField(max_length=100, blank=True, null=True)
 
