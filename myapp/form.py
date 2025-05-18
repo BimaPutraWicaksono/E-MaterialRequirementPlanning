@@ -45,29 +45,16 @@ class PurchaseRequestForm(forms.ModelForm):
     part_order = forms.ModelMultipleChoiceField(
         queryset=Carline.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        label="Pilih Carline"
+        label="Pilih Carline",
+        required=True
     )
 
     class Meta:
         model = PurchaseRequest
-        fields = [
-            'registered_no',
-            'section',
-            'purchase_by',
-            'requested',
-        ]
-
+        fields = ['registered_no', 'section', 'purchase_by', 'requested']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
-
- 
-from .models import RequestForm
-class RequestFormForm(forms.ModelForm):
-    class Meta:
-        model = RequestForm
-        fields = ['date', 'registered_no', 'section', 'purchase_by', 'carlines', 'requested', 'spv_approved', 'sspv_approved']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'carlines': forms.CheckboxSelectMultiple(),
+            'registered_no': forms.TextInput(attrs={'required': True}),
+            'section': forms.TextInput(attrs={'required': True}),
+            'purchase_by': forms.TextInput(attrs={'required': True}),
+            'requested': forms.CheckboxInput(),
         }

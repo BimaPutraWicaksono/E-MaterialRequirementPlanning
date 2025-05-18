@@ -1,21 +1,23 @@
 <table class="table table-bordered">
-  <thead>
+  <thead class="table-light">
     <tr>
-      <th>Budget Ref No</th>
-      <th>Carline</th>
-      <th>Terminal</th>
-      <th>Part Name</th>
-      <th>Part Desk / Part Number</th>
-      <th>Result Avg Round</th>
-      <th>Estimated Price</th>
-      <th>Amount</th>
-      <th>Deadline</th>
+      <th scope="col">Budget Ref No</th>
+      <th scope="col">Carline</th>
+      <th scope="col">Terminal</th>
+      <th scope="col">Part Name</th>
+      <th scope="col">Part Desk / Part Number</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Est. Price</th>
+      <th scope="col">Amount</th>
+      <th scope="col">Deadline</th>
     </tr>
   </thead>
   <tbody>
     {% for item in loading_parts %}
     <tr class="part-row">
-      <td><input type="text" name="budget_ref_no" class="form-control"></td>
+      <td>
+        <input type="text" name="budget_ref_no" class="form-control form-control-sm">
+      </td>
       <td>{{ item.carline.name }}</td>
       <td>{{ item.terminal }}</td>
       <td>{{ item.part_name }}</td>
@@ -23,16 +25,22 @@
         {% if item.partdesk %}
           {{ item.partdesk.partName.name }} {{ item.partdesk.applicatorNumber.code }} {{ item.partdesk.partNumber }}
         {% else %}
-          -
+          <span class="text-muted">-</span>
         {% endif %}
       </td>
       <td>
-        {{ item.average_round|default:"0" }}
-        <input type="hidden" value="{{ item.average_round|default:0 }}" class="avg-round">
+        {{ item.average_round|floatformat:"-0"|default:"0" }}
+        <input type="hidden" name="avg_round" value="{{ item.average_round|floatformat:"-0"|default:"0" }}" class="avg-round">
       </td>
-      <td><input type="number" step="0.01" name="estimated_price" class="form-control est-price"></td>
-      <td><input type="text" name="amount" class="form-control amount" readonly></td>
-      <td><input type="date" name="deadline" class="form-control"></td>
+      <td>
+        <input type="number" name="estimated_price" step="0.01" class="form-control form-control-sm est-price" placeholder="0.00">
+      </td>
+      <td>
+        <input type="text" name="amount" class="form-control form-control-sm amount" readonly>
+      </td>
+      <td>
+        <input type="date" name="deadline" class="form-control form-control-sm">
+      </td>
     </tr>
     {% endfor %}
   </tbody>

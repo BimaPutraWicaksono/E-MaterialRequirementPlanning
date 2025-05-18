@@ -129,12 +129,6 @@
               </a>
             </li>
             {% endif %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-              <a href="{% url 'about' %}" class="nav-link">
-                <i class="nav-icon far fa-calendar-alt"></i>
-                <p>E-MRP</p>
-              </a>
-            </li>
             {% if request.user|has_group:"Admin" %}
             <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
               <a href="{% url 'master_departement_section' %}" class="nav-link">
@@ -143,6 +137,12 @@
               </a>
             </li>
             {% endif %}
+            <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+              <a href="{% url 'about' %}" class="nav-link">
+                <i class="nav-icon far fa-calendar-alt"></i>
+                <p>E-MRP</p>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>

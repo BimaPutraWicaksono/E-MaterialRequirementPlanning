@@ -279,19 +279,13 @@ class Section(models.Model):
         db_table = 'section' 
 
 class PurchaseRequest(models.Model):
-    date = models.DateField(auto_now_add=True)
-    registered_no = models.CharField(max_length=100, unique=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
-    purchase_by = models.CharField(max_length=255)
-    budget_ref_no = models.CharField(max_length=100)
-    part_order = models.ManyToManyField(Carline)
-    estimated_price = models.IntegerField()
-    amount = models.IntegerField()
-    total_amount = models.IntegerField()
-    deadline = models.DateTimeField()
+    registered_no = models.CharField(max_length=100)
+    section = models.ForeignKey('Section', on_delete=models.CASCADE)
+    purchase_by = models.CharField(max_length=100)
     requested = models.BooleanField(default=False)
-    spv_approved = models.BooleanField(default=False)
-    sspv_approved = models.BooleanField(default=False)
+    part_order = models.ManyToManyField(Carline)
+    total_amount = models.FloatField(default=0)
+    date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Request {self.registered_no} by {self.purchase_by}"
@@ -299,28 +293,17 @@ class PurchaseRequest(models.Model):
     class Meta:
         db_table = 'purchase_request'
 
-class RequestForm(models.Model):
-    date = models.DateField()
-    registered_no = models.CharField(max_length=100)
-    section = models.CharField(max_length=100)
-    purchase_by = models.CharField(max_length=100)
-    carlines = models.ManyToManyField(Carline)
-    requested = models.BooleanField(default=False)
-    total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    spv_approved = models.CharField(max_length=100, blank=True, null=True)
-    sspv_approved = models.CharField(max_length=100, blank=True, null=True)
+class RequestItem(models.Model):
+    purchase_request = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
+    loading_part_result = models.ForeignKey(LoadingPartResult, on_delete=models.CASCADE)
+    budget_ref_no = models.CharField(max_length=100, blank=True)
+    result_average_round = models.FloatField(default=0)
+    estimated_price = models.FloatField(default=0)
+    amount = models.FloatField(default=0)
+    deadline = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'request_form'
 
-class RequestItem(models.Model):
-    request_form = models.ForeignKey(RequestForm, on_delete=models.CASCADE, related_name='items')
-    loading_part_result = models.ForeignKey(LoadingPartResult, on_delete=models.CASCADE)
-    budget_ref_no = models.CharField(max_length=100)
-    result_average_round = models.IntegerField()
-    estimated_price = models.DecimalField(max_digits=15, decimal_places=2)
-    amount = models.DecimalField(max_digits=20, decimal_places=2)
-    deadline = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = 'request_item'
+    def __str__(self):
+        return f"Item for Request {self.purchase_request.registered_no if self.purchase_request else 'N/A'}"
