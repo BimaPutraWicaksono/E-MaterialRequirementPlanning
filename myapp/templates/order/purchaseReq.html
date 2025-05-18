@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load user_tags %}
 <div class="container mt-4">
   <h2>Form Pengajuan Purchase Request</h2>
   <form method="POST" id="purchase-form">
@@ -8,6 +9,10 @@
     <div class="mb-3">
       <label for="id_registered_no" class="form-label">Registered No</label>
       {{ form.registered_no }}
+    </div>
+    <div class="mb-3">
+      <label for="id_departement" class="form-label">Departement</label>
+      {{ form.departement }}
     </div>
     <div class="mb-3">
       <label for="id_section" class="form-label">Section</label>
@@ -33,6 +38,22 @@
     </div>
 
     <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
+    
+    {% if request.user|has_group:"Supervisor" %}
+      <div class="mb-3">
+        <label class="form-label">Supervisor Approval:</label><br>
+        <button type="submit" name="action" value="approve_spv" class="btn btn-success">Accept</button>
+        <button type="submit" name="action" value="disapprove_spv" class="btn btn-danger">Disapprove</button>
+      </div>
+    {% endif %}
+
+    {% if request.user|has_group:"Senior Supervisor" %}
+      <div class="mb-3">
+        <label class="form-label">Senior Supervisor Approval:</label><br>
+        <button type="submit" name="action" value="approve_sspv" class="btn btn-success">Accept</button>
+        <button type="submit" name="action" value="disapprove_sspv" class="btn btn-danger">Disapprove</button>
+      </div>
+    {% endif %}
 
     <button type="submit" class="btn btn-primary mt-3">Submit</button>
   </form>
@@ -85,6 +106,21 @@
     }
 
     $(document).on('input', '.est-price', updateAmounts);
+  });
+
+  $(document).ready(function () {
+    $('#id_departement').change(function () {
+      var departementId = $(this).val();
+      $.ajax({
+        url: "{% url 'ajax_load_sections' %}",
+        data: {
+          'departement_id': departementId
+        },
+        success: function (data) {
+          $("#id_section").html(data);
+        }
+      });
+    });
   });
 </script>
 {% endblock %}

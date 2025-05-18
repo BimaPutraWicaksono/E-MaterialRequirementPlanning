@@ -61,6 +61,23 @@ def purchaseReq(request):
 
             pr = form.save(commit=False)
             pr.total_amount = total_amount
+
+            # Approval logic
+            action = request.POST.get('action')
+
+            if request.user.groups.filter(name="Supervisor").exists():
+                if action == 'approve_spv':
+                    pr.approve_spv = True
+                elif action == 'disapprove_spv':
+                    pr.approve_spv = False
+
+            if request.user.groups.filter(name="Senior Supervisor").exists():
+                if action == 'approve_sspv':
+                    pr.approve_sspv = True
+                elif action == 'disapprove_sspv':
+                    pr.approve_sspv = False
+
+
             pr.save()
             pr.part_order.set(selected_carlines)
 
@@ -91,6 +108,8 @@ def purchaseReq(request):
                     )
                     index += 1
 
+                messages.success(request, "Purchase Request berhasil dikirim.")
+                
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
@@ -98,7 +117,6 @@ def purchaseReq(request):
     return render(request, 'order/purchaseReq.html', {
         'form': form,
     })
-
 
 @login_required
 def ajax_get_loading_parts(request):
@@ -109,6 +127,14 @@ def ajax_get_loading_parts(request):
             'loading_parts': loading_parts
         })
         return JsonResponse({'table': table_html})
+
+@login_required
+def ajax_load_sections(request):
+    departement_id = request.GET.get('departement_id')
+    sections = Section.objects.filter(departement_id=departement_id).order_by('name')
+    html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
+    return JsonResponse(html, safe=False)
+
 
 # purchase order
 @login_required()

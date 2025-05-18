@@ -55,6 +55,8 @@ urlpatterns = [
     #order
     path('purchaseReq/', views_order.purchaseReq, name='purchaseReq'),
     path('ajax/get-loading-parts/', views_order.ajax_get_loading_parts, name='ajax_get_loading_parts'),
+    path('ajax/load-sections/', views_order.ajax_load_sections, name='ajax_load_sections'),
+
     
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),

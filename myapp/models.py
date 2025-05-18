@@ -280,12 +280,16 @@ class Section(models.Model):
 
 class PurchaseRequest(models.Model):
     registered_no = models.CharField(max_length=100)
+    departement = models.ForeignKey(Departement, on_delete=models.SET_NULL, null=True, blank=True)
     section = models.ForeignKey('Section', on_delete=models.CASCADE)
     purchase_by = models.CharField(max_length=100)
     requested = models.BooleanField(default=False)
     part_order = models.ManyToManyField(Carline)
     total_amount = models.FloatField(default=0)
     date = models.DateField(auto_now_add=True)
+
+    approve_spv = models.BooleanField(default=False)
+    approve_sspv = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Request {self.registered_no} by {self.purchase_by}"
