@@ -36,7 +36,7 @@ def create_section(request):
             messages.error(request, 'Semua field Section harus diisi.')
     return redirect('master_departement_section')
 # views.py
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -134,6 +134,26 @@ def ajax_load_sections(request):
     sections = Section.objects.filter(departement_id=departement_id).order_by('name')
     html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
     return JsonResponse(html, safe=False)
+
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from .models import PurchaseRequest, RequestItem
+
+def purchase_request_list_view(request):
+    requests = PurchaseRequest.objects.all()
+    return render(request, 'order/purchase_request_list.html', {'requests': requests})
+
+
+def purchase_request_detail_ajax(request, registered_no):
+    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request).select_related('loading_part_result')
+
+    html = render_to_string('partials/purchase_request_detail_partial.html', {
+        'purchase_request': purchase_request,
+        'request_items': request_items
+    })
+
+    return JsonResponse({'html': html})
 
 
 # purchase order
