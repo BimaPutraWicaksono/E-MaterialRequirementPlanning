@@ -144,9 +144,21 @@ def purchase_request_list_view(request):
     return render(request, 'order/purchase_request_list.html', {'requests': requests})
 
 
+from django.db.models import F
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+
 def purchase_request_detail_ajax(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    request_items = RequestItem.objects.filter(purchase_request=purchase_request).select_related('loading_part_result')
+
+    # Mengurutkan berdasarkan part_name dan terminal dari relasi loading_part_result
+    request_items = (
+        RequestItem.objects
+        .filter(purchase_request=purchase_request)
+        .select_related('loading_part_result')
+        .order_by('loading_part_result__part_name', 'loading_part_result__terminal')
+    )
 
     html = render_to_string('partials/purchase_request_detail_partial.html', {
         'purchase_request': purchase_request,
@@ -154,6 +166,7 @@ def purchase_request_detail_ajax(request, registered_no):
     })
 
     return JsonResponse({'html': html})
+
 
 
 # purchase order

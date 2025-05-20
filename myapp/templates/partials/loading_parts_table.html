@@ -1,6 +1,7 @@
 <table class="table table-bordered">
   <thead class="table-light">
     <tr>
+      <th scope="col">No</th>
       <th scope="col">Budget Ref No</th>
       <th scope="col">Carline</th>
       <th scope="col">Terminal</th>
@@ -15,6 +16,7 @@
   <tbody>
     {% for item in loading_parts %}
     <tr class="part-row">
+      <td>{{ forloop.counter }}</td> 
       <td>
         <input type="text" name="budget_ref_no" class="form-control form-control-sm">
       </td>
