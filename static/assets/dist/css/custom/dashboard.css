@@ -14,14 +14,13 @@
     overflow-x: auto;
     margin-bottom: 20px;
     max-height: 450px; /* Atur tinggi maksimal */
-    overflow-y: auto; /* Scroll vertikal */
+    /* overflow-y: auto; */
     
 }
 
 form {
     display: inline-block;
     text-align: left;
-    max-width: 500px;
     width: 100%;
 }
 

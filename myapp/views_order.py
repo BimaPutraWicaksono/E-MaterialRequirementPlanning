@@ -56,7 +56,7 @@ def purchaseReq(request):
 
             try:
                 total_amount = float(total_amount_hidden)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError): 
                 total_amount = 0
 
             pr = form.save(commit=False)
@@ -121,7 +121,7 @@ def purchaseReq(request):
     else:
         form = PurchaseRequestForm()
 
-    return render(request, 'order/purchaseReq.html', {
+    return render(request, 'order/purchaseReq.html', { 
         'form': form,
     })
 

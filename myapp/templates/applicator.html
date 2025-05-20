@@ -1,8 +1,9 @@
 {% extends "base.html" %} {% block content %} {% load user_tags %}
 
 <div class="container">
-  <div class="table-container">
-    <table class="table table-bordered">
+  <h3>APPLICATOR PART</h3>
+  <div class="mb-4">
+    <table class="table-bordered" id='table_applicator'>
       <thead>
         <tr>
           <th>Applicator Number</th>
@@ -30,7 +31,7 @@
 
   <!-- Upload Section -->
   {% if request.user|has_group:"Admin" %}
-  <div class="d-flex gap-3">
+  <div class="d-flex gap-3 mt-2">
     <div class="upload-container">
       <form
         class="d-flex"
@@ -69,6 +70,7 @@
 </div>
 
 <!-- SweetAlert script for confirmation and loading spinner -->
+ 
 <script>
   // Show spinner on upload
   document
@@ -102,5 +104,4 @@
     });
   });
 </script>
-
 {% endblock %}

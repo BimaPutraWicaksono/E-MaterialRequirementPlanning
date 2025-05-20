@@ -3,11 +3,11 @@
 
 {% block content %}
 <div class="container mt-4">
-  <div class="card my-4 table-section" id="table3">
+  <div class="my-4 table-section" >
     <div class="card-header">
       <h2 class="mb-0">LOADING PART</h2>
     </div>
-    <div class="card-body">
+    <div class="card-header">
       {% if grouped_data %}
         {% for carline, year_data in grouped_data.items %}
           {% for year, part_data in year_data.items %}
@@ -18,8 +18,8 @@
                   <i class="fas fa-list-ul"></i>
                 </button>
               </h5>
-              <div id="table-{{ carline }}-{{ year }}" class="table-container" style="display:none;">
-                <table class="table table-bordered table-sm">
+              <div id="table-{{ carline }}-{{ year }}" style="display:none;">
+                <table class="table table-bordered table-sm" id="table_loading_part">
                   <thead>
                     <tr>
                       <th>Part Name</th>

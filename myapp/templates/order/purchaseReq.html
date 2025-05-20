@@ -5,31 +5,35 @@
   <h2>Form Pengajuan Purchase Request</h2>
   <form method="POST" id="purchase-form">
     {% csrf_token %}
-
-    <div class="mb-3">
-      <label for="id_registered_no" class="form-label">Registered No</label>
-      {{ form.registered_no }}
-    </div>
-    <div class="mb-3">
-      <label for="id_departement" class="form-label">Departement</label>
-      {{ form.departement }}
-    </div>
-    <div class="mb-3"> 
-      <label for="id_section" class="form-label">Section</label>
-      {{ form.section }}
-    </div>
-    <div class="mb-3">
-      <label for="id_purchase_by" class="form-label">Purchase By</label>
-      {{ form.purchase_by }}
-    </div>
-    <div class="form-check mb-3">
-      {{ form.requested }}
-      <label class="form-check-label" for="id_requested">Requested</label>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Pilih Carline</label>
-      {{ form.part_order }}
-    </div>
+    
+    <table class="table table-bordered align-middle">
+      <tbody>
+        <tr>
+          <th style="width: 200px;">Registered No</th>
+          <td>{{ form.registered_no }}</td>
+        </tr>
+        <tr>
+          <th>Departement</th>
+          <td>{{ form.departement }}</td>
+        </tr>
+        <tr>
+          <th>Section</th>
+          <td>{{ form.section }}</td>
+        </tr>
+        <tr>
+          <th>Purchase By</th>
+          <td>{{ form.purchase_by }}</td>
+        </tr>
+        <tr>
+          <th>Requested</th>
+          <td>{{ form.requested }}</td>
+        </tr>
+        <tr>
+          <th>Pilih Carline</th>
+          <td>{{ form.part_order }}</td>
+        </tr>
+      </tbody>
+    </table>
 
     <div id="loading-parts-table-container" class="mt-4"></div>
 
@@ -38,7 +42,7 @@
     </div>
 
     <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
-    
+
     {% if request.user|has_group:"Supervisor" %}
       <div class="mb-3">
         <label class="form-label">Supervisor Approval:</label><br>
@@ -88,10 +92,6 @@
       }
     });
 
-    $(document).on('input', '.est-price', function () {
-      updateAmounts();
-    });
-
     function updateAmounts() {
       let total = 0;
       $('.part-row').each(function () {
@@ -106,9 +106,7 @@
     }
 
     $(document).on('input', '.est-price', updateAmounts);
-  });
 
-  $(document).ready(function () {
     $('#id_departement').change(function () {
       var departementId = $(this).val();
       $.ajax({

@@ -13,18 +13,14 @@
 
   <h5>Requested Parts</h5>
   <div class="table-responsive">
-    <table class="table table-bordered mt-3">
+    <table class="table table-bordered mt-3" id='table_approve'>
       <thead class="table-secondary">
         <tr>
           <th>No</th>
+          <th>Budget Ref No</th>
           <th>Part Name</th>
           <th>Terminal</th>
-          <th>Month</th>
-          <th>Last Loading</th>
-          <th>Rounded Loading</th>
           <th>Average</th>
-          <th>Average Round</th>
-          <th>Budget Ref No</th>
           <th>Estimated Price</th>
           <th>Amount</th>
           <th>Deadline</th>
@@ -34,14 +30,10 @@
         {% for item in request_items %}
         <tr>
           <td>{{ forloop.counter }}</td>  <!-- Tambahkan nomor urut -->
+          <td>{{ item.budget_ref_no }}</td>
           <td>{{ item.loading_part_result.part_name }}</td>
           <td>{{ item.loading_part_result.terminal }}</td>
-          <td>{{ item.loading_part_result.month }}</td>
-          <td>{{ item.loading_part_result.last_loading }}</td>
-          <td>{{ item.loading_part_result.rounded_loading }}</td>
-          <td>{{ item.loading_part_result.average }}</td>
           <td>{{ item.loading_part_result.average_round }}</td>
-          <td>{{ item.budget_ref_no }}</td>
           <td>{{ item.estimated_price }}</td>
           <td>{{ item.amount }}</td>
           <td>{{ item.deadline }}</td>
@@ -53,3 +45,6 @@
     </table>
   </div>
 </div>
+<script>
+  new DataTable('#table_approve');
+</script>
