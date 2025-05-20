@@ -84,7 +84,14 @@ def purchaseReq(request):
             index = 0
             for carline in selected_carlines:
                 parts = LoadingPartResult.objects.filter(carline=carline)
-                for part in parts:
+
+                # Filter hanya 1 part per partdesk
+                unique_parts = {}
+                for part in parts.order_by('partdesk'):
+                    if part.partdesk_id not in unique_parts:
+                        unique_parts[part.partdesk_id] = part
+
+                for partdesk_id, part in unique_parts.items():
                     try:
                         budget = budget_ref_no[index]
                         est_price = float(estimated_prices[index])
@@ -122,12 +129,17 @@ def purchaseReq(request):
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
         carline_ids = request.POST.getlist('carline_ids[]')
-        loading_parts = LoadingPartResult.objects.filter(carline__id__in=carline_ids)
+        loading_parts = (
+            LoadingPartResult.objects
+            .filter(carline__id__in=carline_ids)
+            .order_by('partdesk')  # penting untuk distinct
+            .distinct('partdesk')
+        )
         table_html = render_to_string('partials/loading_parts_table.html', {
             'loading_parts': loading_parts
         })
         return JsonResponse({'table': table_html})
-
+# sspv
 @login_required
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
