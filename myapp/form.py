@@ -41,7 +41,7 @@ class LoginForm(forms.Form):
 from .models import PurchaseRequest, Carline, Section, Departement
 
 class PurchaseRequestForm(forms.ModelForm):
-    departement = forms.ModelChoiceField(
+    departement = forms.ModelChoiceField( 
         queryset=Departement.objects.all(),
         widget=forms.Select(attrs={'class': 'form-select'}),
         label="Departement"

@@ -80,21 +80,21 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
-              {% if request.user|has_group:"Admin" %}
+              {% comment %} {% if request.user|has_group:"Admin" %} {% endcomment %}
               <a href="{% url 'purchaseReq' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-plus"></i>
                 <p>Purchase Request</p>
               </a>
-              {% endif %}
+              {% comment %} {% endif %} {% endcomment %}
             </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'purchase_request_list' %}active{% endif %}">
+            {% comment %} <li class="nav-item {% if request.resolver_match.url_name == 'purchase_request_list' %}active{% endif %}">
               {% if request.user|has_group:"Senior Supervisor" %}
               <a href="{% url 'purchase_request_list' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-plus"></i>
                 <p>Purchase Request</p>
               </a>
               {% endif %}
-            </li>
+            </li> {% endcomment %}
             <li class="nav-item {% if request.resolver_match.url_name == 'purchaseOrd' %}active{% endif %}">
               <a href="{% url 'purchaseOrd' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-arrow-down"></i>

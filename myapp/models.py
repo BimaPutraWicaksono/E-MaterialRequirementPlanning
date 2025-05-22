@@ -265,7 +265,7 @@ class Departement(models.Model):
     def __str__(self):
         return self.name
         
-    class Meta:
+    class Meta: 
         db_table = 'departement' 
 
 class Section(models.Model):
@@ -285,7 +285,7 @@ class PurchaseRequest(models.Model):
     purchase_by = models.CharField(max_length=100)
     requested = models.BooleanField(default=False)
     part_order = models.ManyToManyField(Carline)
-    total_amount = models.FloatField(default=0)
+    total_amount = models.FloatField(default=0) 
     date = models.DateField(auto_now_add=True)
 
     approve_spv = models.BooleanField(null=True, blank=True)

@@ -1,0 +1,85 @@
+{% load user_tags %}
+<div class="card p-3 border">
+  <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
+
+  <p>
+    <strong>Departement:</strong> {{ purchase_request.departement.name }}<br>
+    <strong>Section:</strong> {{ purchase_request.section.name }}<br>
+    <strong>Purchase By:</strong> {{ purchase_request.purchase_by }}<br>
+    <strong>Date:</strong> {{ purchase_request.date }}<br>
+    <strong>Total Amount:</strong> {{ purchase_request.total_amount }}<br>
+    <strong>Status:</strong>
+    {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}
+  </p>
+  <p>User: {{ request.user.username }} | Groups: 
+    {% if request.user|has_group:"Supervisor" %} Supervisor {% endif %}
+    {% if request.user|has_group:"SeniorSupervisor" %} SeniorSupervisor {% endif %}
+  </p>
+
+  <h5>Requested Parts</h5>
+  <div class="table-responsive">
+    <table class="table table-bordered mt-3" id="table_approve">
+      <thead class="table-secondary">
+        <tr>
+          <th>No</th>
+          <th>Budget Ref No</th>
+          <th>Part Name</th>
+          <th>Terminal</th>
+          <th>Average</th>
+          <th>Estimated Price</th>
+          <th>Amount</th>
+          <th>Deadline</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in request_items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.budget_ref_no }}</td>
+            <td>{{ item.loading_part_result.part_name }}</td>
+            <td>{{ item.loading_part_result.terminal }}</td>
+            <td>{{ item.loading_part_result.average_round }}</td>
+            <td>{{ item.estimated_price }}</td>
+            <td>{{ item.amount }}</td>
+            <td>{{ item.deadline }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center">Tidak ada item.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" %}
+    <h5 class="mt-4">Approval Form</h5>
+    <form method="POST" action="{% url 'approve_purchase_request' purchase_request.registered_no %}">
+        {% csrf_token %}
+
+        {% if request.user|has_group:"Supervisor" %}
+          <div class="mb-3">
+            <label for="approve_spv" class="form-label">Approved by Supervisor:</label>
+            <select name="approve_spv" id="approve_spv" class="form-select">
+              <option value="True" {% if purchase_request.approve_spv %}selected{% endif %}>Yes</option>
+              <option value="False" {% if not purchase_request.approve_spv %}selected{% endif %}>No</option>
+            </select>
+          </div>
+          <button type="submit" name="action" value="approve_spv" class="btn btn-success">Submit Supervisor Approval</button>
+        {% endif %}
+
+        {% if request.user|has_group:"SeniorSupervisor" %}
+          <div class="mb-3">
+            <label for="approve_sspv" class="form-label">Approved by Senior Supervisor:</label>
+            <select name="approve_sspv" id="approve_sspv" class="form-select">
+              <option value="True" {% if purchase_request.approve_sspv %}selected{% endif %}>Yes</option>
+              <option value="False" {% if not purchase_request.approve_sspv %}selected{% endif %}>No</option>
+            </select>
+          </div>
+          <button type="submit" name="action" value="approve_sspv" class="btn btn-primary">Submit SSPV Approval</button>
+        {% endif %}
+    </form>
+  {% endif %}
+</div>
+
+<script>
+  new DataTable('#table_approve');
+</script>

@@ -57,16 +57,15 @@ urlpatterns = [
     path('ajax/get-loading-parts/', views_order.ajax_get_loading_parts, name='ajax_get_loading_parts'),
     path('ajax/load-sections/', views_order.ajax_load_sections, name='ajax_load_sections'),
     
-    path('purchase-request/', views_order.purchase_request_list_view, name='purchase_request_list'),
-    path('purchase-request/detail/<str:registered_no>/', views_order.purchase_request_detail_ajax, name='purchase_request_detail_ajax'),
 
-
+    path('purchase-request/detail/<str:registered_no>/', views_order.purchase_request_detail, name='purchase_request_detail_ajax'),
+    path('purchase-request/approve/<str:registered_no>/', views_order.approve_purchase_request, name='approve_purchase_request'),
     
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
-    
+     
     
     
 ]

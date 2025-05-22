@@ -71,7 +71,7 @@ def purchaseReq(request):
                 elif action == 'disapprove_spv':
                     pr.approve_spv = False
 
-            if request.user.groups.filter(name="Senior Supervisor").exists():
+            if request.user.groups.filter(name="SeniorSupervisor").exists():
                 if action == 'approve_sspv':
                     pr.approve_sspv = True
                 elif action == 'disapprove_sspv':
@@ -120,9 +120,11 @@ def purchaseReq(request):
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
+        requests = PurchaseRequest.objects.all().order_by('-requested')
 
     return render(request, 'order/purchaseReq.html', { 
         'form': form,
+        'requests': requests,
     })
 
 @login_required
@@ -139,7 +141,6 @@ def ajax_get_loading_parts(request):
             'loading_parts': loading_parts
         })
         return JsonResponse({'table': table_html})
-# sspv
 @login_required
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
@@ -147,39 +148,53 @@ def ajax_load_sections(request):
     html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
     return JsonResponse(html, safe=False)
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from .models import PurchaseRequest, RequestItem
-
-def purchase_request_list_view(request):
-    requests = PurchaseRequest.objects.all()
-    return render(request, 'order/purchase_request_list.html', {'requests': requests})
-
-
-from django.db.models import F
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 
-def purchase_request_detail_ajax(request, registered_no):
+def purchase_request_detail(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    request_items = purchase_request.items.all()
 
-    # Mengurutkan berdasarkan part_name dan terminal dari relasi loading_part_result
-    request_items = (
-        RequestItem.objects
-        .filter(purchase_request=purchase_request)
-        .select_related('loading_part_result')
-        .order_by('loading_part_result__part_name', 'loading_part_result__terminal')
-    )
-
-    html = render_to_string('partials/purchase_request_detail_partial.html', {
-        'purchase_request': purchase_request,
-        'request_items': request_items
+    html = render_to_string("partials/purchase_request_detail.html", {
+        "purchase_request": purchase_request,
+        "request_items": request_items,
+        "request": request,  # <-- ini penting agar tag has_group berfungsi
     })
 
-    return JsonResponse({'html': html})
+    return JsonResponse({"html": html})
 
 
+# views.py
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+
+@require_POST
+@login_required
+def approve_purchase_request(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    action = request.POST.get('action')
+
+    if request.user.groups.filter(name="Supervisor").exists():
+        if action == 'approve_spv':
+            pr.approve_spv = True
+            messages.success(request, "Disetujui oleh Supervisor.")
+        elif action == 'disapprove_spv':
+            pr.approve_spv = False
+            messages.warning(request, "Ditolak oleh Supervisor.")
+
+    elif request.user.groups.filter(name="SeniorSupervisor").exists():
+        if action == 'approve_sspv':
+            pr.approve_sspv = True
+            messages.success(request, "Disetujui oleh Senior Supervisor.")
+        elif action == 'disapprove_sspv':
+            pr.approve_sspv = False
+            messages.warning(request, "Ditolak oleh Senior Supervisor.")
+
+    else:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    pr.save()
+    return redirect('purchaseReq')  # Atau bisa redirect kembali ke detail kalau kamu punya view-nya
 
 # purchase order
 @login_required()
