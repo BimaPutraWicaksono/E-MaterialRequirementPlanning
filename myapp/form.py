@@ -38,44 +38,18 @@ class LoginForm(forms.Form):
 
 
 # request order
-from .models import PurchaseRequest, Carline, Section, Departement
+from django import forms
+from .models import PurchaseRequest, Departement, Section, Carline
 
 class PurchaseRequestForm(forms.ModelForm):
-    departement = forms.ModelChoiceField( 
-        queryset=Departement.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        label="Departement"
-    )
-
-    section = forms.ModelChoiceField(
-        queryset=Section.objects.none(),  # kosong dulu, nanti isi via JS
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        label="Section"
-    )
-
-    part_order = forms.ModelMultipleChoiceField(
-        queryset=Carline.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        label="Pilih Carline",
-        required=True
-    )
-
     class Meta:
         model = PurchaseRequest
-        fields = ['registered_no', 'departement', 'section', 'purchase_by', 'requested']
+        fields = ['registered_no', 'departement', 'section', 'purchase_by', 'requested', 'part_order']
         widgets = {
-            'registered_no': forms.TextInput(attrs={'required': True, 'class': 'form-control'}),
-            'purchase_by': forms.TextInput(attrs={'required': True, 'class': 'form-control'}),
+            'registered_no': forms.TextInput(attrs={'class': 'form-control'}),
+            'departement': forms.Select(attrs={'class': 'form-select', 'id': 'id_departement'}),
+            'section': forms.Select(attrs={'class': 'form-select', 'id': 'id_section'}),
+            'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
             'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'part_order': forms.CheckboxSelectMultiple(),  # checkbox list untuk carline
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'departement' in self.data:
-            try:
-                departement_id = int(self.data.get('departement'))
-                self.fields['section'].queryset = Section.objects.filter(departement_id=departement_id)
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk and self.instance.departement:
-            self.fields['section'].queryset = Section.objects.filter(departement=self.instance.departement)

@@ -35,12 +35,13 @@ def create_section(request):
         else:
             messages.error(request, 'Semua field Section harus diisi.')
     return redirect('master_departement_section')
-# views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from .models import PurchaseRequest, RequestItem, LoadingPartResult
+from django.contrib import messages
+from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section
 from .form import PurchaseRequestForm
 
 @login_required
@@ -49,43 +50,28 @@ def purchaseReq(request):
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
             selected_carlines = form.cleaned_data['part_order']
-            budget_ref_no = request.POST.getlist('budget_ref_no')
-            estimated_prices = request.POST.getlist('estimated_price')
-            deadlines = request.POST.getlist('deadline')
+            budget_ref_no_list = request.POST.getlist('budget_ref_no')
+            estimated_prices_list = request.POST.getlist('estimated_price')
+            deadlines_list = request.POST.getlist('deadline')
             total_amount_hidden = request.POST.get('total_amount_hidden')
 
             try:
                 total_amount = float(total_amount_hidden)
-            except (TypeError, ValueError): 
+            except (TypeError, ValueError):
                 total_amount = 0
 
             pr = form.save(commit=False)
             pr.total_amount = total_amount
-
-            # Approval logic
-            action = request.POST.get('action')
-
-            if request.user.groups.filter(name="Supervisor").exists():
-                if action == 'approve_spv':
-                    pr.approve_spv = True
-                elif action == 'disapprove_spv':
-                    pr.approve_spv = False
-
-            if request.user.groups.filter(name="SeniorSupervisor").exists():
-                if action == 'approve_sspv':
-                    pr.approve_sspv = True
-                elif action == 'disapprove_sspv':
-                    pr.approve_sspv = False
-
-
             pr.save()
             pr.part_order.set(selected_carlines)
+
+            # Hapus dulu item lama jika ada (opsional, kalau update)
+            pr.items.all().delete()
 
             index = 0
             for carline in selected_carlines:
                 parts = LoadingPartResult.objects.filter(carline=carline)
 
-                # Filter hanya 1 part per partdesk
                 unique_parts = {}
                 for part in parts.order_by('partdesk'):
                     if part.partdesk_id not in unique_parts:
@@ -93,9 +79,9 @@ def purchaseReq(request):
 
                 for partdesk_id, part in unique_parts.items():
                     try:
-                        budget = budget_ref_no[index]
-                        est_price = float(estimated_prices[index])
-                        dl = deadlines[index]
+                        budget = budget_ref_no_list[index]
+                        est_price = float(estimated_prices_list[index])
+                        dl = deadlines_list[index] if deadlines_list[index] else None
                     except (IndexError, ValueError):
                         budget = ""
                         est_price = 0
@@ -115,86 +101,88 @@ def purchaseReq(request):
                     )
                     index += 1
 
-                messages.success(request, "Purchase Request berhasil dikirim.")
-                
+            messages.success(request, "Purchase Request berhasil disimpan.")
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
-        requests = PurchaseRequest.objects.all().order_by('-requested')
-
-    return render(request, 'order/purchaseReq.html', { 
+    
+    requests = PurchaseRequest.objects.all().order_by('-date')
+    return render(request, 'order/purchaseReq.html', {
         'form': form,
         'requests': requests,
     })
+
 
 @login_required
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
         carline_ids = request.POST.getlist('carline_ids[]')
-        loading_parts = (
-            LoadingPartResult.objects
-            .filter(carline__id__in=carline_ids)
-            .order_by('partdesk')  # penting untuk distinct
-            .distinct('partdesk')
-        )
+        parts = LoadingPartResult.objects.filter(carline__id__in=carline_ids).order_by('partdesk')
+
+        unique_parts = {}
+        for part in parts:
+            if part.partdesk_id not in unique_parts:
+                unique_parts[part.partdesk_id] = part
+        
+        parts_list = unique_parts.values()
+
         table_html = render_to_string('partials/loading_parts_table.html', {
-            'loading_parts': loading_parts
+            'parts': parts_list
         })
         return JsonResponse({'table': table_html})
+
+
 @login_required
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
     sections = Section.objects.filter(departement_id=departement_id).order_by('name')
-    html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
-    return JsonResponse(html, safe=False)
+    return render(request, 'partials/section_options.html', {'sections': sections})
 
-from django.template.loader import render_to_string
-from django.http import JsonResponse
 
+@login_required
 def purchase_request_detail(request, registered_no):
-    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    request_items = purchase_request.items.all()
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    items = RequestItem.objects.filter(purchase_request=pr)
 
-    html = render_to_string("partials/purchase_request_detail.html", {
-        "purchase_request": purchase_request,
-        "request_items": request_items,
-        "request": request,  # <-- ini penting agar tag has_group berfungsi
-    })
+    context = {
+        'purchase_request': pr,
+        'request_items': items,
+    }
 
-    return JsonResponse({"html": html})
+    # Render template ke string
+    html = render_to_string('partials/purchase_request_detail.html', context, request=request)
+    return JsonResponse({'html': html})
 
 
-# views.py
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-
-@require_POST
 @login_required
 def approve_purchase_request(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    action = request.POST.get('action')
 
-    if request.user.groups.filter(name="Supervisor").exists():
-        if action == 'approve_spv':
-            pr.approve_spv = True
-            messages.success(request, "Disetujui oleh Supervisor.")
-        elif action == 'disapprove_spv':
-            pr.approve_spv = False
-            messages.warning(request, "Ditolak oleh Supervisor.")
+    if request.method == 'POST':
+        action = request.POST.get('action')
 
-    elif request.user.groups.filter(name="SeniorSupervisor").exists():
-        if action == 'approve_sspv':
-            pr.approve_sspv = True
-            messages.success(request, "Disetujui oleh Senior Supervisor.")
-        elif action == 'disapprove_sspv':
-            pr.approve_sspv = False
-            messages.warning(request, "Ditolak oleh Senior Supervisor.")
+        if request.user.groups.filter(name='Supervisor').exists():
+            if action == 'approve_spv':
+                pr.approve_spv = True
+                pr.save()
+                messages.success(request, "Purchase Request disetujui oleh Supervisor.")
+            elif action == 'disapprove_spv':
+                pr.approve_spv = False
+                pr.save()
+                messages.success(request, "Purchase Request ditolak oleh Supervisor.")
 
-    else:
-        return JsonResponse({'error': 'Not authorized'}, status=403)
+        elif request.user.groups.filter(name='SeniorSupervisor').exists():
+            if action == 'approve_sspv':
+                pr.approve_sspv = True
+                pr.save()
+                messages.success(request, "Purchase Request disetujui oleh Senior Supervisor.")
+            elif action == 'disapprove_sspv':
+                pr.approve_sspv = False
+                pr.save()
+                messages.success(request, "Purchase Request ditolak oleh Senior Supervisor.")
 
-    pr.save()
-    return redirect('purchaseReq')  # Atau bisa redirect kembali ke detail kalau kamu punya view-nya
+        return redirect('purchaseReq')  # redirect ke list atau halaman lain sesuai kebutuhan
+
 
 # purchase order
 @login_required()

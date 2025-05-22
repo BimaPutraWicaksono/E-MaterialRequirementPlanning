@@ -1,37 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-{% load user_tags %}
 <div class="container mt-4">
   <h2>Form Pengajuan Purchase Request</h2>
   <form method="POST" id="purchase-form">
     {% csrf_token %}
     
+    <!-- Form fields seperti departement, section, purchase_by, dll -->
     <table class="table table-bordered align-middle">
       <tbody>
-        <tr>
-          <th style="width: 200px;">Registered No</th>
-          <td>{{ form.registered_no }}</td>
-        </tr>
-        <tr>
-          <th>Departement</th>
-          <td>{{ form.departement }}</td>
-        </tr>
-        <tr>
-          <th>Section</th>
-          <td>{{ form.section }}</td>
-        </tr>
-        <tr>
-          <th>Purchase By</th>
-          <td>{{ form.purchase_by }}</td>
-        </tr>
-        <tr>
-          <th>Requested</th>
-          <td>{{ form.requested }}</td>
-        </tr>
-        <tr>
-          <th>Pilih Carline</th>
-          <td>{{ form.part_order }}</td>
-        </tr>
+        <tr><th style="width: 200px;">Registered No</th><td>{{ form.registered_no }}</td></tr>
+        <tr><th>Departement</th><td>{{ form.departement }}</td></tr>
+        <tr><th>Section</th><td>{{ form.section }}</td></tr>
+        <tr><th>Purchase By</th><td>{{ form.purchase_by }}</td></tr>
+        <tr><th>Requested</th><td>{{ form.requested }}</td></tr>
+        <tr><th>Pilih Carline</th><td>{{ form.part_order }}</td></tr>
       </tbody>
     </table>
 
@@ -39,31 +21,14 @@
 
     <div class="mt-3">
       <h5>Total Amount: <span id="total-amount-display">0</span></h5>
-    </div> 
+    </div>
 
     <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
 
-    {% if request.user|has_group:"Supervisor" %}
-      <div class="mb-3">
-        <label class="form-label">Supervisor Approval:</label><br>
-        <button type="submit" name="action" value="approve_spv" class="btn btn-success">Accept</button>
-        <button type="submit" name="action" value="disapprove_spv" class="btn btn-danger">Disapprove</button>
-      </div>
-    {% endif %}
-
-    {% if request.user|has_group:"SeniorSupervisor" %}
-      <div class="mb-3">
-        <label class="form-label">Senior Supervisor Approval:</label><br>
-        <button type="submit" name="action" value="approve_sspv" class="btn btn-success">Accept</button>
-        <button type="submit" name="action" value="disapprove_sspv" class="btn btn-danger">Disapprove</button>
-      </div>
-    {% endif %}
-
     <button type="submit" class="btn btn-primary mt-3">Submit</button>
   </form>
-  <hr class="my-4">
-  <h4>Daftar Purchase Request Sebelumnya</h4>
 
+  <h4>Daftar Purchase Request Sebelumnya</h4>
   <div class="mb-4">
     {% for pr in requests %}
       <button class="btn btn-outline-primary m-1 load-detail-btn" data-registered-no="{{ pr.registered_no }}">
@@ -75,12 +40,12 @@
   </div>
 
   <div id="detail-container" class="mt-5"></div>
-
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
+    // Event ketika pilihan carline berubah
     $("input[name='part_order']").change(function () {
       let carlineIds = [];
       $("input[name='part_order']:checked").each(function () {
@@ -97,6 +62,7 @@
           },
           success: function (response) {
             $('#loading-parts-table-container').html(response.table);
+            updateAmounts(); // update total saat parts muncul
           },
           error: function (xhr, status, error) {
             console.error("AJAX error:", error);
@@ -104,9 +70,23 @@
         });
       } else {
         $('#loading-parts-table-container').html('');
+        updateAmounts();
       }
     });
 
+    // Event ketika departement berubah untuk load sections
+    $('#id_departement').change(function () {
+      var departementId = $(this).val();
+      $.ajax({
+        url: "{% url 'ajax_load_sections' %}",
+        data: { 'departement_id': departementId },
+        success: function (data) {
+          $("#id_section").html(data);
+        }
+      });
+    });
+
+    // Fungsi update amount dan total amount
     function updateAmounts() {
       let total = 0;
       $('.part-row').each(function () {
@@ -120,34 +100,20 @@
       $('#total-amount-hidden').val(total.toFixed(2));
     }
 
+    // Update total amount saat input harga berubah
     $(document).on('input', '.est-price', updateAmounts);
 
-    $('#id_departement').change(function () {
-      var departementId = $(this).val();
-      $.ajax({
-        url: "{% url 'ajax_load_sections' %}",
-        data: {
-          'departement_id': departementId
-        },
-        success: function (data) {
-          $("#id_section").html(data);
-        }
-      });
-    });
-  });
-    // Load detail Purchase Request
-  document.querySelectorAll(".load-detail-btn").forEach(button => {
-    button.addEventListener("click", function () {
-      const registeredNo = this.dataset.registeredNo;
+    // Event delegation untuk tombol load-detail-btn (daftar purchase request sebelumnya)
+    $(document).on("click", ".load-detail-btn", function() {
+      const registeredNo = $(this).data("registered-no");
 
       fetch(`/e-mrp/purchase-request/detail/${registeredNo}/`)
         .then(response => response.json())
         .then(data => {
-          document.getElementById("detail-container").innerHTML = data.html;
+          $("#detail-container").html(data.html);
         })
         .catch(error => console.error("Error fetching detail:", error));
     });
   });
-
 </script>
 {% endblock %}
