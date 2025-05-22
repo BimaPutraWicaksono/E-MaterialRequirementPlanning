@@ -288,8 +288,8 @@ class PurchaseRequest(models.Model):
     total_amount = models.FloatField(default=0)
     date = models.DateField(auto_now_add=True)
 
-    approve_spv = models.BooleanField(default=False)
-    approve_sspv = models.BooleanField(default=False)
+    approve_spv = models.BooleanField(null=True, blank=True)
+    approve_sspv = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
         return f"Request {self.registered_no} by {self.purchase_by}"
