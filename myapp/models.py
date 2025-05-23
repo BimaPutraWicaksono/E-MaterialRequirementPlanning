@@ -279,7 +279,7 @@ class Section(models.Model):
         db_table = 'section' 
 
 class PurchaseRequest(models.Model):
-    registered_no = models.CharField(max_length=100)
+    registered_no = models.CharField(max_length=100, unique=True)
     departement = models.ForeignKey(Departement, on_delete=models.SET_NULL, null=True, blank=True)
     section = models.ForeignKey('Section', on_delete=models.CASCADE)
     purchase_by = models.CharField(max_length=100)
@@ -297,17 +297,21 @@ class PurchaseRequest(models.Model):
     class Meta:
         db_table = 'purchase_request'
 
+from datetime import date
+
 class RequestItem(models.Model):
     purchase_request = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     loading_part_result = models.ForeignKey(LoadingPartResult, on_delete=models.CASCADE)
-    budget_ref_no = models.CharField(max_length=100, blank=True)
+    budget_ref_no = models.CharField(max_length=100)
     result_average_round = models.FloatField(default=0)
     estimated_price = models.FloatField(default=0)
     amount = models.FloatField(default=0)
-    deadline = models.DateField(null=True, blank=True)
+    deadline = models.DateField(default=date.today)
 
     class Meta:
+        
         db_table = 'request_form'
+
 
     def __str__(self):
         return f"Item for Request {self.purchase_request.registered_no if self.purchase_request else 'N/A'}"

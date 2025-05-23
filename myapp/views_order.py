@@ -136,7 +136,8 @@ def ajax_get_loading_parts(request):
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
     sections = Section.objects.filter(departement_id=departement_id).order_by('name')
-    return render(request, 'partials/section_options.html', {'sections': sections})
+    html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
+    return JsonResponse(html, safe=False)
 
 
 @login_required

@@ -1,39 +1,56 @@
 {% extends "base.html" %}
+{% load user_tags %}
 {% block content %}
 <div class="container mt-4">
-  <h2>Form Pengajuan Purchase Request</h2>
-  <form method="POST" id="purchase-form">
-    {% csrf_token %}
-    
-    <!-- Form fields seperti departement, section, purchase_by, dll -->
-    <table class="table table-bordered align-middle">
-      <tbody>
-        <tr><th style="width: 200px;">Registered No</th><td>{{ form.registered_no }}</td></tr>
-        <tr><th>Departement</th><td>{{ form.departement }}</td></tr>
-        <tr><th>Section</th><td>{{ form.section }}</td></tr>
-        <tr><th>Purchase By</th><td>{{ form.purchase_by }}</td></tr>
-        <tr><th>Requested</th><td>{{ form.requested }}</td></tr>
-        <tr><th>Pilih Carline</th><td>{{ form.part_order }}</td></tr>
-      </tbody>
-    </table>
+  {% if request.user|has_group:"Admin" %}
+    <h2>Purchase Request Form</h2>
+    <form method="POST" id="purchase-form">
+      {% csrf_token %}
+      
+      <!-- Form fields seperti departement, section, purchase_by, dll -->
+      <table class="table table-bordered align-middle">
+        <tbody>
+          <tr><th style="width: 200px;">Registered No</th><td>{{ form.registered_no }}</td></tr>
+          <tr><th>Departement</th><td>{{ form.departement }}</td></tr>
+          <tr><th>Section</th><td>{{ form.section }}</td></tr>
+          <tr><th>Purchase By</th><td>{{ form.purchase_by }}</td></tr>
+          <tr><th>Requested</th><td>{{ form.requested }}</td></tr>
+          <tr><th>Pilih Carline</th><td>{{ form.part_order }}</td></tr>
+        </tbody>
+      </table>
 
-    <div id="loading-parts-table-container" class="mt-4"></div>
+      <div id="loading-parts-table-container" class="mt-4"></div>
 
-    <div class="mt-3">
-      <h5>Total Amount: <span id="total-amount-display">0</span></h5>
-    </div>
+      <div class="mt-3">
+        <h5>Total Amount: <span id="total-amount-display">0</span></h5>
+      </div>
 
-    <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
+      <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
 
-    <button type="submit" class="btn btn-primary mt-3">Submit</button>
-  </form>
-
-  <h4>Daftar Purchase Request Sebelumnya</h4>
+      <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+  {% endif %}
+  <h4>Daftar Purchase Request</h4>
   <div class="mb-4">
     {% for pr in requests %}
-      <button class="btn btn-outline-primary m-1 load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-        {{ pr.registered_no }}
-      </button>
+      <div class="card border-primary mb-2 p-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>No:</strong> {{ pr.registered_no }}<br>
+            <strong>Requested:</strong> {{ pr.requested|yesno:"✅,❌" }}<br>
+            <strong>SPV Approve:</strong> 
+            {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}<br>
+            <strong>SSPV Approve:</strong> 
+            {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+          </div>
+          <div>
+            <button class="btn btn-outline-primary load-detail-btn mt-2"
+                    data-registered-no="{{ pr.registered_no }}">
+              Lihat Detail
+            </button>
+          </div>
+        </div>
+      </div>
     {% empty %}
       <p>Tidak ada Purchase Request.</p>
     {% endfor %}

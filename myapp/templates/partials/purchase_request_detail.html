@@ -8,7 +8,9 @@
     <strong>Purchase By:</strong> {{ purchase_request.purchase_by }}<br>
     <strong>Date:</strong> {{ purchase_request.date }}<br>
     <strong>Total Amount:</strong> {{ purchase_request.total_amount }}<br>
-    <strong>Status:</strong> {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}
+    <strong>Status:</strong> {% if purchase_request.requested %} Requested {% else %} Draft {% endif %} <br>
+    <strong>SPV Approved:</strong> {{ purchase_request.approve_spv }}<br>
+    <strong>SSPV Approved:</strong> {{ purchase_request.approve_sspv }}<br>
   </p>
 
   <h5>Requested Parts</h5>

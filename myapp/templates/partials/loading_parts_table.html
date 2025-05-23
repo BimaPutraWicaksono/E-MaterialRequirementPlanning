@@ -2,12 +2,12 @@
   <thead class="table-light">
     <tr>
       <th>No</th>
+      <th>Budget Ref No</th>
       <th>Part Name</th>
       <th>Terminal</th>
-      <th>Average</th>
+      <th>Quantity</th>
       <th>Estimated Price</th>
       <th>Amount</th>
-      <th>Budget Ref No</th>
       <th>Deadline</th>
     </tr>
   </thead>
@@ -16,6 +16,9 @@
       {% for part in parts %}
       <tr class="part-row">
         <td>{{ forloop.counter }}</td>
+        <td>
+          <input type="text" name="budget_ref_no[]" class="form-control" value="">
+        </td>
         <td>{{ part.part_name }}</td>
         <td>{{ part.terminal }}</td>
         <td>
@@ -26,9 +29,6 @@
         </td>
         <td>
           <input type="text" readonly class="form-control amount" value="0">
-        </td>
-        <td>
-          <input type="text" name="budget_ref_no[]" class="form-control" value="">
         </td>
         <td>
           <input type="date" name="deadline[]" class="form-control" value="">
