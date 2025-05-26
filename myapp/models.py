@@ -306,7 +306,7 @@ class RequestItem(models.Model):
     result_average_round = models.FloatField(default=0)
     estimated_price = models.FloatField(default=0)
     amount = models.FloatField(default=0)
-    deadline = models.DateField(default=date.today)
+    deadline = models.DateField(null=True, blank=True)
 
     class Meta:
         

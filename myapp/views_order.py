@@ -65,41 +65,41 @@ def purchaseReq(request):
             pr.save()
             pr.part_order.set(selected_carlines)
 
-            # Hapus dulu item lama jika ada (opsional, kalau update)
             pr.items.all().delete()
 
-            index = 0
+            # Kumpulkan semua part unik dari seluruh carline
+            all_parts = []
+            seen_partdesk_ids = set()
+
             for carline in selected_carlines:
-                parts = LoadingPartResult.objects.filter(carline=carline)
+                parts = LoadingPartResult.objects.filter(carline=carline).order_by('partdesk')
+                for part in parts:
+                    if part.partdesk_id and part.partdesk_id not in seen_partdesk_ids:
+                        seen_partdesk_ids.add(part.partdesk_id)
+                        all_parts.append(part)
 
-                unique_parts = {}
-                for part in parts.order_by('partdesk'):
-                    if part.partdesk_id not in unique_parts:
-                        unique_parts[part.partdesk_id] = part
+            for i, part in enumerate(all_parts):
+                try:
+                    budget = budget_ref_no_list[i]
+                    est_price = float(estimated_prices_list[i])
+                    dl = deadlines_list[i] if deadlines_list[i] else None
+                except (IndexError, ValueError):
+                    budget = ""
+                    est_price = 0
+                    dl = None
 
-                for partdesk_id, part in unique_parts.items():
-                    try:
-                        budget = budget_ref_no_list[index]
-                        est_price = float(estimated_prices_list[index])
-                        dl = deadlines_list[index] if deadlines_list[index] else None
-                    except (IndexError, ValueError):
-                        budget = ""
-                        est_price = 0
-                        dl = None
+                avg = part.average_round or 0
+                amount = avg * est_price
 
-                    avg = part.average_round or 0
-                    amount = avg * est_price
-
-                    RequestItem.objects.create(
-                        purchase_request=pr,
-                        loading_part_result=part,
-                        budget_ref_no=budget,
-                        result_average_round=avg,
-                        estimated_price=est_price,
-                        amount=amount,
-                        deadline=dl
-                    )
-                    index += 1
+                RequestItem.objects.create(
+                    purchase_request=pr,
+                    loading_part_result=part,
+                    budget_ref_no=budget,
+                    result_average_round=avg,
+                    estimated_price=est_price,
+                    amount=amount,
+                    deadline=dl
+                )
 
             messages.success(request, "Purchase Request berhasil disimpan.")
             return redirect('purchaseReq')
@@ -111,7 +111,6 @@ def purchaseReq(request):
         'form': form,
         'requests': requests,
     })
-
 
 @login_required
 def ajax_get_loading_parts(request):
