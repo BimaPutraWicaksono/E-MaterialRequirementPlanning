@@ -59,6 +59,8 @@ urlpatterns = [
 
     path('purchase-request/detail/<str:registered_no>/', views_order.purchase_request_detail, name='purchase_request_detail'),
     path('purchase-request/approve/<str:registered_no>/', views_order.approve_purchase_request, name='approve_purchase_request'),
+    
+    path('purchase-request/delete/<str:registered_no>/', views_order.delete_purchase_request, name='delete_purchase_request'),
 
     
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),

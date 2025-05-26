@@ -130,7 +130,6 @@ def ajax_get_loading_parts(request):
         })
         return JsonResponse({'table': table_html})
 
-
 @login_required
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
@@ -183,6 +182,16 @@ def approve_purchase_request(request, registered_no):
 
         return redirect('purchaseReq')  # redirect ke list atau halaman lain sesuai kebutuhan
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import PurchaseRequest
+
+def delete_purchase_request(request, registered_no):
+    if request.method == "POST":
+        pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+        pr.delete()
+        messages.success(request, f"Purchase Request {registered_no} berhasil dihapus.")
+    return redirect('purchaseReq')  # ganti sesuai nama path untuk halaman PR utama
 
 # purchase order
 @login_required()
