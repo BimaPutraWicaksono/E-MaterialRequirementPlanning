@@ -13,7 +13,7 @@ def master_departement_section(request):
     })
 
 @login_required()
-def create_departement(request):
+def create_departement(request): 
     if request.method == 'POST':
         name = request.POST.get('name')
         if name:

@@ -1,20 +1,44 @@
 {% load user_tags %}
-<div class="card p-3 border">
+<div class="p-3 border">
   <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
-
-  <p>
-    <strong>Departement:</strong> {{ purchase_request.departement.name }}<br>
-    <strong>Section:</strong> {{ purchase_request.section.name }}<br>
-    <strong>Purchase By:</strong> {{ purchase_request.purchase_by }}<br>
-    <strong>Date:</strong> {{ purchase_request.date }}<br>
-    <strong>Total Amount:</strong> {{ purchase_request.total_amount }}<br>
-    <strong>Status:</strong> {% if purchase_request.requested %} Requested {% else %} Draft {% endif %} <br>
-    <strong>SPV Approved:</strong> {{ purchase_request.approve_spv }}<br>
-    <strong>SSPV Approved:</strong> {{ purchase_request.approve_sspv }}<br>
-  </p>
-
+  <div class="mt-2 mb-2">
+    <table style="width: auto;" >
+      <tr>
+        <td><strong>Departement</strong></td>
+        <td>: {{ purchase_request.departement.name }}</td>
+      </tr>
+      <tr>
+        <td><strong>Section</strong></td>
+        <td>: {{ purchase_request.section.name }}</td>
+      </tr>
+      <tr>
+        <td><strong>Purchase By</strong></td>
+        <td>: {{ purchase_request.purchase_by }}</td>
+      </tr>
+      <tr>
+        <td><strong>Date</strong></td>
+        <td>: {{ purchase_request.date }}</td>
+      </tr>
+      <tr>
+        <td><strong>Total Amount</strong></td>
+        <td>: {{ purchase_request.total_amount }}</td>
+      </tr>
+      <tr>
+        <td><strong>Status</strong></td>
+        <td>: {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}</td>
+      </tr>
+      <tr>
+        <td><strong>SPV Approved</strong></td>
+        <td>: {% if purchase_request.approve_spv == True %}✅{% elif purchase_request.approve_spv == False %}❌{% else %}-{% endif %}</td>
+      </tr>
+      <tr>
+        <td><strong>SSPV Approved</strong></td>
+        <td>: {% if purchase_request.approve_sspv == True %}✅{% elif purchase_request.approve_sspv == False %}❌{% else %}-{% endif %}</td>
+      </tr>
+    </table>
+  </div>
   <h5>Requested Parts</h5>
-  <div class="table-responsive">
+  <div class="table-responsive mt-2 mb-2">
     <table class="table table-bordered mt-3" id="table_approve">
       <thead class="table-secondary">
         <tr>

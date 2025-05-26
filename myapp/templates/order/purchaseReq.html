@@ -8,15 +8,13 @@
       {% csrf_token %}
       
       <!-- Form fields seperti departement, section, purchase_by, dll -->
-      <table class="table table-bordered align-middle">
-        <tbody>
-          <tr><th style="width: 200px;">Registered No</th><td>{{ form.registered_no }}</td></tr>
-          <tr><th>Departement</th><td>{{ form.departement }}</td></tr>
-          <tr><th>Section</th><td>{{ form.section }}</td></tr>
-          <tr><th>Purchase By</th><td>{{ form.purchase_by }}</td></tr>
-          <tr><th>Requested</th><td>{{ form.requested }}</td></tr>
-          <tr><th>Pilih Carline</th><td>{{ form.part_order }}</td></tr>
-        </tbody>
+      <table>
+        <tr><td style="width: 200px;">Registered No</td><td>{{ form.registered_no }}</td></tr>
+        <tr><td>Departement</td><td>{{ form.departement }}</td></tr>
+        <tr><td>Section</td><td>{{ form.section }}</td></tr>
+        <tr><td>Purchase By</td><td>{{ form.purchase_by }}</td></tr>
+        <tr><td>Requested</td><td>{{ form.requested }}</td></tr>
+        <tr><td>Pilih Carline</td><td>{{ form.part_order }}</td></tr>
       </table>
 
       <div id="loading-parts-table-container" class="mt-4"></div>
@@ -31,31 +29,45 @@
     </form>
   {% endif %}
   <h4>Daftar Purchase Request</h4>
-  <div class="mb-4">
+  <div class="d-flex justify-content-start align-items-start mb-4"> 
     {% for pr in requests %}
-      <div class="card border-primary mb-2 p-2">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>No:</strong> {{ pr.registered_no }}<br>
-            <strong>Requested:</strong> {{ pr.requested|yesno:"✅,❌" }}<br>
-            <strong>SPV Approve:</strong> 
-            {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}<br>
-            <strong>SSPV Approve:</strong> 
-            {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
-          </div>
-          <div>
-            <button class="btn btn-outline-primary load-detail-btn mt-2"
-                    data-registered-no="{{ pr.registered_no }}">
-              Lihat Detail
+      <div class="mb-2 p-2 mr-2 border">
+          <!-- Info Table -->
+          <table>
+            <tr>
+              <td><strong>Registered No</strong></td>
+              <td>: {{ pr.registered_no }}</td>
+            </tr>
+            <tr>
+              <td><strong>Requested</strong></td>
+              <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
+            </tr>
+            <tr>
+              <td><strong>SPV Approve</strong></td>
+              <td>: 
+                {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>SSPV Approve</strong></td>
+              <td>: 
+                {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+              </td>
+            </tr>
+          </table>
+          <!-- Button -->
+          <div class="text-end" style="flex-shrink: 0;">
+            <button class="btn load-detail-btn mt-2"
+              data-registered-no="{{ pr.registered_no }}">
+              Detail
             </button>
           </div>
-        </div>
+         
       </div>
     {% empty %}
       <p>Tidak ada Purchase Request.</p>
     {% endfor %}
   </div>
-
   <div id="detail-container" class="mt-5"></div>
 </div>
 
