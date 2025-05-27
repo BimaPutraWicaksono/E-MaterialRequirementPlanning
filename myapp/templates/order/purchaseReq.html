@@ -57,16 +57,20 @@
           </table>
           <!-- Button -->
           <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
-            <button class="btn btn-sm btn-info load-detail-btn"
-              data-registered-no="{{ pr.registered_no }}">
+            <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
               Detail
             </button>
+
+            <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">
+              Edit
+            </a>
 
             <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
               {% csrf_token %}
               <button type="submit" class="btn btn-sm btn-danger">Delete</button>
             </form>
           </div>
+
       </div>
     {% empty %}
       <p>Tidak ada Purchase Request.</p>

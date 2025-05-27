@@ -51,5 +51,17 @@ class PurchaseRequestForm(forms.ModelForm):
             'section': forms.Select(attrs={'class': 'form-select', 'id': 'id_section'}),
             'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
             'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'part_order': forms.CheckboxSelectMultiple(),  # checkbox list untuk carline
+            'part_order': forms.CheckboxSelectMultiple(),
+        }
+
+class PurchaseRequestEditForm(forms.ModelForm):
+    class Meta:
+        model = PurchaseRequest
+        fields = ['departement', 'section', 'purchase_by', 'requested', 'part_order']
+        widgets = {
+            'departement': forms.Select(attrs={'class': 'form-select', 'id': 'id_departement'}),
+            'section': forms.Select(attrs={'class': 'form-select', 'id': 'id_section'}),
+            'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
+            'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'part_order': forms.CheckboxSelectMultiple(),
         }

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Purchase Request: {{ registered_no }}</h2>
+
+  <form method="POST" id="purchase-edit-form">
+    {% csrf_token %}
+    <table>
+      <tr><td style="width: 200px;">Registered No</td><td><input type="text" class="form-control" value="{{ registered_no }}" readonly></td></tr>
+      <tr><td>Departement</td><td>{{ form.departement }}</td></tr>
+      <tr><td>Section</td><td>{{ form.section }}</td></tr>
+      <tr><td>Purchase By</td><td>{{ form.purchase_by }}</td></tr>
+      <tr><td>Requested</td><td>{{ form.requested }}</td></tr>
+      <tr>
+        <td>Pilih Carline</td>
+        <td>
+          {{ form.part_order }}
+        </td>
+      </tr>
+    </table>
+
+    <div id="parts-container" class="mt-4"></div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+    <a href="{% url 'purchaseReq' %}" class="btn btn-secondary mt-3 ms-2">Cancel</a>
+  </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+  $(document).ready(function () {
+    // Load sections on departement change
+    $('#id_departement').change(function () {
+      var departementId = $(this).val();
+      $.ajax({
+        url: "{% url 'ajax_load_sections' %}",
+        data: { 'departement_id': departementId },
+        success: function (data) {
+          $("#id_section").html(data);
+        }
+      });
+    });
+
+    function loadParts(selectedCarlines) {
+    if(selectedCarlines.length === 0) {
+        $('#parts-container').html('');
+        return;
+    }
+    $.ajax({
+        url: "{% url 'ajax_get_loading_parts_edit' %}",
+        type: 'POST',
+        data: {
+        'carline_ids': selectedCarlines,
+        'purchase_request_id': '{{ purchase_request.id }}',
+        'csrfmiddlewaretoken': csrftoken
+        },
+        traditional: true,
+        success: function(data) {
+        $('#parts-container').html(data.table);
+        },
+        error: function(xhr, status, error) {
+        console.error("AJAX Error:", status, error);
+        }
+    });
+    }
+
+
+    var checkboxSelector = 'input[name="part_order"]';
+
+    $(checkboxSelector).change(function () {
+      var selected = [];
+      $(checkboxSelector + ':checked').each(function () {
+        selected.push($(this).val());
+      });
+      loadParts(selected);
+    });
+
+    var preselected = [];
+    $(checkboxSelector + ':checked').each(function() {
+      preselected.push($(this).val());
+    });
+    if(preselected.length > 0) {
+      loadParts(preselected);
+    }
+  });
+
+</script>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 {% load user_tags %}
 <div class="p-3 border">
   <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
-  <div class="mt-2 mb-2">
+  <div class="d-flex mt-2 mb-2">
     <table style="width: auto;" >
       <tr>
         <td><strong>Departement</strong></td>
@@ -19,10 +19,8 @@
         <td><strong>Date</strong></td>
         <td>: {{ purchase_request.date }}</td>
       </tr>
-      <tr>
-        <td><strong>Total Amount</strong></td>
-        <td>: {{ purchase_request.total_amount }}</td>
-      </tr>
+    </table>
+    <table style="width: auto;" >
       <tr>
         <td><strong>Status</strong></td>
         <td>: {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}</td>
@@ -68,6 +66,12 @@
           <tr><td colspan="8" class="text-center">Tidak ada item.</td></tr>
         {% endfor %}
       </tbody>
+    </table>
+    <table style="width: auto;" >
+      <tr>
+        <td><strong>AMOUNT</strong></td>
+        <td><strong>: Rp. {{ purchase_request.total_amount }}</strong></td>
+      </tr>
     </table>
   </div>
 

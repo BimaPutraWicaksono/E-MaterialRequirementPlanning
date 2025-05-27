@@ -61,7 +61,8 @@ urlpatterns = [
     path('purchase-request/approve/<str:registered_no>/', views_order.approve_purchase_request, name='approve_purchase_request'),
     
     path('purchase-request/delete/<str:registered_no>/', views_order.delete_purchase_request, name='delete_purchase_request'),
-
+    path('purchase-request/edit/<str:registered_no>/', views_order.purchase_request_edit, name='purchase_request_edit'),
+    path('ajax/get-loading-parts-edit/', views_order.ajax_get_loading_parts_edit, name='ajax_get_loading_parts_edit'),
     
     path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
