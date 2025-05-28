@@ -6,85 +6,141 @@
     <h2>Purchase Request Form</h2>
     <form method="POST" id="purchase-form">
       {% csrf_token %}
-      
-      <!-- Form fields seperti departement, section, purchase_by, dll -->
-      <table>
-        <tr><td style="width: 200px;">Registered No</td><td>{{ form.registered_no }}</td></tr>
-        <tr><td>Departement</td><td>{{ form.departement }}</td></tr>
-        <tr><td>Section</td><td>{{ form.section }}</td></tr>
-        <tr><td>Purchase By</td><td>{{ form.purchase_by }}</td></tr>
-        <tr><td>Requested</td><td>{{ form.requested }}</td></tr>
-        <tr><td>Pilih Carline</td><td>{{ form.part_order }}</td></tr>
-      </table>
-
+      <div class="d-flex mt-2 mb-2">
+        <table style="width: auto;">
+          <tr>
+            <td><strong>Registered No</strong></td>
+            <td>:{{ form.registered_no }}</td>
+          </tr>
+          <tr>
+            <td><strong>Departement</strong></td>
+            <td>:{{ form.departement }}</td>
+          </tr>
+          <tr>
+            <td><strong>Section</strong></td>
+            <td>:{{ form.section }}</td>
+          </tr>
+        </table>
+        <table style="width: auto;">
+          <tr>
+            <td><strong>Purchase By</strong></td>
+            <td>:{{ form.purchase_by }}</td>
+          </tr>
+          <tr>
+            <td><strong>Requested</strong></td>
+            <td>:{{ form.requested }}</td>
+          </tr>
+          <tr>
+            <td><strong>Pilih Carline</strong></td>
+            <td>:{{ form.part_order }}</td>
+          </tr>
+        </table>
+      </div>
       <div id="loading-parts-table-container" class="mt-4"></div>
-
       <div class="mt-3">
         <h5>Total Amount: <span id="total-amount-display">0</span></h5>
       </div>
-
       <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
-
-      <button type="submit" class="btn btn-primary mt-3">Submit</button>
+      <button type="submit" class="btn btn-primary btn-sm mt-2 mb-2 justify-content-end">Submit</button>
     </form>
   {% endif %}
+  {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" %}
   <h4>Daftar Purchase Request</h4>
-  <div class="d-flex justify-content-start align-items-start mb-4"> 
-    {% for pr in requests %}
-      <div class="mb-2 p-2 mr-2 border">
-          <!-- Info Table -->
-          <table>
-            <tr>
-              <td><strong>Registered No</strong></td>
-              <td>: {{ pr.registered_no }}</td>
-            </tr>
-            <tr>
-              <td><strong>Requested</strong></td>
-              <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
-            </tr>
-            <tr>
-              <td><strong>SPV Approve</strong></td>
-              <td>: 
-                {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
-              </td>
-            </tr>
-            <tr>
-              <td><strong>SSPV Approve</strong></td>
-              <td>: 
-                {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
-              </td>
-            </tr>
-          </table>
-          <!-- Button -->
-          <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
-            <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-              Detail
-            </button>
+    <div class="d-flex justify-content-start align-items-start mb-4"> 
+      {% for pr in requests %}
+        <div class="mb-2 p-2 mr-2 border">
+            <!-- Info Table -->
+            <table>
+              <tr>
+                <td><strong>Registered No</strong></td>
+                <td>: {{ pr.registered_no }}</td>
+              </tr>
+              <tr>
+                <td><strong>Requested</strong></td>
+                <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
+              </tr>
+              <tr>
+                <td><strong>SPV Approve</strong></td>
+                <td>: 
+                  {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>SSPV Approve</strong></td>
+                <td>: 
+                  {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+                </td>
+              </tr>
+            </table>
+            <!-- Button -->
+            <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
+              {% if request.user|has_group:"Admin" %} 
+                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                  Detail
+                </button>
+                <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">
+                  Edit
+                </a>
+                <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              {% endif %}
+              {% if request.user|has_group:"Supervisor" %} 
+                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                  Approve
+                </button>
+              {% endif %}
+            </div>
+        </div>
+      {% empty %}
+        <p>Tidak ada Purchase Request.</p>
+      {% endfor %}
+    </div>
+    <div id="detail-container" class="mt-5"></div>
+  {% endif %}
+  {% if request.user|has_group:"SeniorSupervisor" %} 
+    <h4>Daftar Purchase Request</h4>
+    <div class="d-flex justify-content-start align-items-start mb-4"> 
+      {% for pr in requests %}
+        {% if pr.approve_spv %}
+          <div class="mb-2 p-2 mr-2 border">
+            <!-- Info Table -->
+            <table>
+              <tr>
+                <td><strong>Registered No</strong></td>
+                <td>: {{ pr.registered_no }}</td>
+              </tr>
+              <tr>
+                <td><strong>Requested</strong></td>
+                <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
+              </tr>
+              <tr>
+                <td><strong>SPV Approve</strong></td>
+                <td>: ✅</td>
+              </tr>
+              <tr>
+                <td><strong>SSPV Approve</strong></td>
+                <td>: 
+                  {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+                </td>
+              </tr>
+            </table>
 
-            <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">
-              Edit
-            </a>
-
-            <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-            </form>
+            <!-- Button -->
+            <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
+              <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                Approve
+              </button>
+            </div>
           </div>
-
-      </div>
-    {% empty %}
-      <p>Tidak ada Purchase Request.</p>
-    {% endfor %}
-  </div>
-  {% comment %} {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  {% endif %} {% endcomment %}
-  <div id="detail-container" class="mt-5"></div>
+        {% endif %}
+      {% empty %}
+        <p>Tidak ada Purchase Request.</p>
+      {% endfor %}
+    </div>
+    <div id="detail-container" class="mt-5"></div>
+  {% endif %}
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

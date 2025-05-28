@@ -29,28 +29,30 @@
           
           <td>{{ part.part_name }}</td>
           <td>{{ part.terminal }}</td>
-
           <td>
-            <input type="number" step="0.01" 
-                   class="form-control avg-round" 
-                   readonly
-                   value="{% if existing %}{{ existing.result_average_round }}{% else %}{{ part.average_round }}{% endif %}">
+            <span class="form-control-plaintext avg-round">
+              {% if existing %}
+                {{ existing.result_average_round|floatformat:-1 }}
+              {% else %}
+                {{ part.average_round|floatformat:-1 }}
+              {% endif %}
+            </span>
           </td>
-
           <td>
             <input type="number" step="0.01" 
                    name="estimated_price" 
                    class="form-control est-price" 
                    value="{% if existing %}{{ existing.estimated_price }}{% endif %}">
           </td>
-
           <td>
-            <input type="text" 
-                   class="form-control amount" 
-                   readonly 
-                   value="{% if existing %}{{ existing.amount }}{% else %}0{% endif %}">
+            <span class="form-control-plaintext amount">
+              {% if existing %}
+                {{ existing.amount }}
+              {% else %}
+                0
+              {% endif %}
+            </span>
           </td>
-
           <td>
             <input type="date" 
                    name="deadline" 

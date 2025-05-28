@@ -44,7 +44,7 @@
           <th>Budget Ref No</th>
           <th>Part Name</th>
           <th>Terminal</th>
-          <th>Average</th>
+          <th>Quantity</th>
           <th>Estimated Price</th>
           <th>Amount</th>
           <th>Deadline</th>
@@ -57,7 +57,7 @@
             <td>{{ item.budget_ref_no }}</td>
             <td>{{ item.loading_part_result.part_name }}</td>
             <td>{{ item.loading_part_result.terminal }}</td>
-            <td>{{ item.result_average_round }}</td>
+            <td>{{ item.result_average_round|floatformat:-1 }}</td>
             <td>{{ item.estimated_price }}</td>
             <td>{{ item.amount }}</td>
             <td>{{ item.deadline }}</td>
