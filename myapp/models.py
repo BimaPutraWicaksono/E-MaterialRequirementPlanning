@@ -332,7 +332,7 @@ class Supplier(models.Model):
 
 
 class PurchaseOrder(models.Model):
-    registered_no = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE)
+    registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
     date = models.DateField(auto_now_add=True)
     term = models.CharField(max_length=100)
     delivery = models.DateField(null=True, blank=True)
