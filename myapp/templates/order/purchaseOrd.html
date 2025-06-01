@@ -1,7 +1,48 @@
-{% extends "base.html" %} {% block content %} {% load user_tags %}
-<div class="container">
-  <div class="main-content">
-    
-  </div>
+{% extends "base.html" %}
+{% load user_tags %}
+{% block content %}
+<div class="container mt-4">
+  <h4>Purchase Order</h4>
+    <div class="d-flex justify-content-start align-items-start mb-4"> 
+      {% for pr in requests %}
+        {% if pr.approve_spv and pr.approve_sspv %}
+        <div class="mb-2 p-2 mr-2 border">
+            <!-- Info Table -->
+            <table>
+              <tr>
+                <td><strong>Registered No</strong></td>
+                <td>: {{ pr.registered_no }}</td>
+              </tr>
+            </table>
+            <!-- Button -->
+            <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
+                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                  Detail
+                </button>
+            </div>
+        </div>
+        {% endif %}
+      {% empty %}
+        <p>Tidak ada Purchase Request.</p>
+      {% endfor %}
+    </div>
+    <div id="detail-container" class="mt-5"></div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Event delegation untuk tombol load-detail-btn
+    $(document).on("click", ".load-detail-btn", function() {
+      const registeredNo = $(this).data("registered-no");
+
+      fetch(`/e-mrp/purchase-order/detail/${registeredNo}/`)
+        .then(response => response.json())
+        .then(data => {
+          $("#detail-container").html(data.html);
+        })
+        .catch(error => console.error("Error fetching detail:", error));
+    });
+  });
+</script>
 {% endblock %}

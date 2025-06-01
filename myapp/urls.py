@@ -4,6 +4,7 @@ from . import views
 from . import views_view
 from . import views_sparepart
 from . import views_order
+from . import views_ordered
 from . import views_auth
 
 
@@ -52,7 +53,7 @@ urlpatterns = [
     path('master/departement/create/', views_order.create_departement, name='create_departement'),
     path('master/section/create/', views_order.create_section, name='create_section'),
      
-    #order
+    #purchase request
     path('purchase-request/', views_order.purchaseReq, name='purchaseReq'),
     path('ajax/get-loading-parts/', views_order.ajax_get_loading_parts, name='ajax_get_loading_parts'),
     path('ajax/load-sections/', views_order.ajax_load_sections, name='ajax_load_sections'),
@@ -64,7 +65,11 @@ urlpatterns = [
     path('purchase-request/edit/<str:registered_no>/', views_order.purchase_request_edit, name='purchase_request_edit'),
     path('ajax/get-loading-parts-edit/', views_order.ajax_get_loading_parts_edit, name='ajax_get_loading_parts_edit'),
     
-    path('purchaseOrd/', views_order.purchaseOrd, name='purchaseOrd'),
+    # purchase order
+    path('purchase-order/', views_ordered.purchaseReq, name='purchaseOrd'),
+    path('purchase-order/detail/<str:registered_no>/', views_ordered.purchase_order_detail, name='purchase_order_detail'),
+    
+    # no
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),

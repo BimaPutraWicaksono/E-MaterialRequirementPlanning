@@ -1,6 +1,6 @@
 {% load user_tags %}
 <div class="p-3 border">
-  <h4>Registered No: {{ purchase_request.registered_no }}</h4>
+  <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
   <div class="d-flex mt-2 mb-2">
     <table style="width: auto;" >
       <tr>
@@ -74,32 +74,6 @@
       </tr>
     </table>
   </div>
-
-  <form method="POST" action="{% url 'approve_purchase_request' purchase_request.registered_no %}">
-    {% csrf_token %}
-
-    {% if request.user|has_group:"Supervisor" %}
-      <div class="mb-3">
-        <label for="approve_spv" class="form-label">Approved by Supervisor:</label>
-        <select name="action" id="approve_spv" class="form-select">
-          <option value="approve_spv" {% if purchase_request.approve_spv %}selected{% endif %}>Yes</option>
-          <option value="disapprove_spv" {% if purchase_request.approve_spv == False %}selected{% endif %}>No</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-success">Submit Supervisor Approval</button>
-    {% endif %}
-
-    {% if request.user|has_group:"SeniorSupervisor" %}
-      <div class="mb-3">
-        <label for="approve_sspv" class="form-label">Approved by Senior Supervisor:</label>
-        <select name="action" id="approve_sspv" class="form-select">
-          <option value="approve_sspv" {% if purchase_request.approve_sspv %}selected{% endif %}>Yes</option>
-          <option value="disapprove_sspv" {% if purchase_request.approve_sspv == False %}selected{% endif %}>No</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Submit Senior Supervisor Approval</button>
-    {% endif %}
-  </form>
 </div>
 <script>
   new DataTable('#table_approve');

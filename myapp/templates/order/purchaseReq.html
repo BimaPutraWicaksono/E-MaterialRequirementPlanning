@@ -44,54 +44,123 @@
       <button type="submit" class="btn btn-primary btn-sm mt-2 mb-2 justify-content-end">Submit</button>
     </form>
   {% endif %}
-  {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" %}
-  <h4>Daftar Purchase Request</h4>
+  {% if request.user|has_group:"Admin" %}
+    <h4>Purchase Request List</h4>
+
+    <!-- Bagian 1 -->
+    <h5>Belum Ada Persetujuan</h5>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      {% for pr in requests %}
+        {% if pr.approve_spv == None and pr.approve_sspv == None %}
+          <div class="mb-2 p-2 mr-2 border">
+            <table>
+              <tr><td><strong>Registered No</strong></td><td>: {{ pr.registered_no }}</td></tr>
+              <tr><td><strong>Requested</strong></td><td>: {{ pr.requested|yesno:"✅,❌" }}</td></tr>
+              <tr><td><strong>SPV Approve</strong></td><td>: {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}</td></tr>
+              <tr><td><strong>SSPV Approve</strong></td><td>: {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}</td></tr>
+            </table>
+            <div class="text-end d-flex gap-2 mt-2">
+              <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">Edit</a>
+              <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      {% empty %}
+        <p>Tidak ada Purchase Request.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Bagian 2 -->
+    <h5>Salah Satu Sudah Disetujui</h5>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      {% for pr in requests %}
+        {% if pr.approve_spv == True and pr.approve_sspv != False or pr.approve_sspv == True and pr.approve_spv != False %}
+          <div class="mb-2 p-2 mr-2 border">
+            <table>
+              <tr><td><strong>Registered No</strong></td><td>: {{ pr.registered_no }}</td></tr>
+              <tr><td><strong>Requested</strong></td><td>: {{ pr.requested|yesno:"✅,❌" }}</td></tr>
+              <tr><td><strong>SPV Approve</strong></td><td>: {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}</td></tr>
+              <tr><td><strong>SSPV Approve</strong></td><td>: {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}</td></tr>
+            </table>
+            <div class="text-end d-flex gap-2 mt-2">
+              <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">Edit</a>
+              <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Bagian 3 -->
+    <h5>Ditolak</h5>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      {% for pr in requests %}
+        {% if pr.approve_spv == False or pr.approve_sspv == False %}
+          <div class="mb-2 p-2 mr-2 border">
+            <table>
+              <tr><td><strong>Registered No</strong></td><td>: {{ pr.registered_no }}</td></tr>
+              <tr><td><strong>Requested</strong></td><td>: {{ pr.requested|yesno:"✅,❌" }}</td></tr>
+              <tr><td><strong>SPV Approve</strong></td><td>: {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}</td></tr>
+              <tr><td><strong>SSPV Approve</strong></td><td>: {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}</td></tr>
+            </table>
+            <div class="text-end d-flex gap-2 mt-2">
+              <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">Edit</a>
+              <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div id="detail-container" class="mt-5"></div>
+  {% endif %}
+  {% if request.user|has_group:"Supervisor" %}
+    <h4>Purchase Request List</h4>
     <div class="d-flex justify-content-start align-items-start mb-4"> 
       {% for pr in requests %}
         <div class="mb-2 p-2 mr-2 border">
-            <!-- Info Table -->
-            <table>
-              <tr>
-                <td><strong>Registered No</strong></td>
-                <td>: {{ pr.registered_no }}</td>
-              </tr>
-              <tr>
-                <td><strong>Requested</strong></td>
-                <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
-              </tr>
-              <tr>
-                <td><strong>SPV Approve</strong></td>
-                <td>: 
-                  {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>SSPV Approve</strong></td>
-                <td>: 
-                  {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
-                </td>
-              </tr>
-            </table>
-            <!-- Button -->
-            <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
-              {% if request.user|has_group:"Admin" %} 
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                  Detail
-                </button>
-                <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">
-                  Edit
-                </a>
-                <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-              {% endif %}
-              {% if request.user|has_group:"Supervisor" %} 
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                  Approve
-                </button>
-              {% endif %}
-            </div>
+          <!-- Info Table -->
+          <table>
+            <tr>
+              <td><strong>Registered No</strong></td>
+              <td>: {{ pr.registered_no }}</td>
+            </tr>
+            <tr>
+              <td><strong>Requested</strong></td>
+              <td>: {{ pr.requested|yesno:"✅,❌" }}</td>
+            </tr>
+            <tr>
+              <td><strong>SPV Approve</strong></td>
+              <td>: 
+                {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>SSPV Approve</strong></td>
+              <td>: 
+                {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Button -->
+          <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
+            <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+              Approve
+            </button>
+          </div>
         </div>
       {% empty %}
         <p>Tidak ada Purchase Request.</p>
@@ -99,11 +168,12 @@
     </div>
     <div id="detail-container" class="mt-5"></div>
   {% endif %}
+
   {% if request.user|has_group:"SeniorSupervisor" %} 
     <h4>Daftar Purchase Request</h4>
     <div class="d-flex justify-content-start align-items-start mb-4"> 
       {% for pr in requests %}
-        {% if pr.approve_spv %}
+        {% if pr.approve_spv and not pr.approve_sspv %}
           <div class="mb-2 p-2 mr-2 border">
             <!-- Info Table -->
             <table>
@@ -216,5 +286,16 @@
         .catch(error => console.error("Error fetching detail:", error));
     });
   });
+
+  function toggleSection(sectionId, button) {
+    const section = document.getElementById(sectionId);
+    if (section.style.display === "none") {
+      section.style.display = "block";
+      button.innerText = "Sembunyikan";
+    } else {
+      section.style.display = "none";
+      button.innerText = button.dataset.label;
+    }
+  }
 </script>
 {% endblock %}

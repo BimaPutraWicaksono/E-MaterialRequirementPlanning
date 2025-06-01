@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from myapp.models import Departement, Section
@@ -36,11 +36,9 @@ def create_section(request):
             messages.error(request, 'Semua field Section harus diisi.')
     return redirect('master_departement_section')
 
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.contrib import messages
 from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section
 from .form import PurchaseRequestForm
 
@@ -183,7 +181,6 @@ def approve_purchase_request(request, registered_no):
         return redirect('purchaseReq')  # redirect ke list atau halaman lain sesuai kebutuhan
 
 from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
 from .models import PurchaseRequest
 
 def delete_purchase_request(request, registered_no):
@@ -195,7 +192,7 @@ def delete_purchase_request(request, registered_no):
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from .models import PurchaseRequest, RequestItem
+from .models import RequestItem
 from .form import PurchaseRequestForm, PurchaseRequestEditForm
 
 def purchase_request_edit(request, registered_no):
@@ -253,9 +250,6 @@ def purchase_request_edit(request, registered_no):
         'purchase_request': pr,
     }
     return render(request, 'order/purchase_request_edit.html', context)
-
-
-from django.template.loader import render_to_string
 
 @login_required
 def ajax_get_loading_parts_edit(request):
