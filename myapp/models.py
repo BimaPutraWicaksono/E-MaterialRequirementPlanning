@@ -331,16 +331,16 @@ class Supplier(models.Model):
         return self.name
 
 
-# class PurchaseOrder(models.Model):
-#     registered_no = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE)
-#     date = models.DateField(auto_now_add=True)
-#     term = models.CharField(max_length=100)
-#     delivery = models.DateField(auto_now_add=True)
-#     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-#     shipped_by = models.CharField(max_length=100)
+class PurchaseOrder(models.Model):
+    registered_no = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    term = models.CharField(max_length=100)
+    delivery = models.DateField(null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    shipped_by = models.CharField(max_length=100)
     
-#     def __str__(self):
-#         return f"Request {self.registered_no}"
+    def __str__(self):
+        return f"Request {self.registered_no}"
 
-#     class Meta:
-#         db_table = 'purchase_order'
+    class Meta:
+        db_table = 'purchase_order'

@@ -73,6 +73,12 @@
         <td><strong>: Rp. {{ purchase_request.total_amount }}</strong></td>
       </tr>
     </table>
+    <h5 class="mt-4">Create Purchase Order</h5>
+    <form method="POST" id="purchase-order-form">
+      {% csrf_token %}
+      {{ po_form.as_p }}
+      <button type="submit" class="btn btn-primary mt-2">Save Purchase Order</button>
+    </form>
   </div>
 </div>
 <script>

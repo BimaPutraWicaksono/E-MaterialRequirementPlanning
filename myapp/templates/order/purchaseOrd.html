@@ -31,18 +31,52 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  $(document).ready(function () {
-    // Event delegation untuk tombol load-detail-btn
-    $(document).on("click", ".load-detail-btn", function() {
-      const registeredNo = $(this).data("registered-no");
+  $(document).on("click", ".load-detail-btn", function () {
+    const registeredNo = $(this).data("registered-no");
 
-      fetch(`/e-mrp/purchase-order/detail/${registeredNo}/`)
-        .then(response => response.json())
-        .then(data => {
-          $("#detail-container").html(data.html);
-        })
-        .catch(error => console.error("Error fetching detail:", error));
-    });
+    fetch(`/e-mrp/purchase-order/detail/${registeredNo}/`)
+      .then(response => response.json())
+      .then(data => {
+        $("#detail-container").html(data.html);
+
+        // Setelah form dimuat, tambahkan hidden input ke form
+        const form = $("#purchase-order-form");
+        if (form.length > 0) {
+          // Hapus input sebelumnya jika ada
+          form.find("input[name=registered_no]").remove();
+          // Tambahkan input tersembunyi berisi registeredNo
+          form.append(`<input type="hidden" name="registered_no" value="${registeredNo}">`);
+        }
+      })
+      .catch(error => console.error("Error fetching detail:", error));
   });
+
+  // Form submission
+  $(document).on("submit", "#purchase-order-form", function (e) {
+    e.preventDefault();
+    const form = $(this);
+    const registeredNo = form.find("input[name=registered_no]").val();
+
+    fetch(`/e-mrp/purchase-order/detail/${registeredNo}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": form.find("input[name=csrfmiddlewaretoken]").val(),
+        "Accept": "application/json",
+      },
+      body: new FormData(this)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Purchase Order berhasil disimpan.");
+        location.reload();
+      } else {
+        alert("Terjadi kesalahan.");
+      }
+    })
+    .catch(err => console.error("Submit error:", err));
+  });
+
+
 </script>
 {% endblock %}

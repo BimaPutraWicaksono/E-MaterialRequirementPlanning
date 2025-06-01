@@ -67,7 +67,7 @@ urlpatterns = [
     
     # purchase order
     path('purchase-order/', views_ordered.purchaseOrd, name='purchaseOrd'),
-    path('purchase-order/detail/<str:registered_no>/', views_ordered.purchase_order_detail, name='purchase_order_detail'),
+    path('purchase-order/detail/<str:registered_no>/', views_ordered.purchase_order_detail_view, name='purchase_order_detail'),
     
     # supplier
     path('supplier/', views_ordered.supplier_list, name='supplier_list'),

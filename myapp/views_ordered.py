@@ -74,19 +74,36 @@ def purchaseOrd(request):
         'requests': requests,
     })
 
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from .models import PurchaseRequest, RequestItem, PurchaseOrder
+from .form import PurchaseOrderForm
+
 @login_required
-def purchase_order_detail(request, registered_no):
-    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    items = RequestItem.objects.filter(purchase_request=pr)
+@login_required
+def purchase_order_detail_view(request, registered_no):
+    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request)  # Perbaikan di sini
 
-    context = {
-        'purchase_request': pr,
-        'request_items': items,
-    }
+    if request.method == 'POST':
+        form = PurchaseOrderForm(request.POST)
+        if form.is_valid():
+            po = form.save(commit=False)
+            po.registered_no = purchase_request
+            po.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-    # Render template ke string
-    html = render_to_string('partials/purchase_order_detail.html', context, request=request)
+    form = PurchaseOrderForm()
+    html = render(request, 'partials/purchase_order_detail.html', {
+        'purchase_request': purchase_request,
+        'request_items': request_items,
+        'po_form': form,
+    }).content.decode('utf-8')
+
     return JsonResponse({'html': html})
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
