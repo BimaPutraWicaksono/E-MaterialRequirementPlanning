@@ -315,3 +315,32 @@ class RequestItem(models.Model):
 
     def __str__(self):
         return f"Item for Request {self.purchase_request.registered_no if self.purchase_request else 'N/A'}"
+
+from django.db import models
+
+class Supplier(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    tel_no = models.CharField(max_length=100, unique=True)
+    fax_no = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = 'supplier'
+
+    def __str__(self):
+        return self.name
+
+
+# class PurchaseOrder(models.Model):
+#     registered_no = models.ForeignKey(PurchaseRequest, on_delete=models.CASCADE)
+#     date = models.DateField(auto_now_add=True)
+#     term = models.CharField(max_length=100)
+#     delivery = models.DateField(auto_now_add=True)
+#     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+#     shipped_by = models.CharField(max_length=100)
+    
+#     def __str__(self):
+#         return f"Request {self.registered_no}"
+
+#     class Meta:
+#         db_table = 'purchase_order'

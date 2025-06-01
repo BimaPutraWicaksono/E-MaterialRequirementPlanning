@@ -66,8 +66,14 @@ urlpatterns = [
     path('ajax/get-loading-parts-edit/', views_order.ajax_get_loading_parts_edit, name='ajax_get_loading_parts_edit'),
     
     # purchase order
-    path('purchase-order/', views_ordered.purchaseReq, name='purchaseOrd'),
+    path('purchase-order/', views_ordered.purchaseOrd, name='purchaseOrd'),
     path('purchase-order/detail/<str:registered_no>/', views_ordered.purchase_order_detail, name='purchase_order_detail'),
+    
+    # supplier
+    path('supplier/', views_ordered.supplier_list, name='supplier_list'),
+    path('supplier/add/', views_ordered.supplier_create, name='supplier_create'),
+    path('supplier/edit/<int:pk>/', views_ordered.supplier_update, name='supplier_update'),
+    path('supplier/delete/<int:pk>/', views_ordered.supplier_delete, name='supplier_delete'),
     
     # no
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),

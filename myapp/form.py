@@ -65,3 +65,12 @@ class PurchaseRequestEditForm(forms.ModelForm):
             'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'part_order': forms.CheckboxSelectMultiple(),
         }
+
+# form supplier
+from django import forms
+from .models import Supplier
+
+class SupplierForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['name', 'address', 'tel_no', 'fax_no']

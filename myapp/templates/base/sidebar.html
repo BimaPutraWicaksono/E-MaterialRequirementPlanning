@@ -136,6 +136,12 @@
                 <p>Dept/Sect</p>
               </a>
             </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'supplier_list' %}active{% endif %}">
+              <a href="{% url 'supplier_list' %}" class="nav-link">
+                <i class="nav-icon fas fa-user-cog"></i>
+                <p>Supplier</p>
+              </a>
+            </li>
             {% endif %}
             <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
               <a href="{% url 'about' %}" class="nav-link">

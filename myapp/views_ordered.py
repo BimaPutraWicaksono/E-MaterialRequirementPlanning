@@ -7,7 +7,7 @@ from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section
 from .form import PurchaseRequestForm
 
 @login_required
-def purchaseReq(request):
+def purchaseOrd(request):
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
@@ -87,3 +87,40 @@ def purchase_order_detail(request, registered_no):
     # Render template ke string
     html = render_to_string('partials/purchase_order_detail.html', context, request=request)
     return JsonResponse({'html': html})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from .models import Supplier
+from .form import SupplierForm
+
+def supplier_list(request):
+    suppliers = Supplier.objects.all()
+    return render(request, 'order/supplier/supplier.html', {'suppliers': suppliers})
+
+def supplier_create(request):
+    if request.method == 'POST':
+        form = SupplierForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm()
+    return render(request, 'order/supplier/supplier_form.html', {'form': form, 'title': 'Add Supplier'})
+
+def supplier_update(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    if request.method == 'POST':
+        form = SupplierForm(request.POST, instance=supplier)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm(instance=supplier)
+    return render(request, 'order/supplier/supplier_form.html', {'form': form, 'title': 'Edit Supplier'})
+
+def supplier_delete(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    if request.method == 'POST':
+        supplier.delete()
+        return redirect('supplier_list')
+    return render(request, 'order/supplier/supplier_confirm_delete.html', {'supplier': supplier})
