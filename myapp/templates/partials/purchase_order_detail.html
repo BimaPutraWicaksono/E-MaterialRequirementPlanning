@@ -86,6 +86,30 @@
       </tr>
     </table>
   </div>
+  {% if created_po %}
+  <hr>
+  <div class="mt-4 p-3 border">
+    <h5>Saved Purchase Order</h5>
+    <table class="table table-bordered">
+      <tr>
+        <th>PO Number</th>
+        <td>{{ created_po.registered_no.registered_no }}</td>
+      </tr>
+      <tr>
+        <th>Supplier</th>
+        <td>{{ created_po.supplier.name }}</td>
+      </tr>
+      <tr>
+        <th>PO Date</th>
+        <td>{{ created_po.date }}</td>
+      </tr>
+      <tr>
+        <th>Shipeped By</th>
+        <td>{{ created_po.shipped_by }}</td>
+      </tr>
+    </table>
+  </div>
+  {% endif %}
 </div>
 <script>
   new DataTable('#table_approve');

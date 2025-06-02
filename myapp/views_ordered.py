@@ -84,6 +84,7 @@ from .form import PurchaseOrderForm
 def purchase_order_detail_view(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
     request_items = RequestItem.objects.filter(purchase_request=purchase_request)  # Perbaikan di sini
+    po = PurchaseOrder.objects.filter(registered_no=purchase_request).last()
 
     if request.method == 'POST':
         form = PurchaseOrderForm(request.POST)
@@ -100,6 +101,7 @@ def purchase_order_detail_view(request, registered_no):
         'purchase_request': purchase_request,
         'request_items': request_items,
         'po_form': form,
+        'created_po': po, 
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
