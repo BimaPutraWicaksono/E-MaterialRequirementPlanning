@@ -41,6 +41,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section
 from .form import PurchaseRequestForm
+from django.db.models import Q
 
 @login_required
 def purchaseReq(request):
@@ -65,7 +66,6 @@ def purchaseReq(request):
 
             pr.items.all().delete()
 
-            # Kumpulkan semua part unik dari seluruh carline
             all_parts = []
             seen_partdesk_ids = set()
 
@@ -103,12 +103,40 @@ def purchaseReq(request):
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
-    
-    requests = PurchaseRequest.objects.all().order_by('-date')
+
+    # Filter berdasarkan query parameter
+    # Default berdasarkan grup user
+    if 'filter' in request.GET:
+        filter_option = request.GET['filter']
+    else:
+        if request.user.groups.filter(name='Karyawan').exists():
+            filter_option = 'all'
+        elif request.user.groups.filter(name='Supervisor').exists():
+            filter_option = 'pending'
+        elif request.user.groups.filter(name='SeniorSupervisor').exists():
+            filter_option = 'approved_spv'
+        else:
+            filter_option = 'all'  # fallback
+
+    requests = PurchaseRequest.objects.all()
+
+    if filter_option == 'pending':
+        requests = requests.filter(approve_spv__isnull=True, approve_sspv__isnull=True)
+    elif filter_option == 'approved_spv':
+        requests = requests.filter(approve_spv=True, approve_sspv__isnull=True)
+    elif filter_option == 'fully_approved':
+        requests = requests.filter(approve_spv=True, approve_sspv=True)
+    elif filter_option == 'rejected':
+        requests = requests.filter(Q(approve_spv=False) | Q(approve_sspv=False))
+
+    requests = requests.order_by('-date')
+
     return render(request, 'order/purchaseReq.html', {
         'form': form,
         'requests': requests,
+        'filter_option': filter_option,
     })
+
 
 @login_required
 def ajax_get_loading_parts(request):
@@ -151,7 +179,6 @@ def purchase_request_detail(request, registered_no):
     return JsonResponse({'html': html})
 
 
-@login_required
 @login_required
 def approve_purchase_request(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)

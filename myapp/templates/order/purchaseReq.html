@@ -3,54 +3,179 @@
 {% block content %}
 <div class="container mt-4">
   {% if request.user|has_group:"Karyawan" %}
-    <h2>Purchase Request Form</h2>
-    <form method="POST" id="purchase-form">
-      {% csrf_token %}
-      <div class="d-flex mt-2 mb-2">
-        <table style="width: auto;">
-          <tr>
-            <td><strong>Registered No</strong></td>
-            <td>:{{ form.registered_no }}</td>
-          </tr>
-          <tr>
-            <td><strong>Departement</strong></td>
-            <td>:{{ form.departement }}</td>
-          </tr>
-          <tr>
-            <td><strong>Section</strong></td>
-            <td>:{{ form.section }}</td>
-          </tr>
-        </table>
-        <table style="width: auto;">
-          <tr>
-            <td><strong>Purchase By</strong></td>
-            <td>:{{ form.purchase_by }}</td>
-          </tr>
-          <tr>
-            <td><strong>Requested</strong></td>
-            <td>:{{ form.requested }}</td>
-          </tr>
-          <tr>
-            <td><strong>Pilih Carline</strong></td>
-            <td>:{{ form.part_order }}</td>
-          </tr>
-        </table>
-      </div>
-      <div id="loading-parts-table-container" class="mt-4"></div>
-      <div class="mt-3">
-        <h5>Total Amount: <span id="total-amount-display">0</span></h5>
-      </div>
-      <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
-      <button type="submit" class="btn btn-primary btn-sm mt-2 mb-2 justify-content-end">Submit</button>
-    </form>
-  {% endif %}
-  {% if request.user|has_group:"Karyawan" %} 
-    <h4>Purchase Request List</h4>
+  <h4>Purchase Request List</h4>
+  <form method="get" class="mb-3">
+    <label for="filter" class="form-label">Filter Approval:</label>
+    <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
+      <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+      <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Waiting Approve</option>
+      <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
+      <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV & SSPV</option>
+      <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+  </form>
+  <table class="table table-bordered mt-3" id='table_purchase_req'>
+    <thead class="table-light text-center">
+      <tr>
+        <th class="text-start">Registered No</th>
+        <th>Requested</th>
+        <th>SPV Approve</th>
+        <th>SSPV Approve</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pr in requests %}
+      <tr>
+        <td class="text-start align-middle">{{ pr.registered_no }}</td>
+        <td class="text-center align-middle">{{ pr.requested|yesno:"✅,❌" }}</td>
+        <td class="text-center align-middle">
+          {% if pr.approve_spv == True %}✅{% elif pr.approve_spv == False %}❌{% else %}-{% endif %}
+        </td>
+        <td class="text-center align-middle">
+          {% if pr.approve_sspv == True %}✅{% elif pr.approve_sspv == False %}❌{% else %}-{% endif %}
+        </td>
+        <td class="text-center align-middle">
+          <div class="d-flex justify-content-center">
+            <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+            <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mx-2">Edit</a>
+            <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center">Tidak ada Purchase Request.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#purchaseModal">
+    Add Purchase Request
+  </button>
+  <!-- Modal form purchase request -->
+  <div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document" style="position: absolute; right: 4%; width: 80vw; max-width: 1140px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="purchaseModalLabel">Purchase Request Form</h5>
+        </div>
+        <div class="modal-body">
+          <form method="POST" id="purchase-form">
+            {% csrf_token %}
+            <div class="d-flex mt-2 mb-2 justify-content-between">
+              <table style="width: auto;">
+                <tr>
+                  <td><strong>Registered No</strong></td>
+                  <td>: {{ form.registered_no }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Departement</strong></td>
+                  <td>: {{ form.departement }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Section</strong></td>
+                  <td>: {{ form.section }}</td>
+                </tr>
+              </table>
+              <table style="width: auto;">
+                <tr>
+                  <td><strong>Purchase By</strong></td>
+                  <td>: {{ form.purchase_by }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Requested</strong></td>
+                  <td>: {{ form.requested }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Pilih Carline</strong></td>
+                  <td>: {{ form.part_order }}</td>
+                </tr>
+              </table>
+            </div>
 
-    <table class="table table-bordered mt-3">
-      <thead class="table-light text-center">
+            <div id="loading-parts-table-container" class="mt-4"></div>
+
+            <div class="mt-3">
+              <h5>Total Amount: <span id="total-amount-display">0</span></h5>
+            </div>
+            <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
+
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+              <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="detail-container" class="mt-5"></div>
+  {% endif %}
+
+  {% if request.user|has_group:"Supervisor" %}
+    <h4>Purchase Request List</h4>
+    <form method="get" class="mb-3">
+      <label for="filter" class="form-label">Filter Approval:</label>
+      <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
+        <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+        <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Menunggu Persetujuan</option>
+        <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
+        <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV & SSPV</option>
+        <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+      </select>
+    </form>
+    {% if requests %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle text-center" id='table_purchase_req'>
+        <thead class="table-light">
+          <tr>
+            <th>Registered No</th>
+            <th>Requested</th>
+            <th>SPV Approve</th>
+            <th>SSPV Approve</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pr in requests %}
+          <tr>
+            <td>{{ pr.registered_no }}</td>
+            <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
+            <td>{% if pr.approve_spv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_spv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
+            <td>{% if pr.approve_sspv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_sspv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
+            <td><button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p>Tidak ada Purchase Request.</p>
+    {% endif %}
+    <div id="detail-container" class="mt-5"></div>
+  {% endif %}
+
+  {% if request.user|has_group:"SeniorSupervisor" %}
+  <h4>Daftar Purchase Request</h4>
+  <form method="get" class="mb-3">
+    <label for="filter" class="form-label">Filter Approval:</label>
+    <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
+      <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+      <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Menunggu Persetujuan</option>
+      <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
+      <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV & SSPV</option>
+      <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+  </form>
+  {% with filtered_requests=requests|dictsort:"registered_no" %}
+  {% if filtered_requests %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle text-center" id='table_purchase_req'>
+      <thead class="table-light">
         <tr>
-          <th class="text-start">Registered No</th>
+          <th>Registered No</th>
           <th>Requested</th>
           <th>SPV Approve</th>
           <th>SSPV Approve</th>
@@ -58,170 +183,29 @@
         </tr>
       </thead>
       <tbody>
-        {% for pr in requests %}
-          <tr>
-            <td class="text-start align-middle">{{ pr.registered_no }}</td>
-            <td class="text-center align-middle">{{ pr.requested|yesno:"✅,❌" }}</td>
-            <td class="text-center align-middle">
-              {% if pr.approve_spv == True %}
-                ✅
-              {% elif pr.approve_spv == False %}
-                ❌
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td class="text-center align-middle">
-              {% if pr.approve_sspv == True %}
-                ✅
-              {% elif pr.approve_sspv == False %}
-                ❌
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td class="text-center align-middle">
-              <div class="d-flex justify-content-center">
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mr-2 ml-2">Edit</a>
-                <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="5" class="text-center">Tidak ada Purchase Request.</td>
-          </tr>
+        {% for pr in filtered_requests %}
+        <tr>
+          <td>{{ pr.registered_no }}</td>
+          <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
+          <td>{% if pr.approve_spv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_spv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
+          <td>{% if pr.approve_sspv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_sspv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
+          <td><button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button></td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
-
-    <div id="detail-container" class="mt-5"></div>
+  </div>
+  {% else %}
+  <p>Tidak ada Purchase Request.</p>
   {% endif %}
-
-
-  {% if request.user|has_group:"Supervisor" %}
-    <h4>Purchase Request List</h4>
-
-    {% if requests %}
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle text-center">
-          <thead class="table-light">
-            <tr>
-              <th>Registered No</th>
-              <th>Requested</th>
-              <th>SPV Approve</th>
-              <th>SSPV Approve</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for pr in requests %}
-              <tr>
-                <td>{{ pr.registered_no }}</td>
-                <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
-                <td>
-                  {% if pr.approve_spv == True %}
-                    <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_spv == False %}
-                    <i class="fas fa-times text-danger"></i>
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
-                <td>
-                  {% if pr.approve_sspv == True %}
-                    <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_sspv == False %}
-                    <i class="fas fa-times text-danger"></i>
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                    Approve
-                  </button>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <p>Tidak ada Purchase Request.</p>
-    {% endif %}
-
-    <div id="detail-container" class="mt-5"></div>
+  {% endwith %}
+  <div id="detail-container" class="mt-5"></div>
   {% endif %}
-
-
-  {% if request.user|has_group:"SeniorSupervisor" %}
-    <h4>Daftar Purchase Request</h4>
-
-    {% with filtered_requests=requests|dictsort:"registered_no" %}
-      {% if filtered_requests %}
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped align-middle text-center">
-            <thead class="table-light">
-              <tr>
-                <th>Registered No</th>
-                <th>Requested</th>
-                <th>SPV Approve</th>
-                <th>SSPV Approve</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for pr in filtered_requests %}
-                <tr>
-                  <td>{{ pr.registered_no }}</td>
-                  <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
-                  <td>
-                    {% if pr.approve_spv == True %}
-                      <i class="fas fa-check text-success"></i>
-                    {% elif pr.approve_spv == False %}
-                      <i class="fas fa-times text-danger"></i>
-                    {% else %}
-                      -
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if pr.approve_sspv == True %}
-                      <i class="fas fa-check text-success"></i>
-                    {% elif pr.approve_sspv == False %}
-                      <i class="fas fa-times text-danger"></i>
-                    {% else %}
-                      -
-                    {% endif %}
-                  </td>
-                  <td>
-                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                      Approve
-                    </button>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <p>Tidak ada Purchase Request.</p>
-      {% endif %}
-    {% endwith %}
-
-    <div id="detail-container" class="mt-5"></div>
-  {% endif %}
-
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
-    // Event ketika pilihan carline berubah
     $("input[name='part_order']").change(function () {
       let carlineIds = [];
       $("input[name='part_order']:checked").each(function () {
@@ -238,7 +222,7 @@
           },
           success: function (response) {
             $('#loading-parts-table-container').html(response.table);
-            updateAmounts(); // update total saat parts muncul
+            updateAmounts();
           },
           error: function (xhr, status, error) {
             console.error("AJAX error:", error);
@@ -250,7 +234,6 @@
       }
     });
 
-    // Event ketika departement berubah untuk load sections
     $('#id_departement').change(function () {
       var departementId = $(this).val();
       $.ajax({
@@ -262,7 +245,6 @@
       });
     });
 
-    // Fungsi update amount dan total amount
     function updateAmounts() {
       let total = 0;
       $('.part-row').each(function () {
@@ -276,13 +258,10 @@
       $('#total-amount-hidden').val(total.toFixed(2));
     }
 
-    // Update total amount saat input harga berubah
     $(document).on('input', '.est-price', updateAmounts);
 
-    // Event delegation untuk tombol load-detail-btn (daftar purchase request sebelumnya)
     $(document).on("click", ".load-detail-btn", function() {
       const registeredNo = $(this).data("registered-no");
-
       fetch(`/e-mrp/purchase-request/detail/${registeredNo}/`)
         .then(response => response.json())
         .then(data => {
@@ -291,16 +270,5 @@
         .catch(error => console.error("Error fetching detail:", error));
     });
   });
-
-  function toggleSection(sectionId, button) {
-    const section = document.getElementById(sectionId);
-    if (section.style.display === "none") {
-      section.style.display = "block";
-      button.innerText = "Sembunyikan";
-    } else {
-      section.style.display = "none";
-      button.innerText = button.dataset.label;
-    }
-  }
 </script>
 {% endblock %}
