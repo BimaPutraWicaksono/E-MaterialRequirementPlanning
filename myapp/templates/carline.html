@@ -7,7 +7,7 @@
   <div class="card mt-5">
     <div class="card-lite">
       <div class="d-flex justify-content-between mb-3 mt-2">
-        {% if request.user|has_group:"Admin" %}
+        {% if request.user|has_group:"Karyawan" %}
         <form method="post" class="form-inline">
           {% csrf_token %}
           <div class="form-group mx-sm-3 mb-2">
@@ -53,7 +53,7 @@
                     class="export-btn"
                     ><i class="far fa-folder-open mr-2"></i>View</a
                   >
-                  {%endif%} {% if request.user|has_group:"Admin" %}
+                  {%endif%} {% if request.user|has_group:"Karyawan" %}
                   <a
                     href="{% url 'sixProductionPlan' name=carline.name %}"
                     class="export-btn"
@@ -69,7 +69,7 @@
                 </div>
 
                 <div>
-                  {% if request.user|has_group:"Admin" %}
+                  {% if request.user|has_group:"Karyawan" %}
                   <button
                     class="reset-btn d-flex"
                     onclick="confirmDelete('{{ carline.id }}')"
@@ -89,7 +89,7 @@
     </div>
     <div class="d-flex justify-content-end mt-3">
       <div>
-        {% if request.user|has_group:"Admin" %}
+        {% if request.user|has_group:"Karyawan" %}
         <form
           method="post"
           style="display: inline"

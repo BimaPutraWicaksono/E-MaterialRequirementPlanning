@@ -34,7 +34,7 @@
         <div class="stroke">
           <h6>Stroke Part</h6>
         </div>
-        {% if request.user|has_group:"Admin" %}
+        {% if request.user|has_group:"Karyawan" %}
         <div class="stroke">
           <h6>Actions</h6>
         </div>
@@ -62,7 +62,7 @@
                   {% else %} No Image {% endif %}
                 </td>
                 <td class="text-center col-3">{{ applicator.loading }}</td>
-                {% if request.user|has_group:"Admin" %}
+                {% if request.user|has_group:"Karyawan" %}
                 <td class="text-center col-3">
                   <button
                     class="export-btn"
@@ -188,7 +188,7 @@
     </div>
 
     <!-- Button to Open the Add Modal -->
-    {% if request.user|has_group:"Admin" %}
+    {% if request.user|has_group:"Karyawan" %}
     <div class="d-flex justify-content-end mt-3">
       <button class="upload-btn" onclick="openModal('addModal')">
         <i class="fas fa-plus mr-1"></i>

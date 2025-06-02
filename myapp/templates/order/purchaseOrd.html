@@ -3,30 +3,35 @@
 {% block content %}
 <div class="container mt-4">
   <h4>Purchase Order</h4>
-    <div class="d-flex justify-content-start align-items-start mb-4"> 
-      {% for pr in requests %}
-        {% if pr.approve_spv and pr.approve_sspv %}
-        <div class="mb-2 p-2 mr-2 border">
-            <!-- Info Table -->
-            <table>
+  {% if requests %}
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light text-center">
+          <tr>
+            <th>Registered No</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pr in requests %}
+            {% if pr.approve_spv and pr.approve_sspv %}
               <tr>
-                <td><strong>Registered No</strong></td>
-                <td>: {{ pr.registered_no }}</td>
+                <td>{{ pr.registered_no }}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                    Detail
+                  </button>
+                </td>
               </tr>
-            </table>
-            <!-- Button -->
-            <div class="text-end d-flex gap-2 mt-2" style="flex-shrink: 0;">
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                  Detail
-                </button>
-            </div>
-        </div>
-        {% endif %}
-      {% empty %}
-        <p>Tidak ada Purchase Order.</p>
-      {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div id="detail-container" class="mt-5"></div>
+  {% else %}
+    <p>Tidak ada Purchase Order.</p>
+  {% endif %}
+  <div id="detail-container" class="mt-5"></div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

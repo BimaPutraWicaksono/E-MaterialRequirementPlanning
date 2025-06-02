@@ -14,7 +14,7 @@ class Command(BaseCommand):
         {
             "username": "karyawan",
             "password": "1234",
-            "group": "Guest",
+            "group": "Karyawan",
         },
         {
             "username": "supervisor",
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         },
     ]
 
-    groups = ["Admin", "Guest", "Supervisor", "SeniorSupervisor"]
+    groups = ["Admin", "Karyawan", "Supervisor", "SeniorSupervisor"]
 
     def handle(self, *args, **kwargs):
         # Buat grup jika belum ada
