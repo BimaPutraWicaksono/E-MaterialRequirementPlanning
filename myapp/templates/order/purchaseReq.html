@@ -49,7 +49,7 @@
 
     <!-- Bagian 1 -->
     <h5>Belum Ada Persetujuan</h5>
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 justify-content-start">
       {% for pr in requests %}
         {% if pr.approve_spv == None and pr.approve_sspv == None %}
           <div class="mb-2 p-2 mr-2 border">
@@ -76,7 +76,7 @@
 
     <!-- Bagian 2 -->
     <h5>Salah Satu Sudah Disetujui</h5>
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 justify-content-start">
       {% for pr in requests %}
         {% if pr.approve_spv == True and pr.approve_sspv != False or pr.approve_sspv == True and pr.approve_spv != False %}
           <div class="mb-2 p-2 mr-2 border">
@@ -88,11 +88,11 @@
             </table>
             <div class="text-end d-flex gap-2 mt-2">
               <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">Edit</a>
+              {% comment %} <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success ml-2 mr-2">Edit</a>
               <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-              </form>
+              </form> {% endcomment %}
             </div>
           </div>
         {% endif %}
@@ -101,7 +101,7 @@
 
     <!-- Bagian 3 -->
     <h5>Ditolak</h5>
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 justify-content-start">
       {% for pr in requests %}
         {% if pr.approve_spv == False or pr.approve_sspv == False %}
           <div class="mb-2 p-2 mr-2 border">

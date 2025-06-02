@@ -152,6 +152,7 @@ def purchase_request_detail(request, registered_no):
 
 
 @login_required
+@login_required
 def approve_purchase_request(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
 
@@ -161,24 +162,37 @@ def approve_purchase_request(request, registered_no):
         if request.user.groups.filter(name='Supervisor').exists():
             if action == 'approve_spv':
                 pr.approve_spv = True
+                pr.reason_spv = ''
                 pr.save()
-                messages.success(request, "Purchase Request disetujui oleh Supervisor.")
+                messages.success(request, "Disetujui oleh Supervisor.")
             elif action == 'disapprove_spv':
+                reason = request.POST.get('reason_spv', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Supervisor.")
+                    return redirect(request.META.get('HTTP_REFERER'))
                 pr.approve_spv = False
+                pr.reason_spv = reason
                 pr.save()
-                messages.success(request, "Purchase Request ditolak oleh Supervisor.")
+                messages.success(request, "Ditolak oleh Supervisor.")
 
         elif request.user.groups.filter(name='SeniorSupervisor').exists():
             if action == 'approve_sspv':
                 pr.approve_sspv = True
+                pr.reason_sspv = ''
                 pr.save()
-                messages.success(request, "Purchase Request disetujui oleh Senior Supervisor.")
+                messages.success(request, "Disetujui oleh Senior Supervisor.")
             elif action == 'disapprove_sspv':
+                reason = request.POST.get('reason_sspv', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Senior Supervisor.")
+                    return redirect(request.META.get('HTTP_REFERER'))
                 pr.approve_sspv = False
+                pr.reason_sspv = reason
                 pr.save()
-                messages.success(request, "Purchase Request ditolak oleh Senior Supervisor.")
+                messages.success(request, "Ditolak oleh Senior Supervisor.")
 
-        return redirect('purchaseReq')  # redirect ke list atau halaman lain sesuai kebutuhan
+        return redirect('purchaseReq')
+
 
 from django.shortcuts import get_object_or_404, redirect
 from .models import PurchaseRequest

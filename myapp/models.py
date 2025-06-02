@@ -290,6 +290,9 @@ class PurchaseRequest(models.Model):
 
     approve_spv = models.BooleanField(null=True, blank=True)
     approve_sspv = models.BooleanField(null=True, blank=True)
+    reason_spv = models.TextField(blank=True, null=True)
+    reason_sspv = models.TextField(blank=True, null=True)
+
 
     def __str__(self):
         return f"Request {self.registered_no} by {self.purchase_by}"

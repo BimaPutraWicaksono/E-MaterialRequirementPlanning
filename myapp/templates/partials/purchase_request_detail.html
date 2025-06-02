@@ -1,6 +1,6 @@
 {% load user_tags %}
 <div class="p-3 border">
-  <h4>Registered No: {{ purchase_request.registered_no }}</h4>
+  <h4>Registered No: {{ purchase_request.registered_no }}</h4> 
   <div class="d-flex mt-2 mb-2">
     <table style="width: auto;" >
       <tr>
@@ -32,6 +32,18 @@
       <tr>
         <td><strong>SSPV Approved</strong></td>
         <td>: {% if purchase_request.approve_sspv == True %}✅{% elif purchase_request.approve_sspv == False %}❌{% else %}-{% endif %}</td>
+      </tr>
+      <tr>
+        
+          {% if purchase_request.reason_spv %}
+            <td class='btn-danger'>SPV Reason</td>
+            <td><strong>:</strong> {{ purchase_request.reason_spv }}</td>
+          {% endif %}
+          {% if purchase_request.reason_sspv %}
+            <td class='btn-danger'>SSPV Reason</td>
+            <td><strong>:</strong> {{ purchase_request.reason_sspv }}</td>
+          {% endif %}
+       
       </tr>
     </table>
   </div>
@@ -81,10 +93,14 @@
     {% if request.user|has_group:"Supervisor" %}
       <div class="mb-3">
         <label for="approve_spv" class="form-label">Approved by Supervisor:</label>
-        <select name="action" id="approve_spv" class="form-select">
+        <select name="action" id="approve_spv" class="form-select" onchange="toggleReason('spv')">
           <option value="approve_spv" {% if purchase_request.approve_spv %}selected{% endif %}>Yes</option>
           <option value="disapprove_spv" {% if purchase_request.approve_spv == False %}selected{% endif %}>No</option>
         </select>
+      </div>
+      <div class="mb-3" id="reason_spv_div" style="display: none;">
+        <label for="reason_spv" class="form-label">Reason for Disapproval (Supervisor):</label>
+        <input type="text" name="reason_spv" id="reason_spv" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_spv }}">
       </div>
       <button type="submit" class="btn btn-success">Submit Supervisor Approval</button>
     {% endif %}
@@ -92,10 +108,14 @@
     {% if request.user|has_group:"SeniorSupervisor" %}
       <div class="mb-3">
         <label for="approve_sspv" class="form-label">Approved by Senior Supervisor:</label>
-        <select name="action" id="approve_sspv" class="form-select">
+        <select name="action" id="approve_sspv" class="form-select" onchange="toggleReason('sspv')">
           <option value="approve_sspv" {% if purchase_request.approve_sspv %}selected{% endif %}>Yes</option>
           <option value="disapprove_sspv" {% if purchase_request.approve_sspv == False %}selected{% endif %}>No</option>
         </select>
+      </div>
+      <div class="mb-3" id="reason_sspv_div" style="display: none;">
+        <label for="reason_sspv" class="form-label">Reason for Disapproval (Senior Supervisor):</label>
+        <input type="text" name="reason_sspv" id="reason_sspv" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_sspv }}">
       </div>
       <button type="submit" class="btn btn-primary">Submit Senior Supervisor Approval</button>
     {% endif %}
@@ -103,4 +123,15 @@
 </div>
 <script>
   new DataTable('#table_approve');
+
+  function toggleReason(role) {
+    const select = document.getElementById(`approve_${role}`);
+    const reasonDiv = document.getElementById(`reason_${role}_div`);
+    reasonDiv.style.display = select.value === `disapprove_${role}` ? 'block' : 'none';
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    toggleReason('spv');
+    toggleReason('sspv');
+  });
 </script>
