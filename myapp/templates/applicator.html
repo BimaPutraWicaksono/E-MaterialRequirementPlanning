@@ -2,32 +2,32 @@
 
 <div class="container">
   <h3>APPLICATOR PART</h3>
-  <div class="mb-4">
-    <table class="table-bordered" id='table_applicator'>
-      <thead>
+ 
+  <table class="table table-bordered mt-3" id='table_applicator'>
+    <thead class="table-light text-center">
+      <tr>
+        <th class="text-start">Applicator Number</th>
+        <th class="text-center">Part Name</th>
+        <th class="text-center">Part Number</th>
+        <th class="text-center">Marking</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for part_desk in part_desks %}
         <tr>
-          <th>Applicator Number</th>
-          <th>Part Name</th>
-          <th>Part Number</th>
-          <th>Marking</th>
+          <td class="text-start align-middle">{{ part_desk.applicatorNumber.applicatorNumber }}</td>
+          <td class="text-center align-middle">{{ part_desk.partName.partName }}</td>
+          <td class="text-center align-middle">{{ part_desk.partNumber }} {{ part_desk.partCode }}</td>
+          <td class="text-center align-middle">{{ part_desk.level }} {{ part_desk.marking|floatformat:"0" }}</td>
         </tr>
-      </thead>
-      <tbody>
-        {% for part_desk in part_desks %}
+      {% empty %}
         <tr>
-          <td>{{ part_desk.applicatorNumber.applicatorNumber }}</td>
-          <td>{{ part_desk.partName.partName }}</td>
-          <td>{{ part_desk.partNumber }} {{ part_desk.partCode }}</td>
-          <td>{{ part_desk.level }} {{ part_desk.marking|floatformat:"0" }}</td>
+          <td colspan="4" class="text-center">No results found</td>
         </tr>
-        {% empty %}
-        <tr>
-          <td colspan="4">No results found</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% endfor %}
+    </tbody>
+  </table>
+
 
   <!-- Upload Section -->
   {% if request.user|has_group:"Karyawan" %}

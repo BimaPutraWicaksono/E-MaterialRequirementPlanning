@@ -252,6 +252,8 @@ def purchase_request_edit(request, registered_no):
 
             total_amount = 0
             for i, item_id in enumerate(item_ids):
+                if not item_id.strip():  # skip if empty or whitespace
+                    continue
                 try:
                     item = RequestItem.objects.get(id=item_id, purchase_request=pr)
                 except RequestItem.DoesNotExist:

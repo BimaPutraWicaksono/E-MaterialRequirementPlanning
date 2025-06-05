@@ -2,28 +2,60 @@
 {% load user_tags %}
 {% block content %}
 <div class="container mt-4">
-  <h4>Purchase Order</h4>
+  <h4>PURCHASE ORDER</h4>
   {% if requests %}
     <div class="table-responsive mb-4">
-      <table class="table table-bordered table-striped align-middle">
+      <table class="table table-bordered table-striped align-middle mt-3" id="table_order">
         <thead class="table-light text-center">
           <tr>
-            <th>Registered No</th>
-            <th class="text-center">Action</th>
+            <th class="text-start">Registered No</th>
+            <th>Requested</th>
+            <th>SPV Approve</th>
+            <th>SSPV Approve</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for pr in requests %}
             {% if pr.approve_spv and pr.approve_sspv %}
-              <tr>
-                <td>{{ pr.registered_no }}</td>
-                <td class="text-center">
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                    Detail
-                  </button>
-                </td>
-              </tr>
+            <tr>
+              <td class="text-start align-middle">{{ pr.registered_no }}</td>
+              <td class="text-center align-middle">
+                {% if pr.requested %}
+                  <i class="fas fa-check text-success"></i>
+                {% else %}
+                  <i class="fas fa-times text-danger"></i>
+                {% endif %}
+              </td>
+              <td class="text-center align-middle">
+                {% if pr.approve_spv == True %}
+                  <i class="fas fa-check text-success"></i>
+                {% elif pr.approve_spv == False %}
+                  <i class="fas fa-times text-danger"></i>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="text-center align-middle">
+                {% if pr.approve_sspv == True %}
+                  <i class="fas fa-check text-success"></i>
+                {% elif pr.approve_sspv == False %}
+                  <i class="fas fa-times text-danger"></i>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="text-center align-middle">
+                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
+                  Detail
+                </button>
+              </td>
+            </tr>
             {% endif %}
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center">Tidak ada data yang disetujui oleh SPV dan SSPV.</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

@@ -1,53 +1,68 @@
 {% load user_tags %}
 <div class="p-3 border">
-  <h4>Detail Purchase Order: {{ purchase_request.registered_no }}</h4>
+  <h4 class="text-center"><u>PURCHASE ORDER</u></h4>
   <div class="d-flex mt-2 mb-2">
-    <div class="d-flex mt-2 mb-2">
-      <table style="width: auto;" >
-        <tr>
-          <td><strong>Departement</strong></td>
-          <td>: {{ purchase_request.departement.name }}</td>
-        </tr>
-        <tr>
-          <td><strong>Section</strong></td>
-          <td>: {{ purchase_request.section.name }}</td>
-        </tr>
-        <tr>
-          <td><strong>Purchase By</strong></td>
-          <td>: {{ purchase_request.purchase_by }}</td>
-        </tr>
-        <tr>
-          <td><strong>Date</strong></td>
-          <td>: {{ purchase_request.date }}</td>
-        </tr>
-      </table>
-      <table style="width: auto;" >
-        <tr>
-          <td><strong>Status</strong></td>
-          <td>: {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}</td>
-        </tr>
-        <tr>
-          <td><strong>SPV Approved</strong></td>
-          <td>: {% if purchase_request.approve_spv == True %}✅{% elif purchase_request.approve_spv == False %}❌{% else %}-{% endif %}</td>
-        </tr>
-        <tr>
-          <td><strong>SSPV Approved</strong></td>
-          <td>: {% if purchase_request.approve_sspv == True %}✅{% elif purchase_request.approve_sspv == False %}❌{% else %}-{% endif %}</td>
-        </tr>
-      </table>
-    </div>
-    <div>
-      <table>
-        <h5 class="mt-4">Create Purchase Order</h5>
-        <form method="POST" id="purchase-order-form">
-          {% csrf_token %}
-          {{ po_form.as_p }}
-          <button type="submit" class="btn btn-primary mt-2">Save Purchase Order</button>
-        </form>
-      </table>
+    <div class="d-flex mt-2 mb-2 justify-content-between">
+      {% if created_po.supplier and created_po.supplier.name and created_po.supplier.address %}
+        <div class="p-3 border">
+          <table class="clean-table">
+            <tr>
+              <td class="text-center"><strong>{{ created_po.supplier.name }}</strong></td>
+            </tr>
+            <tr>
+              <td class="text-center">{{ created_po.supplier.address }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">Tel No: {{ created_po.supplier.tel_no }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">Fax No: {{ created_po.supplier.fax_no }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">CC: {{ created_po.supplier.name }}</td>
+            </tr>
+          </table>
+        </div>
+      {% endif %}
+      <!-- Tabel Kanan -->
+      <div style="margin-left: 50px;">
+        {% if created_po %}
+          <table class="clean-table">
+            <tr><td><strong>Registered No</strong></td><td>:</td><td>{{ purchase_request.registered_no }}</td></tr>
+            <tr><td><strong>Date</strong></td><td>:</td><td>{{ created_po.date }}</td></tr>
+            <tr><td><strong>Term</strong></td><td>:</td><td>{{ created_po.term }}</td></tr>
+            <tr><td><strong>Delivery</strong></td><td>:</td><td>{{ created_po.delivery }}</td></tr>
+            <tr><td><strong>Shipped By</strong></td><td>:</td><td>{{ created_po.shipped_by }}</td></tr>
+          </table>
+        {% endif %}
+      </div>
     </div>
   </div>
-  <h5>Parts Order</h5>
+  {% if not created_po %}
+    <div>
+      <form method="POST" id="purchase-order-form">
+        {% csrf_token %}
+        <table class="clean-table">
+          <tr>
+            <td><strong>Term</strong></td><td>:</td>
+            <td>{{ po_form.term }}</td>
+          </tr>
+          <tr>
+            <td><strong>Delivery</strong></td><td>:</td>
+            <td>{{ po_form.delivery }}</td>
+          </tr>
+          <tr>
+            <td><strong>Supplier</strong></td><td>:</td>
+            <td>{{ po_form.supplier }}</td>
+          </tr>
+          <tr>
+            <td><strong>Shipped By</strong></td><td>:</td>
+            <td>{{ po_form.shipped_by }}</td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  {% endif %}
   <div class="table-responsive mt-2 mb-2">
     <table class="table table-bordered mt-3" id="table_approve">
       <thead class="table-secondary">
@@ -86,31 +101,31 @@
       </tr>
     </table>
   </div>
-  {% if created_po %}
-  <hr>
-  <div class="mt-4 p-3 border">
-    <h5>Saved Purchase Order</h5>
-    <table class="table table-bordered">
-      <tr>
-        <th>PO Number</th>
-        <td>{{ created_po.registered_no.registered_no }}</td>
-      </tr>
-      <tr>
-        <th>Supplier</th>
-        <td>{{ created_po.supplier.name }}</td>
-      </tr>
-      <tr>
-        <th>PO Date</th>
-        <td>{{ created_po.date }}</td>
-      </tr>
-      <tr>
-        <th>Shipeped By</th>
-        <td>{{ created_po.shipped_by }}</td>
-      </tr>
-    </table>
-  </div>
+  {% if not created_po %}
+    <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
+      Save Purchase Order
+    </button>
   {% endif %}
 </div>
+<style>
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .clean-table td {
+    padding: 4px 8px;
+    background-color: white;
+    vertical-align: top;
+  }
+  .clean-table td:first-child {
+    white-space: nowrap;
+    width: 150px;
+  }
+  .clean-table td:nth-child(2) {
+    width: 10px;
+  }
+</style>
 <script>
   new DataTable('#table_approve');
 </script>

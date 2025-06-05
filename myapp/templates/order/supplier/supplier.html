@@ -1,31 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Supplier List</h2>
-<a href="{% url 'supplier_create' %}" class="btn btn-success mb-3">Add Supplier</a>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Supplier List</h2>
+    <a href="{% url 'supplier_create' %}" class="btn btn-success">Add Supplier</a>
+  </div>
 
-<table class="table table-bordered">
-    <thead>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light text-center">
         <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Tel No</th>
-            <th>Fax No</th>
-            <th>Actions</th>
+          <th>Name</th>
+          <th>Address</th>
+          <th>Tel No</th>
+          <th>Fax No</th>
+          <th>Actions</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% for supplier in suppliers %}
         <tr>
-            <td>{{ supplier.name }}</td>
-            <td>{{ supplier.address }}</td>
-            <td>{{ supplier.tel_no }}</td>
-            <td>{{ supplier.fax_no }}</td>
-            <td>
-                <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-sm btn-warning">Edit</a>
-                <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-sm btn-danger">Delete</a>
-            </td>
+          <td class="text-start">{{ supplier.name }}</td>
+          <td class="text-start">{{ supplier.address }}</td>
+          <td class="text-center">{{ supplier.tel_no }}</td>
+          <td class="text-center">{{ supplier.fax_no }}</td>
+          <td class="text-center">
+            <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-sm btn-success mx-2">Edit</a>
+            <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-sm btn-danger">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center">No suppliers available.</td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

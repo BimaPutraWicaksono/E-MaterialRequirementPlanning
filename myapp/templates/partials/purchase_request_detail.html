@@ -1,53 +1,73 @@
 {% load user_tags %}
 <div class="p-3 border">
-  <h4>Registered No: {{ purchase_request.registered_no }}</h4> 
+  <h3>PURCHASE REQUISITION</h3>
+
   <div class="d-flex mt-2 mb-2">
-    <table style="width: auto;" >
-      <tr>
-        <td><strong>Departement</strong></td>
-        <td>: {{ purchase_request.departement.name }}</td>
-      </tr>
-      <tr>
-        <td><strong>Section</strong></td>
-        <td>: {{ purchase_request.section.name }}</td>
-      </tr>
-      <tr>
-        <td><strong>Purchase By</strong></td>
-        <td>: {{ purchase_request.purchase_by }}</td>
-      </tr>
-      <tr>
-        <td><strong>Date</strong></td>
-        <td>: {{ purchase_request.date }}</td>
-      </tr>
+    <table class="clean-table">
+      <tr><td><strong>Date</strong></td><td>:</td><td>{{ purchase_request.date }}</td></tr>
+      <tr><td><strong>Registered No</strong></td><td>:</td><td>{{ purchase_request.registered_no }}</td></tr>
+      <tr><td><strong>Dept/Sec</strong></td><td>:</td><td>{{ purchase_request.departement.name }}/{{ purchase_request.section.name }}</td></tr>
+      <tr><td><strong>Purchase By</strong></td><td>:</td><td>{{ purchase_request.purchase_by }}</td></tr>
     </table>
-    <table style="width: auto;" >
-      <tr>
-        <td><strong>Status</strong></td>
-        <td>: {% if purchase_request.requested %} Requested {% else %} Draft {% endif %}</td>
-      </tr>
-      <tr>
-        <td><strong>SPV Approved</strong></td>
-        <td>: {% if purchase_request.approve_spv == True %}✅{% elif purchase_request.approve_spv == False %}❌{% else %}-{% endif %}</td>
-      </tr>
-      <tr>
-        <td><strong>SSPV Approved</strong></td>
-        <td>: {% if purchase_request.approve_sspv == True %}✅{% elif purchase_request.approve_sspv == False %}❌{% else %}-{% endif %}</td>
-      </tr>
-      <tr>
-        
-          {% if purchase_request.reason_spv %}
-            <td class='btn-danger'>SPV Reason</td>
-            <td><strong>:</strong> {{ purchase_request.reason_spv }}</td>
-          {% endif %}
-          {% if purchase_request.reason_sspv %}
-            <td class='btn-danger'>SSPV Reason</td>
-            <td><strong>:</strong> {{ purchase_request.reason_sspv }}</td>
-          {% endif %}
-       
-      </tr>
-    </table>
+    <div>
+      <table class="table table-bordered text-center" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>SPV Approved</th>
+            <th>SSPV Approved</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {% if purchase_request.requested %}
+                <i class="fas fa-check text-success"></i>
+              {% else %}
+                <i class="fas fa-times text-danger"></i>
+              {% endif %}
+            </td>
+            <td>
+              {% if purchase_request.approve_spv == True %}
+                <i class="fas fa-check text-success"></i>
+              {% elif purchase_request.approve_spv == False %}
+                <i class="fas fa-times text-danger"></i>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if purchase_request.approve_sspv == True %}
+                <i class="fas fa-check text-success"></i>
+              {% elif purchase_request.approve_sspv == False %}
+                <i class="fas fa-times text-danger"></i>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+
+        </tbody>
+      </table>
+      <table class="clean-table">
+        <tr>
+          <td>
+          {% if purchase_request.reason_spv %}SPV Reason{% endif %}
+          </td>
+          <td>
+            {% if purchase_request.reason_spv %}<td>:</td><td>{{ purchase_request.reason_spv }}</td>{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            {% if purchase_request.reason_sspv %}SSPV Reason{% endif %}
+          </td>
+          <td>
+            {% if purchase_request.reason_sspv %}<td>:</td><td>{{ purchase_request.reason_sspv }}</td>{% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
-  <h5>Requested Parts</h5>
   <div class="table-responsive mt-2 mb-2">
     <table class="table table-bordered mt-3" id="table_approve">
       <thead class="table-secondary">
@@ -121,6 +141,25 @@
     {% endif %}
   </form>
 </div>
+<style>
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .clean-table td {
+    padding: 4px 8px;
+    background-color: white;
+    vertical-align: top;
+  }
+  .clean-table td:first-child {
+    white-space: nowrap;
+    width: 150px;
+  }
+  .clean-table td:nth-child(2) {
+    width: 10px;
+  }
+</style>
 <script>
   new DataTable('#table_approve');
 
