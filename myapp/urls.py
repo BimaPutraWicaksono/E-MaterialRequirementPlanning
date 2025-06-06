@@ -75,11 +75,16 @@ urlpatterns = [
     path('supplier/edit/<int:pk>/', views_ordered.supplier_update, name='supplier_update'),
     path('supplier/delete/<int:pk>/', views_ordered.supplier_delete, name='supplier_delete'),
     
+    
+    # shipped
+    path('shipped/', views_ordered.shipped_list, name='shipped_list'),
+    path('shipped/add/', views_ordered.shipped_create, name='shipped_create'),
+    path('shipped/<int:pk>/edit/', views_ordered.shipped_update, name='shipped_update'),
+    path('shipped/<int:pk>/delete/', views_ordered.shipped_delete, name='shipped_delete'),
+    
     # no
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
-     
-    
     
 ]

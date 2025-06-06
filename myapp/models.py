@@ -333,6 +333,15 @@ class Supplier(models.Model):
     def __str__(self):
         return self.name
 
+# shipped
+class Shipped(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'shipped'
 
 class PurchaseOrder(models.Model):
     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
@@ -340,10 +349,11 @@ class PurchaseOrder(models.Model):
     term = models.CharField(max_length=100)
     delivery = models.DateField(null=True, blank=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    shipped_by = models.CharField(max_length=100)
+    shipped_by = models.ForeignKey(Shipped, on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return f"Request {self.registered_no}"
 
     class Meta:
         db_table = 'purchase_order'
+        

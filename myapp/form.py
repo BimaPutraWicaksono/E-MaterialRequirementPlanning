@@ -79,15 +79,31 @@ class SupplierForm(forms.ModelForm):
         model = Supplier
         fields = ['name', 'address', 'tel_no', 'fax_no']
         
+
+
+# shipped
+from django import forms
+from .models import Shipped
+
+class ShippedForm(forms.ModelForm):
+    class Meta:
+        model = Shipped
+        fields = ['name']
+
+
 # order
 from django import forms
 from .models import PurchaseOrder
 
 class PurchaseOrderForm(forms.ModelForm):
+    shipped_by = forms.ModelChoiceField(
+        queryset=Shipped.objects.all(),
+        empty_label="-- Select Shipped By --"
+    )
+
     class Meta:
         model = PurchaseOrder
         fields = ['term', 'delivery', 'supplier', 'shipped_by']
         widgets = {
             'delivery': forms.DateInput(attrs={'type': 'date'}),
         }
-

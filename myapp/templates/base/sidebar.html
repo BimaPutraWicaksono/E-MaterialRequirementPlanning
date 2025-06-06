@@ -142,6 +142,12 @@
                 <p>Supplier</p>
               </a>
             </li>
+            <li class="nav-item {% if request.resolver_match.url_name == 'shipped_list' %}active{% endif %}">
+              <a href="{% url 'shipped_list' %}" class="nav-link">
+                <i class="nav-icon fas fa-user-cog"></i>
+                <p>Shipped</p>
+              </a>
+            </li>
             {% endif %}
             <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
               <a href="{% url 'about' %}" class="nav-link">

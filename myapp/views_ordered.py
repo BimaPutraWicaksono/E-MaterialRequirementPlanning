@@ -143,3 +143,39 @@ def supplier_delete(request, pk):
         supplier.delete()
         return redirect('supplier_list')
     return render(request, 'order/supplier/supplier_confirm_delete.html', {'supplier': supplier})
+
+# shippedfrom django.shortcuts import render, redirect, get_object_or_404
+from .models import Shipped
+from .form import ShippedForm
+
+def shipped_list(request):
+    shippeds = Shipped.objects.all()
+    return render(request, 'order/shipped/shipped.html', {'shippeds': shippeds})
+
+def shipped_create(request):
+    if request.method == 'POST':
+        form = ShippedForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('shipped_list')
+    else:
+        form = ShippedForm()
+    return render(request, 'order/shipped/shipped_form.html', {'form': form})
+
+def shipped_update(request, pk):
+    shipped = get_object_or_404(Shipped, pk=pk)
+    if request.method == 'POST':
+        form = ShippedForm(request.POST, instance=shipped)
+        if form.is_valid():
+            form.save()
+            return redirect('shipped_list')
+    else:
+        form = ShippedForm(instance=shipped)
+    return render(request, 'order/shipped/shipped_form.html', {'form': form})
+
+def shipped_delete(request, pk):
+    shipped = get_object_or_404(Shipped, pk=pk)
+    if request.method == 'POST':
+        shipped.delete()
+        return redirect('shipped_list')
+    return render(request, 'order/shipped/shipped_confirm_delete.html', {'shipped': shipped})
