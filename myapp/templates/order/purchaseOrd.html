@@ -5,57 +5,45 @@
   <h4>PURCHASE ORDER</h4>
   {% if requests %}
     <div class="table-responsive mb-4">
-      <table class="table table-bordered table-striped align-middle mt-3" id="table_order">
+      <table class="table table-bordered mt-3" id='table_purchase_req'>
         <thead class="table-light text-center">
           <tr>
             <th class="text-start">Registered No</th>
-            <th>Requested</th>
-            <th>SPV Approve</th>
-            <th>SSPV Approve</th>
+            <th>Approval</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for pr in requests %}
             {% if pr.approve_spv and pr.approve_sspv %}
-            <tr>
-              <td class="text-start align-middle">{{ pr.registered_no }}</td>
-              <td class="text-center align-middle">
-                {% if pr.requested %}
-                  <i class="fas fa-check text-success"></i>
-                {% else %}
-                  <i class="fas fa-times text-danger"></i>
-                {% endif %}
-              </td>
-              <td class="text-center align-middle">
-                {% if pr.approve_spv == True %}
-                  <i class="fas fa-check text-success"></i>
-                {% elif pr.approve_spv == False %}
-                  <i class="fas fa-times text-danger"></i>
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td class="text-center align-middle">
-                {% if pr.approve_sspv == True %}
-                  <i class="fas fa-check text-success"></i>
-                {% elif pr.approve_sspv == False %}
-                  <i class="fas fa-times text-danger"></i>
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td class="text-center align-middle">
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">
-                  Detail
-                </button>
-              </td>
-            </tr>
+              <tr>
+                <td class="text-start align-middle">{{ pr.registered_no }}</td>
+                <td class="text-center align-middle">
+                  {% if pr.requested and pr.approve_spv is None and pr.approve_sspv is None %}
+                    <span class="badge border border-success rounded px-3 py-2 text-success">SC <i class="fas fa-check"></i></span>
+                  {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is None %}
+                    {% if pr.approve_spv %}
+                      <span class="badge border border-success rounded px-3 py-2 text-success">SPV <i class="fas fa-check"></i></span>
+                    {% else %}
+                      <span class="badge border border-danger rounded px-3 py-2 text-danger">SPV <i class="fas fa-times"></i></span>
+                    {% endif %}
+                  {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is not None %}
+                    {% if pr.approve_sspv %}
+                      <span class="badge border border-success rounded px-3 py-2 text-success">SSPV <i class="fas fa-check"></i></span>
+                    {% else %}
+                      <span class="badge border border-danger rounded px-3 py-2 text-danger">SSPV <i class="fas fa-times"></i></span>
+                    {% endif %}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                </td>
+              </tr>
             {% endif %}
           {% empty %}
-          <tr>
-            <td colspan="5" class="text-center">Tidak ada data yang disetujui oleh SPV dan SSPV.</td>
-          </tr>
+            <tr><td colspan="3" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -76,19 +64,15 @@
       .then(data => {
         $("#detail-container").html(data.html);
 
-        // Setelah form dimuat, tambahkan hidden input ke form
         const form = $("#purchase-order-form");
         if (form.length > 0) {
-          // Hapus input sebelumnya jika ada
           form.find("input[name=registered_no]").remove();
-          // Tambahkan input tersembunyi berisi registeredNo
           form.append(`<input type="hidden" name="registered_no" value="${registeredNo}">`);
         }
       })
       .catch(error => console.error("Error fetching detail:", error));
   });
 
-  // Form submission
   $(document).on("submit", "#purchase-order-form", function (e) {
     e.preventDefault();
     const form = $(this);
@@ -113,7 +97,5 @@
     })
     .catch(err => console.error("Submit error:", err));
   });
-
-
 </script>
 {% endblock %}

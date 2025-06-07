@@ -30,7 +30,7 @@
           <td>{{ part.part_name }}</td>
           <td>{{ part.terminal }}</td>
           <td>
-            <span class="form-control-plaintext avg-round">
+            <span class="form-control-plaintext avg-round">$ 
               {% if existing %}
                 {{ existing.result_average_round|floatformat:-1 }}
               {% else %}
@@ -45,7 +45,7 @@
                    value="{% if existing %}{{ existing.estimated_price }}{% endif %}">
           </td>
           <td>
-            <span class="form-control-plaintext amount">
+            <span class="form-control-plaintext amount">$ 
               {% if existing %}
                 {{ existing.amount }}
               {% else %}

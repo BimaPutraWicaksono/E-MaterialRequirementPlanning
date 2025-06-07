@@ -4,23 +4,25 @@
 <div class="container mt-4">
   {% if request.user|has_group:"Karyawan" %}
   <h3>PURCHASE REQUISITION LIST</h3>
-  <form method="get" class="form-inline mb-3 justify-content-end">
-    <i class="fas fa-filter text-muted mr-2"></i>
-    <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
-      <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
-      <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Waiting Approve</option>
-      <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
-      <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV&SSPV</option>
-      <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-  </form>
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead class="table-light text-center">
       <tr>
         <th class="text-start">Registered No</th>
-        <th>Requested</th>
-        <th>SPV Approve</th>
-        <th>SSPV Approve</th>
+        <th>
+          <div class="d-flex" style="gap: 0.5rem;">
+            <span>Approval</span>
+            <form method="get" style="margin: 0; display: flex; align-items: center; gap: 0.2rem; font-size: 12px;">
+              <i data-feather="filter" style="width: 14px; height: 14px;"></i>
+              <select name="filter" id="filter" class="form-control form-control-sm custom-select-filter" onchange="this.form.submit()" style="max-width: 50px; padding: 2px 4px; font-size: 12px; height: auto;">
+                <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+                <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>SC</option>
+                <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
+                <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>SSPV</option>
+                <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+              </select>
+            </form>
+          </div>
+        </th>
         <th>Action</th>
       </tr>
     </thead>
@@ -29,26 +31,36 @@
       <tr>
         <td class="text-start align-middle">{{ pr.registered_no }}</td>
         <td class="text-center align-middle">
-          {% if pr.requested %}
-            <i class="fas fa-check text-success"></i>
-          {% else %}
-            <i class="fas fa-times text-danger"></i>
-          {% endif %}
-        </td>
-        <td class="text-center align-middle">
-          {% if pr.approve_spv == True %}
-            <i class="fas fa-check text-success"></i>
-          {% elif pr.approve_spv == False %}
-            <i class="fas fa-times text-danger"></i>
-          {% else %}
-            -
-          {% endif %}
-        </td>
-        <td class="text-center align-middle">
-          {% if pr.approve_sspv == True %}
-            <i class="fas fa-check text-success"></i>
-          {% elif pr.approve_sspv == False %}
-            <i class="fas fa-times text-danger"></i>
+          {% if pr.requested and pr.approve_spv is None and pr.approve_sspv is None %}
+            {% if pr.requested %}
+              <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                SC <i class="fas fa-check"></i>
+              </span>
+            {% else %}
+              <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                SC <i class="fas fa-times"></i>
+              </span>
+            {% endif %}
+          {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is None %}
+            {% if pr.approve_spv %}
+              <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                SPV <i class="fas fa-check"></i>
+              </span>
+            {% else %}
+              <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                SPV <i class="fas fa-times"></i>
+              </span>
+            {% endif %}
+          {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is not None %}
+            {% if pr.approve_sspv %}
+              <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                SSPV <i class="fas fa-check"></i>
+              </span>
+            {% else %}
+              <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                SSPV <i class="fas fa-times"></i>
+              </span>
+            {% endif %}
           {% else %}
             -
           {% endif %}
@@ -56,11 +68,13 @@
         <td class="text-center align-middle">
           <div class="d-flex justify-content-center">
             <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-            <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mx-2">Edit</a>
-            <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-            </form>
+            {% if pr.approve_spv is None %}
+              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mx-2">Edit</a>
+              <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            {% endif %}
           </div>
         </td>
       </tr>
@@ -69,9 +83,14 @@
       {% endfor %}
     </tbody>
   </table>
-  <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
-    Add Purchase Request
-  </button>
+  <div class="d-flex">
+    <div class="border border-warning rounded p-2 mt-1">
+      <strong>Note:</strong> The approval flow proceeds as follows: SC <i class="fas fa-long-arrow-alt-right"></i> SPV <i class="fas fa-long-arrow-alt-right"></i> SSPV
+    </div>
+    <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
+      Add Purchase Request
+    </button>
+  </div>
   <!-- Modal form purchase request -->
   <div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document" style="position: absolute; right: 4%; width: 80vw; max-width: 1140px;">
@@ -136,94 +155,160 @@
   {% endif %}
 
   {% if request.user|has_group:"Supervisor" %}
-    <h4>PURCASHE REQUESTION LIST</h4>
-    <form method="get" class="mb-3">
-      <label for="filter" class="form-label">Filter Approval:</label>
-      <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
-        <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
-        <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Menunggu Persetujuan</option>
-        <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
-        <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV & SSPV</option>
-        <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
-      </select>
-    </form>
-    {% if requests %}
-    <div class="table-responsive">
-      <table class="table table-bordered mt-3 mb-3" id='table_purchase_req'>
-        <thead class="table-light">
-          <tr>
-            <th>Registered No</th>
-            <th>Requested</th>
-            <th>SPV Approve</th>
-            <th>SSPV Approve</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for pr in requests %}
-          <tr>
-            <td>{{ pr.registered_no }}</td>
-            <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
-            <td>{% if pr.approve_spv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_spv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
-            <td>{% if pr.approve_sspv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_sspv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
-            <td><button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <p>Tidak ada Purchase Request.</p>
-    {% endif %}
-    <div id="detail-container" class="mt-5"></div>
-  {% endif %}
-
-  {% if request.user|has_group:"SeniorSupervisor" %}
-  <h4>PURCASHE REQUESTION LIST</h4>
-  <form method="get" class="mb-3">
-    <label for="filter" class="form-label">Filter Approval:</label>
-    <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
-      <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
-      <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Menunggu Persetujuan</option>
-      <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>Approval SPV</option>
-      <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>Approval SPV & SSPV</option>
-      <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-  </form>
-  {% with filtered_requests=requests|dictsort:"registered_no" %}
-  {% if filtered_requests %}
-  <div class="table-responsive">
-    <table class="table table-bordered mt-3" id='table_purchase_req'>
-      <thead class="table-light">
+    <h4>PURCHASE REQUESTION LIST</h4>
+    <table class="table table-bordered mt-3" id="table_purchase_req">
+      <thead class="table-light text-center">
         <tr>
-          <th>Registered No</th>
-          <th>Requested</th>
-          <th>SPV Approve</th>
-          <th>SSPV Approve</th>
+          <th class="text-start">Registered No</th>
+          <th>
+            <div class="d-flex" style="gap: 0.5rem;">
+              <span>Approval</span>
+              <form method="get" style="margin: 0; display: flex; align-items: center; gap: 0.2rem; font-size: 12px;">
+                <i data-feather="filter" style="width: 14px; height: 14px;"></i>
+                <select name="filter" id="filter" class="form-control form-control-sm custom-select-filter" onchange="this.form.submit()" style="max-width: 50px; padding: 2px 4px; font-size: 12px; height: auto;">
+                  <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+                  <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>SC</option>
+                  <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
+                  <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>SSPV</option>
+                  <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+              </form>
+            </div>
+          </th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        {% for pr in filtered_requests %}
+        {% for pr in requests %}
         <tr>
-          <td>{{ pr.registered_no }}</td>
-          <td>{{ pr.requested|yesno:'<i class="fas fa-check text-success"></i>,<i class="fas fa-times text-danger"></i>'|safe }}</td>
-          <td>{% if pr.approve_spv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_spv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
-          <td>{% if pr.approve_sspv == True %}<i class="fas fa-check text-success"></i>{% elif pr.approve_sspv == False %}<i class="fas fa-times text-danger"></i>{% else %}-{% endif %}</td>
-          <td><button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button></td>
+          <td class="text-start align-middle">{{ pr.registered_no }}</td>
+          <td class="text-center align-middle">
+            {% if pr.requested and pr.approve_spv is None and pr.approve_sspv is None %}
+              {% if pr.requested %}
+                <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                  SC <i class="fas fa-check"></i>
+                </span>
+              {% else %}
+                <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                  SC <i class="fas fa-times"></i>
+                </span>
+              {% endif %}
+            {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is None %}
+              {% if pr.approve_spv %}
+                <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                  SPV <i class="fas fa-check"></i>
+                </span>
+              {% else %}
+                <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                  SPV <i class="fas fa-times"></i>
+                </span>
+              {% endif %}
+            {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is not None %}
+              {% if pr.approve_sspv %}
+                <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                  SSPV <i class="fas fa-check"></i>
+                </span>
+              {% else %}
+                <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                  SSPV <i class="fas fa-times"></i>
+                </span>
+              {% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td class="text-center align-middle">
+            <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+          </td>
         </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center">Tidak ada Purchase Request.</td></tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
-  {% else %}
-  <p>Tidak ada Purchase Request.</p>
+    <div id="detail-container" class="mt-5"></div>
   {% endif %}
-  {% endwith %}
-  <div id="detail-container" class="mt-5"></div>
+
+
+  {% if request.user|has_group:"SeniorSupervisor" %}
+    <h4>PURCHASE REQUISITION LIST</h4>
+    <table class="table table-bordered mt-3" id='table_purchase_req'>
+      <thead class="table-light text-center">
+        <tr>
+          <th class="text-start">Registered No</th>
+          <th>
+            <div class="d-flex" style="gap: 0.5rem;">
+              <span>Approval</span>
+              <form method="get" style="margin: 0; display: flex; align-items: center; gap: 0.2rem; font-size: 12px;">
+                <i data-feather="filter" style="width: 14px; height: 14px;"></i>
+                <select name="filter" id="filter" class="form-control form-control-sm custom-select-filter" onchange="this.form.submit()" style="max-width: 50px; padding: 2px 4px; font-size: 12px; height: auto;">
+                  <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+                  <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>SC</option>
+                  <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
+                  <option value="fully_approved" {% if filter_option == 'fully_approved' %}selected{% endif %}>SSPV</option>
+                  <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+              </form>
+            </div>
+          </th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% with filtered_requests=requests|dictsort:"registered_no" %}
+        {% if filtered_requests %}
+          {% for pr in filtered_requests %}
+          <tr>
+            <td class="text-start align-middle">{{ pr.registered_no }}</td>
+            <td class="text-center align-middle">
+              {% if pr.requested and pr.approve_spv is None and pr.approve_sspv is None %}
+                {% if pr.requested %}
+                  <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                    SC <i class="fas fa-check"></i>
+                  </span>
+                {% else %}
+                  <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                    SC <i class="fas fa-times"></i>
+                  </span>
+                {% endif %}
+              {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is None %}
+                {% if pr.approve_spv %}
+                  <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                    SPV <i class="fas fa-check"></i>
+                  </span>
+                {% else %}
+                  <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                    SPV <i class="fas fa-times"></i>
+                  </span>
+                {% endif %}
+              {% elif pr.requested is not None and pr.approve_spv is not None and pr.approve_sspv is not None %}
+                {% if pr.approve_sspv %}
+                  <span style="min-width: 130px;" class="badge border border-success rounded px-3 py-2 text-success">
+                    SSPV <i class="fas fa-check"></i>
+                  </span>
+                {% else %}
+                  <span style="min-width: 130px;" class="badge border border-danger rounded px-3 py-2 text-danger">
+                    SSPV <i class="fas fa-times"></i>
+                  </span>
+                {% endif %}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td class="text-center align-middle">
+              <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="3" class="text-center">Tidak ada Purchase Request.</td></tr>
+        {% endif %}
+        {% endwith %}
+      </tbody>
+    </table>
+    <div id="detail-container" class="mt-5"></div>
   {% endif %}
 </div>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
