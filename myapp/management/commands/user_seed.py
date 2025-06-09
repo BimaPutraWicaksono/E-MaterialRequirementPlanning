@@ -10,11 +10,11 @@ class Command(BaseCommand):
 
     users = [
         {"username": "admin", "password": "1234", "group": "Admin", "departement": "IT"},
-        {"username": "karyawan", "password": "1234", "group": "Karyawan", "departement": "Produksi"},
-        {"username": "supervisor", "password": "1234", "group": "Supervisor", "departement": "Produksi"},
-        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor", "departement": "Quality Control"},
-        {"username": "manager", "password": "1234", "group": "Manager", "departement": "Engineering"},
-        {"username": "factory_manager", "password": "1234", "group": "FactoryManager", "departement": "Factory"},
+        {"username": "karyawan", "password": "1234", "group": "Karyawan", "departement": "IT"},
+        {"username": "supervisor", "password": "1234", "group": "Supervisor", "departement": "IT"},
+        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor", "departement": "IT"},
+        {"username": "manager", "password": "1234", "group": "Manager", "departement": "IT"},
+        {"username": "factory_manager", "password": "1234", "group": "FactoryManager", "departement": "IT"},
     ]
 
     def handle(self, *args, **kwargs):

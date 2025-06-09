@@ -7,6 +7,7 @@
       <thead class="table-primary text-center">
         <tr>
           <th>Username</th>
+          <th>Departemen</th> <!-- Kolom baru -->
           <th>Status</th>
           <th>Last Seen</th>
           <th>Actions</th>
@@ -16,12 +17,19 @@
         {% for user in users %}
         <tr>
           <td class="text-center">{{ user.username }}</td>
+          <td class="text-center">
+            {% if user.departement %}
+              {{ user.departement.name }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
           <td class="text-center">{{ user.groups.all|join:", " }}</td>
           <td class="text-center">{{ user.last_login }}</td>
           <td class="text-center">
             <button
               class="btn btn-sm btn-success mx-2"
-              onclick="editAkun('{{ user.id }}', '{{ user.username }}', '{{ user.groups.first.id }}')"
+              onclick="editAkun('{{ user.id }}', '{{ user.username }}', '{{ user.groups.first.id }}', '{{ user.departement.id|default:"" }}')"
             >
               <i class="fas fa-edit me-1"></i>Edit
             </button>
@@ -35,11 +43,12 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4" class="text-center">No results found</td>
+          <td colspan="5" class="text-center">No results found</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+
     
     <!-- Tombol Tambah Akun -->
     <div class="d-flex justify-content-end">
@@ -90,6 +99,14 @@
           <select id="group" name="group" class="form-control" required>
             {% for group in groups %}
             <option value="{{ group.id }}">{{ group.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="departement" class="form-label">Departemen:</label>
+          <select id="departement" name="departement" class="form-control" required>
+            {% for departement in departements %}
+            <option value="{{ departement.id }}">{{ departement.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -192,11 +209,12 @@
     document.getElementById(modalId).style.display = "none";
   }
 
-  function editAkun(userId, username, groupId) {
+  function editAkun(userId, username, groupId, departementId) {
     openModal("modal-tambah");
     document.getElementById("user_id").value = userId;
     document.getElementById("username").value = username;
     document.getElementById("group").value = groupId;
+    document.getElementById("departement").value = departementId;
     document.getElementById("password").required = false; // Password tidak wajib diisi saat edit
     document.getElementById("modal-title").innerText = "Edit Akun";
   }
