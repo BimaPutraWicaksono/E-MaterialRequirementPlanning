@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4>Edit Purchase Order - {{ po.purchase_request.registered_no }}</h4>
+  <form method="POST">
+    {% csrf_token %}
+    <table class="clean-table">
+      <tr><td><strong>Term</strong></td><td>:</td><td>{{ form.term }}</td></tr>
+      <tr><td><strong>Delivery</strong></td><td>:</td><td>{{ form.delivery }}</td></tr>
+      <tr><td><strong>Supplier</strong></td><td>:</td><td>{{ form.supplier }}</td></tr>
+      <tr><td><strong>Shipped By</strong></td><td>:</td><td>{{ form.shipped_by }}</td></tr>
+    </table>
+    <button type="submit" class="btn btn-success mt-3">Simpan Perubahan</button>
+    <a href="{% url 'purchaseOrd' %}" class="btn btn-secondary mt-3">Batal</a>
+  </form>
+</div>
+{% endblock %}

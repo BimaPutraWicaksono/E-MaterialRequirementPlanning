@@ -1,4 +1,3 @@
-import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User, Group
 
@@ -6,33 +5,19 @@ class Command(BaseCommand):
     help = "Seed the User table with test data"
 
     users = [
-        {
-            "username": "admin",
-            "password": "1234",
-            "group": "Admin",
-        },
-        {
-            "username": "karyawan",
-            "password": "1234",
-            "group": "Karyawan",
-        },
-        {
-            "username": "supervisor",
-            "password": "super123",
-            "group": "Supervisor",
-        },
-        {
-            "username": "senior_supervisor",
-            "password": "senior123",
-            "group": "SeniorSupervisor",
-        },
+        {"username": "admin", "password": "1234", "group": "Admin"},
+        {"username": "karyawan", "password": "1234", "group": "Karyawan"},
+        {"username": "supervisor", "password": "1234", "group": "Supervisor"},
+        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor"},
+        {"username": "manager", "password": "1234", "group": "Manager"},
+        {"username": "factory_manager", "password": "1234", "group": "FactoryManager"},
     ]
 
-    groups = ["Admin", "Karyawan", "Supervisor", "SeniorSupervisor"]
-
     def handle(self, *args, **kwargs):
+        group_names = list(set(user["group"] for user in self.users))
+
         # Buat grup jika belum ada
-        for group_name in self.groups:
+        for group_name in group_names:
             group, created = Group.objects.get_or_create(name=group_name)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Grup '{group_name}' berhasil dibuat!"))
@@ -42,8 +27,12 @@ class Command(BaseCommand):
         # Buat user dan hubungkan dengan grup
         for item in self.users:
             user, created = User.objects.get_or_create(username=item["username"])
-            user.set_password(item["password"])
-            user.save()
+            if created:
+                user.set_password(item["password"])
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"User '{item['username']}' berhasil dibuat."))
+            else:
+                self.stdout.write(self.style.WARNING(f"User '{item['username']}' sudah ada. Password tidak diubah."))
 
             try:
                 group = Group.objects.get(name=item["group"])
@@ -52,4 +41,4 @@ class Command(BaseCommand):
             except Group.DoesNotExist:
                 self.stdout.write(self.style.ERROR(f"Grup '{item['group']}' tidak ditemukan!"))
 
-        self.stdout.write(self.style.SUCCESS("Semua user berhasil ditambahkan!"))
+        self.stdout.write(self.style.SUCCESS("Proses seeding user selesai."))

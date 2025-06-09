@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container mt-4">
   <h4>PURCHASE ORDER</h4>
+
   {% if requests %}
     <div class="table-responsive mb-4">
       <table class="table table-bordered mt-3" id='table_purchase_req'>
@@ -10,14 +11,29 @@
           <tr>
             <th class="text-start">Registered No</th>
             <th>Approval</th>
+            <th>
+              <div class="d-flex" style="gap: 0.5rem;">
+                <span>Status</span>
+                <form method="get" style="margin: 0; display: flex; align-items: center; gap: 0.2rem; font-size: 12px;">
+                  <i data-feather="filter" style="width: 14px; height: 14px;"></i>
+                  <select name="filterPO" id="filterPO" class="form-control form-control-sm custom-select-filter" onchange="this.form.submit()" style="max-width: 110px; padding: 2px 4px; font-size: 12px; height: auto;">
+                    <option value="all" selected>All</option>
+                    <option value="with_po">Purchase Order</option>
+                    <option value="without_po">Belum</option>
+                  </select>
+                </form>
+              </div>
+            </th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for pr in requests %}
             {% if pr.approve_spv and pr.approve_sspv %}
-              <tr>
+              <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
                 <td class="text-start align-middle">{{ pr.registered_no }}</td>
+                
+                <!-- Approval -->
                 <td class="text-center align-middle">
                   {% if pr.requested and pr.approve_spv is None and pr.approve_sspv is None %}
                     <span class="badge border border-success rounded px-3 py-2 text-success">SC <i class="fas fa-check"></i></span>
@@ -34,18 +50,36 @@
                       <span class="badge border border-danger rounded px-3 py-2 text-danger">SSPV <i class="fas fa-times"></i></span>
                     {% endif %}
                   {% else %}
-                    -
+                      -
                   {% endif %}
                 </td>
+                    
+                <!-- Status -->
                 <td class="text-center align-middle">
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                  {% if pr.registered_no in po_registered_nos %}
+                    <i class="fas fa-check text-success"></i> <!-- icon centang -->
+                  {% else %}
+                    <!-- Kosong jika belum ada PO -->
+                  {% endif %}
+                </td>
+                <!-- Action -->
+                <td class="text-center align-middle">
+                  {% if pr.registered_no not in po_registered_nos %}
+                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add Purchase Order</button>
+                  {% endif %}
+                  {% if pr.registered_no in po_registered_nos %}
+                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                    <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                    <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                  {% endif %}
                 </td>
               </tr>
             {% endif %}
           {% empty %}
-            <tr><td colspan="3" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
+            <tr><td colspan="4" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
   {% else %}
@@ -96,6 +130,19 @@
       }
     })
     .catch(err => console.error("Submit error:", err));
+  });
+
+  // Filter logic
+  $("#filterPO").on("change", function () {
+    const value = $(this).val();
+
+    $(".po-row").show(); // reset semua
+
+    if (value === "with_po") {
+      $(".po-row.no-po").hide();
+    } else if (value === "without_po") {
+      $(".po-row.has-po").hide();
+    }
   });
 </script>
 {% endblock %}

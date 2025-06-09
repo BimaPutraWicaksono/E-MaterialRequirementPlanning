@@ -69,9 +69,12 @@ def purchaseOrd(request):
         form = PurchaseRequestForm()
     
     requests = PurchaseRequest.objects.all().order_by('-date')
+    po_registered_nos = set(PurchaseOrder.objects.values_list('registered_no__registered_no', flat=True))
+    
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
         'requests': requests,
+         'po_registered_nos': po_registered_nos,
     })
 
 from django.shortcuts import get_object_or_404, render
@@ -80,8 +83,7 @@ from .models import PurchaseRequest, RequestItem, PurchaseOrder
 from .form import PurchaseOrderForm
 
 @login_required
-@login_required
-def purchase_order_detail_view(request, registered_no):
+def purchase_order_detail(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
     request_items = RequestItem.objects.filter(purchase_request=purchase_request)  # Perbaikan di sini
     po = PurchaseOrder.objects.filter(registered_no=purchase_request).last()
@@ -105,6 +107,31 @@ def purchase_order_detail_view(request, registered_no):
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
+
+from .models import PurchaseOrder, PurchaseRequest
+
+def purchase_order_edit(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    po = get_object_or_404(PurchaseOrder, registered_no=pr)
+
+    if request.method == "POST":
+        form = PurchaseOrderForm(request.POST, instance=po)
+        if form.is_valid():
+            form.save()
+            return redirect('purchaseOrd')
+    else:
+        form = PurchaseOrderForm(instance=po)
+
+    return render(request, 'partials/purchase_order_edit.html', {
+        'form': form,
+        'po': po,
+    })
+
+def purchase_order_delete(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    po = get_object_or_404(PurchaseOrder, registered_no=pr)
+    po.delete()
+    return redirect('purchaseOrd')
 
 
 from django.shortcuts import render, redirect, get_object_or_404
