@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'e-mrp5',  # Ganti dengan nama database Anda
+        'NAME': 'mrp-e1',  # Ganti dengan nama database Anda
         'USER': 'postgres',       # Ganti dengan nama pengguna PostgreSQL Anda
         'PASSWORD': 'bima123456', # Ganti dengan kata sandi PostgreSQL Anda
         'HOST': 'localhost',      # Biasanya 'localhost' untuk database lokal
@@ -114,6 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'myapp.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

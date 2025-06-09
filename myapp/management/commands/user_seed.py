@@ -1,32 +1,44 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
+from myapp.models import Departement
+
+User = get_user_model()
 
 class Command(BaseCommand):
-    help = "Seed the User table with test data"
+    help = "Seed the User table with test data and assign departments"
 
     users = [
-        {"username": "admin", "password": "1234", "group": "Admin"},
-        {"username": "karyawan", "password": "1234", "group": "Karyawan"},
-        {"username": "supervisor", "password": "1234", "group": "Supervisor"},
-        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor"},
-        {"username": "manager", "password": "1234", "group": "Manager"},
-        {"username": "factory_manager", "password": "1234", "group": "FactoryManager"},
+        {"username": "admin", "password": "1234", "group": "Admin", "departement": "IT"},
+        {"username": "karyawan", "password": "1234", "group": "Karyawan", "departement": "Produksi"},
+        {"username": "supervisor", "password": "1234", "group": "Supervisor", "departement": "Produksi"},
+        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor", "departement": "Quality Control"},
+        {"username": "manager", "password": "1234", "group": "Manager", "departement": "Engineering"},
+        {"username": "factory_manager", "password": "1234", "group": "FactoryManager", "departement": "Factory"},
     ]
 
     def handle(self, *args, **kwargs):
+        # Buat semua grup
         group_names = list(set(user["group"] for user in self.users))
-
-        # Buat grup jika belum ada
         for group_name in group_names:
             group, created = Group.objects.get_or_create(name=group_name)
             if created:
-                self.stdout.write(self.style.SUCCESS(f"Grup '{group_name}' berhasil dibuat!"))
+                self.stdout.write(self.style.SUCCESS(f"Grup '{group_name}' berhasil dibuat."))
             else:
                 self.stdout.write(self.style.WARNING(f"Grup '{group_name}' sudah ada."))
 
-        # Buat user dan hubungkan dengan grup
+        # Buat semua departemen
+        dept_names = list(set(user["departement"] for user in self.users))
+        for dept_name in dept_names:
+            Departement.objects.get_or_create(name=dept_name)
+
+        # Buat user dan hubungkan ke grup dan departemen
         for item in self.users:
-            user, created = User.objects.get_or_create(username=item["username"])
+            departement = Departement.objects.get(name=item["departement"])
+            user, created = User.objects.get_or_create(username=item["username"], defaults={
+                "departement": departement,
+            })
+
             if created:
                 user.set_password(item["password"])
                 user.save()
@@ -34,11 +46,15 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"User '{item['username']}' sudah ada. Password tidak diubah."))
 
-            try:
-                group = Group.objects.get(name=item["group"])
-                user.groups.set([group])
-                self.stdout.write(self.style.SUCCESS(f"User '{item['username']}' ditambahkan ke grup '{item['group']}'"))
-            except Group.DoesNotExist:
-                self.stdout.write(self.style.ERROR(f"Grup '{item['group']}' tidak ditemukan!"))
+            # Set departemen jika belum ada
+            if not user.departement:
+                user.departement = departement
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"Departemen '{departement.name}' ditetapkan untuk user '{user.username}'."))
+
+            # Set grup
+            group = Group.objects.get(name=item["group"])
+            user.groups.set([group])
+            self.stdout.write(self.style.SUCCESS(f"User '{item['username']}' ditambahkan ke grup '{item['group']}'."))
 
         self.stdout.write(self.style.SUCCESS("Proses seeding user selesai."))

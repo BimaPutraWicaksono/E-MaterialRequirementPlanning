@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
 
 class ExcelFile(models.Model):
 
@@ -267,6 +269,15 @@ class Departement(models.Model):
         
     class Meta: 
         db_table = 'departement' 
+        
+class CustomUser(AbstractUser):
+    departement = models.ForeignKey(Departement, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.username
+    
+    class Meta: 
+        db_table = 'custom_user' 
 
 class Section(models.Model):
     name = models.CharField(max_length=255)
