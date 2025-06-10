@@ -19,7 +19,7 @@
     <thead>
       <tr>
         <th>Registered No</th>
-        <th>Approval</th>
+        <th>Approval Stages</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -46,13 +46,15 @@
             <div class="d-flex justify-content-center">
               {% if request.user|has_group:"Karyawan" %}
                 <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mx-2">Edit</a>
-                <div>
-                  <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                  </form>
-                </div>
+                {% if not pr.approve_spv %}
+                  <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success mx-2">Edit</a>
+                  <div>
+                    <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                  </div>
+                {% endif %}
               {% endif %}
               {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
                 <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
@@ -61,15 +63,21 @@
           </td>
         </tr>
       {% empty %}
-        <tr><td colspan="3" class="text-center">Tidak ada Purchase Request.</td></tr>
+        <tr><td colspan="3" class="text-center"></td></tr>
       {% endfor %}
     </tbody>
   </table>
-  {% if request.user|has_group:"Karyawan" %}
-    <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
-      Add Purchase Request
-    </button>
-  {% endif %}
+  <div class="d-flex">
+    <div class="border border-warning rounded p-2 mt-1">
+      <strong>Note:</strong> The approval flow proceeds as follows: Requested <i class="fas fa-long-arrow-alt-right"></i> SPV <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager
+    </div>
+    {% if request.user|has_group:"Karyawan" %}
+      <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
+        Add Purchase Request
+      </button>
+    {% endif %}
+  </div>
+
 
   <!-- Modal form purchase request -->
   <div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
@@ -96,7 +104,6 @@
                   {{ form.section }}
                 </div>
               </div>
-
               <div class="col-md-6">
                 <div class="mb-2">
                   <label><strong>Purchase By</strong></label><br>
@@ -122,7 +129,6 @@
               <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
             </div>
           </form>
-
         </div>
       </div>
     </div>
@@ -198,4 +204,5 @@
     });
   });
 </script>
+
 {% endblock %}

@@ -13,7 +13,7 @@
       <table class="table table-bordered text-center" style="width: 100%;">
         <thead>
           <tr>
-            <th>Status</th>
+            <th>Requested</th>
             <th>SPV Approved</th>
             <th>SSPV Approved</th>
             <th>Manager Approved</th>
@@ -131,7 +131,7 @@
 
     {% if request.user|has_group:"Supervisor" %}
       {% if purchase_request.approve_spv %}
-        <p class="text-success">Approval is not complete</p>
+        <p class="text-success">You have already approved</p>
       {% elif not purchase_request.requested %}
         <p class="text-danger">Already approved by Requester.</p>
       {% else %}

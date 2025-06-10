@@ -74,7 +74,7 @@ def purchaseOrd(request):
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
         'requests': requests,
-         'po_registered_nos': po_registered_nos,
+        'po_registered_nos': po_registered_nos,
     })
 
 from django.shortcuts import get_object_or_404, render
@@ -132,6 +132,78 @@ def purchase_order_delete(request, registered_no):
     po = get_object_or_404(PurchaseOrder, registered_no=pr)
     po.delete()
     return redirect('purchaseOrd')
+
+@login_required
+def approve_purchase_request(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        # Supervisor
+        if request.user.groups.filter(name='Supervisor').exists():
+            if action == 'approve_spv':
+                pr.approve_spv = True
+                pr.reason_spv = ''
+            elif action == 'disapprove_spv':
+                reason = request.POST.get('reason_spv', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Supervisor.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_spv = False
+                pr.reason_spv = reason
+            pr.save()
+            messages.success(request, "Supervisor approval updated.")
+
+        # Senior Supervisor
+        elif request.user.groups.filter(name='SeniorSupervisor').exists():
+            if action == 'approve_sspv':
+                pr.approve_sspv = True
+                pr.reason_sspv = ''
+            elif action == 'disapprove_sspv':
+                reason = request.POST.get('reason_sspv', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Senior Supervisor.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_sspv = False
+                pr.reason_sspv = reason
+            pr.save()
+            messages.success(request, "Senior Supervisor approval updated.")
+
+        # Manager
+        elif request.user.groups.filter(name='Manager').exists():
+            if action == 'approve_manager':
+                pr.approve_manager = True
+                pr.reason_manager = ''
+            elif action == 'disapprove_manager':
+                reason = request.POST.get('reason_manager', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Manager.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_manager = False
+                pr.reason_manager = reason
+            pr.save()
+            messages.success(request, "Manager approval updated.")
+
+        # Factory Manager
+        elif request.user.groups.filter(name='FactoryManager').exists():
+            if action == 'approve_factory_manager':
+                pr.approve_factory_manager = True
+                pr.reason_factory_manager = ''
+            elif action == 'disapprove_factory_manager':
+                reason = request.POST.get('reason_factory_manager', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Factory Manager.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_factory_manager = False
+                pr.reason_factory_manager = reason
+            pr.save()
+            messages.success(request, "Factory Manager approval updated.")
+
+        return redirect('purchaseReq')
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import PurchaseRequest
 
 
 from django.shortcuts import render, redirect, get_object_or_404

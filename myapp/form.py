@@ -40,6 +40,7 @@ class LoginForm(forms.Form):
 # request order
 from django import forms
 from .models import PurchaseRequest, Departement, Section, Carline
+from django.core.exceptions import ValidationError
 
 class PurchaseRequestForm(forms.ModelForm):
     class Meta:
@@ -65,22 +66,42 @@ class PurchaseRequestForm(forms.ModelForm):
             'reason_sspv': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_manager': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_factory_manager': forms.TextInput(attrs={'class': 'form-control'}),
-            'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'requested': forms.CheckboxInput(attrs={'class': 'form-check-input', 'required': 'required'}),
             'part_order': forms.CheckboxSelectMultiple(),
         }
+
+    def clean_requested(self):
+        requested = self.cleaned_data.get('requested')
+        if not requested:
+            raise ValidationError("Field ini harus dicentang.")
+        return requested
 
 
 class PurchaseRequestEditForm(forms.ModelForm):
     class Meta:
         model = PurchaseRequest
-        fields = ['departement', 'section', 'purchase_by', 'reason_spv', 'reason_sspv', 'requested', 'part_order']
+        fields = [
+            'registered_no',
+            'departement',
+            'section',
+            'purchase_by',
+            'reason_spv',
+            'reason_sspv',
+            'reason_manager',
+            'reason_factory_manager',
+            'requested',
+            'part_order',
+        ]
         widgets = {
+            'registered_no': forms.TextInput(attrs={'class': 'form-control'}),
             'departement': forms.Select(attrs={'class': 'form-select', 'id': 'id_departement'}),
             'section': forms.Select(attrs={'class': 'form-select', 'id': 'id_section'}),
+            'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_spv': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_sspv': forms.TextInput(attrs={'class': 'form-control'}),
-            'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
-            'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'reason_manager': forms.TextInput(attrs={'class': 'form-control'}),
+            'reason_factory_manager': forms.TextInput(attrs={'class': 'form-control'}),
+            'requested': forms.CheckboxInput(attrs={'class': 'form-check-input', 'required': 'required'}),
             'part_order': forms.CheckboxSelectMultiple(),
         }
 
