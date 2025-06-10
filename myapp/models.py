@@ -299,17 +299,25 @@ class PurchaseRequest(models.Model):
     total_amount = models.FloatField(default=0) 
     date = models.DateField(auto_now_add=True)
 
+    # Approval fields
     approve_spv = models.BooleanField(null=True, blank=True)
-    approve_sspv = models.BooleanField(null=True, blank=True)
     reason_spv = models.TextField(blank=True, null=True)
+
+    approve_sspv = models.BooleanField(null=True, blank=True)
     reason_sspv = models.TextField(blank=True, null=True)
 
+    approve_manager = models.BooleanField(null=True, blank=True)
+    reason_manager = models.TextField(blank=True, null=True)
+
+    approve_factory_manager = models.BooleanField(null=True, blank=True)
+    reason_factory_manager = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Request {self.registered_no} by {self.purchase_by}"
 
     class Meta:
         db_table = 'purchase_request'
+
 
 from datetime import date
 

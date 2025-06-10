@@ -44,7 +44,18 @@ from .models import PurchaseRequest, Departement, Section, Carline
 class PurchaseRequestForm(forms.ModelForm):
     class Meta:
         model = PurchaseRequest
-        fields = ['registered_no', 'departement', 'section', 'purchase_by', 'reason_spv', 'reason_sspv', 'requested', 'part_order']
+        fields = [
+            'registered_no',
+            'departement',
+            'section',
+            'purchase_by',
+            'reason_spv',
+            'reason_sspv',
+            'reason_manager',
+            'reason_factory_manager',
+            'requested',
+            'part_order',
+        ]
         widgets = {
             'registered_no': forms.TextInput(attrs={'class': 'form-control'}),
             'departement': forms.Select(attrs={'class': 'form-select', 'id': 'id_departement'}),
@@ -52,9 +63,12 @@ class PurchaseRequestForm(forms.ModelForm):
             'purchase_by': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_spv': forms.TextInput(attrs={'class': 'form-control'}),
             'reason_sspv': forms.TextInput(attrs={'class': 'form-control'}),
+            'reason_manager': forms.TextInput(attrs={'class': 'form-control'}),
+            'reason_factory_manager': forms.TextInput(attrs={'class': 'form-control'}),
             'requested': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'part_order': forms.CheckboxSelectMultiple(),
         }
+
 
 class PurchaseRequestEditForm(forms.ModelForm):
     class Meta:

@@ -105,7 +105,6 @@ def purchaseReq(request):
         form = PurchaseRequestForm()
 
     # Filter berdasarkan query parameter
-    # Default berdasarkan grup user
     if 'filter' in request.GET:
         filter_option = request.GET['filter']
     else:
@@ -115,19 +114,58 @@ def purchaseReq(request):
             filter_option = 'pending'
         elif request.user.groups.filter(name='SeniorSupervisor').exists():
             filter_option = 'approved_spv'
+        elif request.user.groups.filter(name='Manager').exists():
+            filter_option = 'approved_sspv'
+        elif request.user.groups.filter(name='FactoryManager').exists():
+            filter_option = 'approved_manager'
         else:
             filter_option = 'all'  # fallback
 
     requests = PurchaseRequest.objects.all()
 
+    # Tambahkan logika filter baru
     if filter_option == 'pending':
-        requests = requests.filter(approve_spv__isnull=True, approve_sspv__isnull=True)
+        requests = requests.filter(
+            approve_spv__isnull=True,
+            approve_sspv__isnull=True,
+            approve_manager__isnull=True,
+            approve_factory_manager__isnull=True
+        )
     elif filter_option == 'approved_spv':
-        requests = requests.filter(approve_spv=True, approve_sspv__isnull=True)
-    elif filter_option == 'fully_approved':
-        requests = requests.filter(approve_spv=True, approve_sspv=True)
+        requests = requests.filter(
+            approve_spv=True,
+            approve_sspv__isnull=True,
+            approve_manager__isnull=True,
+            approve_factory_manager__isnull=True
+        )
+    elif filter_option == 'approved_sspv':
+        requests = requests.filter(
+            approve_spv=True,
+            approve_sspv=True,
+            approve_manager__isnull=True,
+            approve_factory_manager__isnull=True
+        )
+    elif filter_option == 'approved_manager':
+        requests = requests.filter(
+            approve_spv=True,
+            approve_sspv=True,
+            approve_manager=True,
+            approve_factory_manager__isnull=True
+        )
+    elif filter_option == 'approved_factory_manager':
+        requests = requests.filter(
+            approve_spv=True,
+            approve_sspv=True,
+            approve_manager=True,
+            approve_factory_manager=True
+        )
     elif filter_option == 'rejected':
-        requests = requests.filter(Q(approve_spv=False) | Q(approve_sspv=False))
+        requests = requests.filter(
+            Q(approve_spv=False) |
+            Q(approve_sspv=False) |
+            Q(approve_manager=False) |
+            Q(approve_factory_manager=False)
+        )
 
     requests = requests.order_by('-date')
 
@@ -136,7 +174,6 @@ def purchaseReq(request):
         'requests': requests,
         'filter_option': filter_option,
     })
-
 
 @login_required
 def ajax_get_loading_parts(request):
@@ -186,12 +223,11 @@ def approve_purchase_request(request, registered_no):
     if request.method == 'POST':
         action = request.POST.get('action')
 
+        # Supervisor
         if request.user.groups.filter(name='Supervisor').exists():
             if action == 'approve_spv':
                 pr.approve_spv = True
                 pr.reason_spv = ''
-                pr.save()
-                messages.success(request, "Disetujui oleh Supervisor.")
             elif action == 'disapprove_spv':
                 reason = request.POST.get('reason_spv', '').strip()
                 if not reason:
@@ -199,15 +235,14 @@ def approve_purchase_request(request, registered_no):
                     return redirect(request.META.get('HTTP_REFERER'))
                 pr.approve_spv = False
                 pr.reason_spv = reason
-                pr.save()
-                messages.success(request, "Ditolak oleh Supervisor.")
+            pr.save()
+            messages.success(request, "Supervisor approval updated.")
 
+        # Senior Supervisor
         elif request.user.groups.filter(name='SeniorSupervisor').exists():
             if action == 'approve_sspv':
                 pr.approve_sspv = True
                 pr.reason_sspv = ''
-                pr.save()
-                messages.success(request, "Disetujui oleh Senior Supervisor.")
             elif action == 'disapprove_sspv':
                 reason = request.POST.get('reason_sspv', '').strip()
                 if not reason:
@@ -215,11 +250,40 @@ def approve_purchase_request(request, registered_no):
                     return redirect(request.META.get('HTTP_REFERER'))
                 pr.approve_sspv = False
                 pr.reason_sspv = reason
-                pr.save()
-                messages.success(request, "Ditolak oleh Senior Supervisor.")
+            pr.save()
+            messages.success(request, "Senior Supervisor approval updated.")
+
+        # Manager
+        elif request.user.groups.filter(name='Manager').exists():
+            if action == 'approve_manager':
+                pr.approve_manager = True
+                pr.reason_manager = ''
+            elif action == 'disapprove_manager':
+                reason = request.POST.get('reason_manager', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Manager.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_manager = False
+                pr.reason_manager = reason
+            pr.save()
+            messages.success(request, "Manager approval updated.")
+
+        # Factory Manager
+        elif request.user.groups.filter(name='FactoryManager').exists():
+            if action == 'approve_factory_manager':
+                pr.approve_factory_manager = True
+                pr.reason_factory_manager = ''
+            elif action == 'disapprove_factory_manager':
+                reason = request.POST.get('reason_factory_manager', '').strip()
+                if not reason:
+                    messages.error(request, "Alasan penolakan harus diisi oleh Factory Manager.")
+                    return redirect(request.META.get('HTTP_REFERER'))
+                pr.approve_factory_manager = False
+                pr.reason_factory_manager = reason
+            pr.save()
+            messages.success(request, "Factory Manager approval updated.")
 
         return redirect('purchaseReq')
-
 
 from django.shortcuts import get_object_or_404, redirect
 from .models import PurchaseRequest
