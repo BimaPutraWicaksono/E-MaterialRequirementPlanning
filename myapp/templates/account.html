@@ -4,7 +4,7 @@
 
   <!-- Tabel Daftar Akun -->  
     <table id="table_user" class="table table-bordered table-striped table-hover" style="width: 100%;">
-      <thead class="table-primary text-center">
+      <thead class="table-primary">
         <tr>
           <th>Username</th>
           <th>Departemen</th> <!-- Kolom baru -->
@@ -27,19 +27,24 @@
           <td class="text-center">{{ user.groups.all|join:", " }}</td>
           <td class="text-center">{{ user.last_login }}</td>
           <td class="text-center">
-            <button
-              class="btn btn-sm btn-success mx-2"
-              onclick="editAkun('{{ user.id }}', '{{ user.username }}', '{{ user.groups.first.id }}', '{{ user.departement.id|default:"" }}')"
-            >
-              <i class="fas fa-edit me-1"></i>Edit
-            </button>
-            <button
-              class="btn btn-sm btn-danger"
-              onclick="hapusAkun('{{ user.id }}')"
-            >
-              <i class="fas fa-trash-alt me-1"></i>Delete
-            </button>
+            {% if request.user.username == user.username and request.user.groups.first == user.groups.first %}
+              <button
+                class="btn btn-sm btn-success mx-2"
+                onclick="editAkun('{{ user.id }}', '{{ user.username }}', '{{ user.groups.first.id }}', '{{ user.departement.id|default:"" }}')"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                onclick="hapusAkun('{{ user.id }}')"
+              >
+                Delete
+              </button>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
           </td>
+
         </tr>
         {% empty %}
         <tr>
@@ -53,7 +58,7 @@
     <!-- Tombol Tambah Akun -->
     <div class="d-flex justify-content-end">
       <button class="btn upload-btn" onclick="openModal('modal-tambah')">
-        <i class="fas fa-plus mr-1"></i>Create Account
+        Create Account
       </button>
     </div>
   </div>

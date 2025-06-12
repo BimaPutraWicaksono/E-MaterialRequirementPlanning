@@ -24,8 +24,8 @@
   </div>
 
   <!-- Data Table -->
-  <div class="table-container mt-4">
-    <table class="table table-bordered">
+  
+    <table class="table table-bordered" id="tabel_mcl">
       <thead>
         <tr>
           <th>Machine</th>
@@ -74,7 +74,7 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
+  
 
   <!-- Forms for Import, Export, and Reset -->
   {% if request.user|has_group:"Karyawan" %}

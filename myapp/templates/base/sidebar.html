@@ -18,9 +18,10 @@
               </a>
             </li>
         </li>
-
         <!-- Sparepart -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'applicator' %}menu-open{% endif %}">
+        
+        {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
+        <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'applicator' or request.resolver_match.url_name == 'loadingPart' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-box"></i>
             <p>
@@ -35,39 +36,65 @@
                 <p>Applicator</p>
               </a>
             </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'strokePart' %}active{% endif %}">
-              <a href="{% url 'strokePart' %}" class="nav-link">
-                <i class="nav-icon fas fa-cogs"></i>
-                <p>Stroke Part</p>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Calculate -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline strokePart loadingPart' %}menu-open{% endif %}">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-dumpster"></i>
-            <p>
-              Requirment
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item {% if request.resolver_match.url_name == 'carline' %}active{% endif %}">
-              <a href="{% url 'carline' %}" class="nav-link">
-                <i class="nav-icon fas fa-truck-loading"></i>
-                <p>Carline</p>
-              </a>
-            </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'loadingPart' %}active{% endif %}">
               <a href="{% url 'loadingPart' %}" class="nav-link" id="loadingPartLink">
                 <i class="nav-icon fas fa-spinner"></i>
-                <p>Loading Part</p>
+                <p>Loading Part Carline</p>
               </a>
             </li>
           </ul>
         </li>
+        {% endif %}
+        
+        {% if request.user|has_group:"Karyawan" %}
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'applicator' or request.resolver_match.url_name == 'strokePart' %}menu-open{% endif %}">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-box"></i>
+              <p>
+                Sparepart
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item {% if request.resolver_match.url_name == 'applicator' %}active{% endif %}">
+                <a href="{% url 'applicator' %}" class="nav-link">
+                  <i class="nav-icon fas fa-screwdriver"></i>
+                  <p>Applicator</p>
+                </a>
+              </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'strokePart' %}active{% endif %}">
+                <a href="{% url 'strokePart' %}" class="nav-link">
+                  <i class="nav-icon fas fa-cogs"></i>
+                  <p>Stroke Part</p>
+                </a>
+              </li>
+            </ul>
+          </li>  
+          <!-- Calculate -->
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline strokePart loadingPart' %}menu-open{% endif %}">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-dumpster"></i>
+              <p>
+                Requirment
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item {% if request.resolver_match.url_name == 'carline' %}active{% endif %}">
+                <a href="{% url 'carline' %}" class="nav-link">
+                  <i class="nav-icon fas fa-truck-loading"></i>
+                  <p>Carline</p>
+                </a>
+              </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'loadingPart' %}active{% endif %}">
+                <a href="{% url 'loadingPart' %}" class="nav-link" id="loadingPartLink">
+                  <i class="nav-icon fas fa-spinner"></i>
+                  <p>Loading Part Carline</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+        {% endif %}
 
          <!-- Order -->
          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd scheduleConf airwayBill invoice' %}menu-open{% endif %}">
@@ -120,15 +147,13 @@
               <i class="right fas fa-angle-left"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
-            {% if request.user|has_group:"Admin" %}
+          <ul class="nav nav-treeview">  
             <li class="nav-item {% if request.resolver_match.url_name == 'daftar_akun' %}active{% endif %}">
               <a href="{% url 'daftar_akun' %}" class="nav-link">
                 <i class="nav-icon fas fa-user-cog"></i>
                 <p>Account</p>
               </a>
             </li>
-            {% endif %}
             {% if request.user|has_group:"Admin" %}
             <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
               <a href="{% url 'master_departement_section' %}" class="nav-link">

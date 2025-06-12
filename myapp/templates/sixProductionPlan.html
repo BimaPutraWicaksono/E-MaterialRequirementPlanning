@@ -26,8 +26,7 @@
   </div>
 
   <!-- Data Table -->
-  <div class="table-container mt-4">
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="tabel_spp">
       <thead>
         <tr>
           <th>No Assy</th>
@@ -74,7 +73,7 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
+
 
   <!-- Form for exporting data and resetting data -->
   {% if request.user|has_group:"Karyawan" %}

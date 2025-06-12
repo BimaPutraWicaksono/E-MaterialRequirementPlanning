@@ -1,114 +1,83 @@
 {% extends "base.html" %} {% load widget_tweaks %} {% block content %} 
 {% load user_tags %}
 
-<div class="container">
+<div class="container mt-5">
+  <h2 class="mb-4">Carline Management</h2>
 
-  <!-- Add Carline Form and Search Input in One Row -->
-  <div class="card mt-5">
-    <div class="card-lite">
-      <div class="d-flex justify-content-between mb-3 mt-2">
-        {% if request.user|has_group:"Karyawan" %}
-        <form method="post" class="form-inline">
-          {% csrf_token %}
-          <div class="form-group mx-sm-3 mb-2">
-            {{ form.name|add_class:"form-control" }}
-          </div>
-          <button type="submit" class="upload-btn mb-2">
-            <i class="fas fa-plus mr-2"></i>Add Carline
-          </button>
-        </form>
-        {% endif %}
-        <div></div>
-
-        <!-- Search Input -->
-        <div class="mb-2 mr-2">
-          <input
-            type="text"
-            id="searchCarline"
-            placeholder="Search Carline"
-            class="form-control"
-          />
+  <!-- Form tambah dan search -->
+  <div class="align-items-center mb-3">
+    {% if request.user|has_group:"Karyawan" %}
+      <form method="post" class="d-flex">
+        {% csrf_token %}
+        <div class="form-group mr-2">
+          {{ form.name|add_class:"form-control" }}
         </div>
-      </div>
-    </div>
-
-    <!-- Carline Cards or Empty Message -->
-    <div class="row d-flex justify-content-start">
-      {% if carlines %} {% for carline in carlines %}
-      <div class="col-md-4 mb-1 mt-1" id="carline-{{ carline.id }}">
-        <div class="card-lite">
-          <div class="card-carline carline-body">
-            <div>
-              <h4 class="card-title" style="font-size:2opx;"><b>{{ carline.name }}</b></h4>
-            </div>
-
-            <br />
-
-            <div>
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  {% if request.user|has_group:"Guest" %}
-                  <a
-                    href="{% url 'sixProductionPlan' name=carline.name %}"
-                    class="export-btn"
-                    ><i class="far fa-folder-open mr-2"></i>View</a
-                  >
-                  {%endif%} {% if request.user|has_group:"Karyawan" %}
-                  <a
-                    href="{% url 'sixProductionPlan' name=carline.name %}"
-                    class="export-btn"
-                    ><i class="fas fa-upload mr-2"></i>Import</a
-                  >
-                  {%endif%}
-                  <button
-                    class="add-btn"
-                    onclick="directSum('{{ carline.name }}')"
-                  >
-                    <i class="fas fa-square-root-alt mr-2"></i>Sum
-                  </button>
-                </div>
-
-                <div>
-                  {% if request.user|has_group:"Karyawan" %}
-                  <button
-                    class="reset-btn d-flex"
-                    onclick="confirmDelete('{{ carline.id }}')"
-                  >
-                    <i class="nav-icon fas fa-trash-alt mr-2"></i>Delete
-                  </button>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endfor %} {% else %}
-      <div></div>
-      {% endif %}
-    </div>
-    <div class="d-flex justify-content-end mt-3">
-      <div>
-        {% if request.user|has_group:"Karyawan" %}
-        <form
-          method="post"
-          style="display: inline"
-          id="resetForm"
-          action="{% url 'reset_carline'%}"
-        >
-          {% csrf_token %}
-          <button type="button" class="reset-btn" id="resetCarlineButton">
-            <i class="nav-icon fas fa-trash-alt mr-2"></i>Delete All
-          </button>
-        </form>
-        {% endif %}
-        <button type="button" class="ok-btn" id="requirementPartButton">
-          <b>Requirement Part All Carline</b>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus mr-1"></i> Add Carline
         </button>
-      </div>
-    </div>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- Tabel daftar carline -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover" id="table_carline">
+      <thead class="table-primary text-center">
+        <tr>
+          <th>Carline</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for carline in carlines %}
+        <tr id="carline-{{ carline.id }}">
+          <td class="align-middle text-center"><strong>{{ carline.name }}</strong></td>
+          <td class="align-middle text-center">
+            {% if request.user|has_group:"Guest" %}
+              <a href="{% url 'sixProductionPlan' name=carline.name %}" class="btn btn-sm btn-info mr-1">
+                <i class="far fa-folder-open mr-1"></i>View
+              </a>
+            {% endif %}
+            {% if request.user|has_group:"Karyawan" %}
+              <a href="{% url 'sixProductionPlan' name=carline.name %}" class="btn btn-sm btn-success mr-1">
+                <i class="fas fa-upload mr-1"></i>Import
+              </a>
+            {% endif %}
+            <button class="btn btn-sm btn-info mr-1" onclick="directSum('{{ carline.name }}')">
+              <i class="fas fa-square-root-alt mr-1"></i>Sum
+            </button>
+            {% if request.user|has_group:"Karyawan" %}
+              <button class="btn btn-sm btn-danger" onclick="confirmDelete('{{ carline.id }}')">
+                <i class="fas fa-trash-alt mr-1"></i>Delete
+              </button>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="2" class="text-center">No carlines found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tombol bawah -->
+  <div class="d-flex justify-content-end mt-3">
+    {% comment %} {% if request.user|has_group:"Karyawan" %}
+      <form method="post" id="resetForm" action="{% url 'reset_carline'%}" class="mr-2">
+        {% csrf_token %}
+        <button type="button" class="btn btn-danger" id="resetCarlineButton">
+          <i class="fas fa-trash-alt mr-1"></i>Delete All
+        </button>
+      </form>
+    {% endif %} {% endcomment %}
+    <button type="button" class="btn btn-info" id="requirementPartButton">
+      <i class="fas fa-cogs mr-1"></i>Requirement Part All Carline
+    </button>
   </div>
 </div>
+
 
 <!-- Loading Spinner -->
 <div id="loadingSpinner" class="d-none">
