@@ -4,7 +4,7 @@
 {% load humanize %}
 
 <div class="container mt-4">
-  <h3>PURCHASE REQUISITION LIST</h3>
+  <h4>PURCHASE REQUISITION LIST</h4>
   <form method="get" class="form-inline mb-3 justify-content-end">
     <i class="fas fa-filter text-muted mr-2"></i>
     <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
@@ -124,7 +124,7 @@
                   {{ form.purchase_by }}
                 </div>
                 <div class="mb-2">
-                  <label><strong>Requested</strong></label>
+                  <label class="mr-4"><strong>Requested</strong></label>
                   {{ form.requested }}
                 </div>
                 <div class="mb-2">
@@ -135,7 +135,7 @@
             </div>
             <div id="loading-parts-table-container" class="mt-4"></div>
             <div class="mt-3">
-              <h5>Total Amount: <span id="total-amount-display">$0.00</span></h5>
+              <h6><strong>TOTAL: <span id="total-amount-display">$0.00</span></strong></h6>
             </div>
             <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
             <div class="modal-footer">

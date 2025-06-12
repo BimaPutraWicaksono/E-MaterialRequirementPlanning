@@ -139,6 +139,8 @@ def purchaseReq(request):
         'filter_option': filter_option,
     })
 
+from datetime import date, timedelta
+
 @login_required
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
@@ -151,11 +153,16 @@ def ajax_get_loading_parts(request):
                 unique_parts[part.partdesk_id] = part
         
         parts_list = unique_parts.values()
+        
+        # Tambahkan tanggal default
+        deadline_default = (date.today() + timedelta(days=30)).isoformat()
 
         table_html = render_to_string('order/partials/loading_parts_table.html', {
-            'parts': parts_list
+            'parts': parts_list,
+            'deadline_default': deadline_default,
         })
         return JsonResponse({'table': table_html})
+
 
 @login_required
 def ajax_load_sections(request):

@@ -1,14 +1,23 @@
 <table class="table table-bordered">
   <thead class="table-light">
     <tr>
-      <th>No</th>
-      <th>Budget Ref No</th>
-      <th>Part Name</th>
-      <th>Terminal</th>
-      <th>Quantity</th>
-      <th>Estimated Price</th>
-      <th>Amount</th>
-      <th>Deadline</th>
+      <th>NO</th>
+      <th>
+        <div>
+          <input type="checkbox" id="copy-budget-ref" class="form-check-input">
+          <label for="copy-budget-ref" class="form-check-label">BUDGET REF. NO.</label>
+        </div>
+      </th>
+      <th>DETAIL OF GOODS/SERVICES</th>
+      <th>QTY</th>
+      <th>ESTIMATED PRICE</th>
+      <th>AMOUNT</th>
+      <th>
+        <div>
+          <input type="checkbox" id="copy-deadline" class="form-check-input">
+          <label for="copy-deadline" class="form-check-label">DEADLINE</label>
+        </div>
+      </th>
     </tr>
   </thead>
   <tbody>
@@ -17,10 +26,9 @@
       <tr class="part-row">
         <td>{{ forloop.counter }}</td>
         <td>
-          <input type="text" name="budget_ref_no" class="form-control" value="">
+          <input type="text" name="budget_ref_no" class="form-control budget-ref-input" value="">
         </td>
-        <td>{{ part.part_name }}</td>
-        <td>{{ part.terminal }}</td>
+        <td>{{ part.terminal }}-{{ part.part_name }}</td>
         <td>
           <input type="number" step="0.01" readonly class="form-control avg-round" value="{{ part.average_round|floatformat:-1 }}">
         </td>
@@ -31,14 +39,43 @@
           <input type="text" readonly class="form-control amount" value="0" >
         </td>
         <td>
-          <input type="date" name="deadline" class="form-control" value="">
+          <input type="date" name="deadline" class="form-control deadline-input" value="{{ deadline_default }}">
         </td>
       </tr>
       {% endfor %}
     {% else %}
       <tr>
-        <td colspan="8" class="text-center">Tidak ada data parts.</td>
+        <td colspan="7" class="text-center">Tidak ada data parts.</td>
       </tr>
     {% endif %}
   </tbody>
 </table>
+<script>
+document.getElementById('copy-budget-ref').addEventListener('change', function () {
+  const isChecked = this.checked;
+  const inputs = document.querySelectorAll('.budget-ref-input');
+
+  if (isChecked && inputs.length > 0) {
+    const firstValue = inputs[0].value;
+    inputs.forEach((input, index) => {
+      if (index !== 0) {
+        input.value = firstValue;
+      }
+    });
+  }
+});
+
+document.getElementById('copy-deadline').addEventListener('change', function () {
+  const isChecked = this.checked;
+  const inputs = document.querySelectorAll('.deadline-input');
+
+  if (isChecked && inputs.length > 0) {
+    const firstValue = inputs[0].value;
+    inputs.forEach((input, index) => {
+      if (index !== 0) {
+        input.value = firstValue;
+      }
+    });
+  }
+});
+</script>
