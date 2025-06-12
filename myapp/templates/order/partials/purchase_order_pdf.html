@@ -1,0 +1,147 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    h2 {
+      text-align: center;
+      text-decoration: underline;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .info-table td {
+      vertical-align: top;
+      padding: 5px;
+    }
+
+    .info-left {
+      width: 40%;
+      border: 2px solid #ccc;
+      text-align: center;
+    }
+
+    .info-right {
+      width: 50%;
+    }
+
+    .po-detail {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+  .po-detail td {
+    padding: 2px 4px;
+    line-height: 0.9;
+  }
+
+
+    .po-detail tr {
+      padding: 4px 6px;
+    }
+
+    .item-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .item-table th, .item-table td {
+      border: 1px solid #ccc;
+      padding: 3px;
+      text-align: center;
+    }
+
+    .item-table th {
+      background-color: #e6f0fc;
+    }
+
+    .total-amount {
+      margin-top: 10px;
+      text-align: right;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2>PURCHASE ORDER</h2>
+
+<div class="section">
+  <table class="info-table">
+    <tr>
+      <td class="info-left">
+        {% if created_po.supplier %}
+          <strong>{{ created_po.supplier.name|upper }}</strong><br>
+          {{ created_po.supplier.address }}<br>
+          Tel No: {{ created_po.supplier.tel_no }}<br>
+          Fax No: {{ created_po.supplier.fax_no }}<br>
+          CC: {{ created_po.supplier.cc }}
+        {% endif %}
+      </td>
+      <td class="info-right">
+        <table class="po-detail">
+          <tr><td><strong>No</strong></td><td>: {{ purchase_request.registered_no }}</td></tr>
+          <tr><td><strong>Date</strong></td><td>: {{ created_po.date }}</td></tr>
+          <tr><td><strong>Term</strong></td><td>: {{ created_po.term }}</td></tr>
+          <tr><td><strong>Delivery</strong></td><td>: {{ created_po.delivery }}</td></tr>
+          <tr><td><strong>Shipped By</strong></td><td>: {{ created_po.shipped_by }}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <table class="item-table">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>PR No.</th>
+        <th>Part Name</th>
+        <th>Terminal</th>
+        <th>Quantity</th>
+        <th>Unit Price</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in request_items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.budget_ref_no }}</td>
+          <td>{{ item.loading_part_result.part_name }}</td>
+          <td>{{ item.loading_part_result.terminal }}</td>
+          <td>{{ item.result_average_round|floatformat:-1 }}</td>
+          <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+          <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7">No items available.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="total-amount">
+  AMOUNT: ${{ purchase_request.total_amount|floatformat:"2"|intcomma }}
+</div>
+
+</body>
+</html>

@@ -186,9 +186,97 @@ def approve_purchase_order(request, registered_no):
             messages.success(request, "Factory Manager approval updated.")
 
         return redirect('purchaseOrd')
-
-from django.shortcuts import get_object_or_404, redirect
+    
+import os
+from django.conf import settings
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from .models import PurchaseRequest
+
+from django.shortcuts import redirect
+
+def export_purchase_order_pdf(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+
+    if not pr.approve_factory_manager:
+        return HttpResponse("Unauthorized", status=403)
+
+    template = get_template('order/partials/purchase_order_pdf.html')
+    html = template.render({
+        'purchase_request': pr,
+        'created_po': pr.purchaseorder if hasattr(pr, 'purchaseorder') else None,
+        'request_items': pr.items.all(),
+        'po_form': None,
+        'request': request,
+        'is_pdf': True
+    })
+
+    # Path untuk menyimpan PDF
+    directory = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
+    os.makedirs(directory, exist_ok=True)
+    filename = f"purchase_order_{registered_no}.pdf"
+    filepath = os.path.join(directory, filename)
+
+    with open(filepath, "wb") as f:
+        pisa_status = pisa.CreatePDF(html, dest=f)
+
+    if pisa_status.err:
+        return HttpResponse('PDF generation failed', status=500)
+
+    # Redirect ke halaman list setelah sukses
+    return redirect('list_exported_files')
+
+import os
+from django.conf import settings
+from django.shortcuts import render
+
+def list_exported_purchase_orders(request):
+    folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
+    file_list = []
+
+    if os.path.exists(folder_path):
+        file_list = [
+            f for f in os.listdir(folder_path)
+            if f.endswith('.pdf')
+        ]
+
+    # Buat URL lengkap untuk ditampilkan di browser
+    file_urls = [
+        {
+            'name': f,
+            'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f)
+        }
+        for f in file_list
+    ]
+
+    return render(request, 'order/list_exported_files.html', {'files': file_urls})
+
+import os
+from django.conf import settings
+from django.http import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+@login_required
+@require_POST
+def delete_exported_file(request):
+    filename = request.POST.get('filename')
+
+    if not filename:
+        return JsonResponse({'success': False, 'error': 'Filename not provided'})
+
+    file_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders', filename)
+
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'File not found'})
 
 
 from django.shortcuts import render, redirect, get_object_or_404

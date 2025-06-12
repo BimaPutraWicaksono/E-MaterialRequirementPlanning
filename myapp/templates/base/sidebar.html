@@ -97,7 +97,7 @@
         {% endif %}
 
          <!-- Order -->
-         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd purchaseSend scheduleConf airwayBill invoice' %}menu-open{% endif %}">
+         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf airwayBill invoice' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -118,10 +118,10 @@
                 <p>Purchase Order</p>
               </a>
             </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'purchaseSend' %}active{% endif %}">
-              <a href="{% url 'purchaseSend' %}" class="nav-link">
-                <i class="nav-icon fas fa-cart-arrow-down"></i>
-                <p>Purchase Send</p>
+            <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
+              <a href="{% url 'list_exported_files' %}" class="nav-link">
+                <i class="nav-icon fas fa-file-pdf"></i>
+                <p>Exported PO Files</p>
               </a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'scheduleConf' %}active{% endif %}">
@@ -187,6 +187,14 @@
               </a>
             </li>
           </ul>
+        </li>
+        <li class="nav-item has-treeview">
+            <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+              <a href="{% url 'home' %}" class="nav-link">
+                <i class="nav-icon fas fa-home"></i>
+                <p>Stock</p>
+              </a>
+            </li>
         </li>
       </ul>
     </nav>

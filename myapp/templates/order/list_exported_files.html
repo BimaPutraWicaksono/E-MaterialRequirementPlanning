@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4>Exported Purchase Orders</h4>
+
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered mt-3">
+      <thead class="table-light text-center">
+        <tr>
+          <th>No</th>
+          <th>File Name</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if files %}
+          {% for file in files %}
+            <tr>
+              <td class="text-center align-middle">{{ forloop.counter }}</td>
+              <td class="align-middle">{{ file.name }}</td>
+              <td class="text-center align-middle">
+                <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
+                  <i class="fas fa-eye"></i> View
+                </a>
+                <a href="{{ file.url }}" class="btn btn-sm btn-success" download>
+                  <i class="fas fa-download"></i> Download
+                </a>
+                <button class="btn btn-sm btn-danger delete-file-btn" data-filename="{{ file.name }}">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="3" class="text-center">Tidak ada file Purchase Order yang telah diekspor.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.delete-file-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      const filename = this.getAttribute('data-filename');
+      if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
+
+      fetch("{% url 'delete_exported_file' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ filename })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Gagal menghapus file: " + (data.error || "Unknown error"));
+        }
+      })
+      .catch(error => {
+        alert("Terjadi kesalahan: " + error);
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

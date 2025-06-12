@@ -1,12 +1,12 @@
-
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 from . import views_auth
 from . import views_view
 from . import views_sparepart
 from . import views_order
 from . import views_ordered
-from . import views_send_order
 
 
 urlpatterns = [
@@ -74,10 +74,6 @@ urlpatterns = [
     path('purchase-order/delete/<str:registered_no>/', views_ordered.purchase_order_delete, name='purchase_order_delete'),
     path('purchase-order/approve/<str:registered_no>/', views_ordered.approve_purchase_order, name='approve_purchase_order'),
     
-    # purchase order send
-    path('purchase-send/', views_send_order.purchaseSend, name='purchaseSend'),
-    path('purchase-send/detail/<str:registered_no>/', views_send_order.purchase_send_detail, name='purchase_send_detail'),
-    
     # supplier
     path('supplier/', views_ordered.supplier_list, name='supplier_list'),
     path('supplier/add/', views_ordered.supplier_create, name='supplier_create'),
@@ -90,9 +86,17 @@ urlpatterns = [
     path('shipped/<int:pk>/edit/', views_ordered.shipped_update, name='shipped_update'),
     path('shipped/<int:pk>/delete/', views_ordered.shipped_delete, name='shipped_delete'),
     
+    # eksport
+    path('purchase-order/export/<str:registered_no>/', views_ordered.export_purchase_order_pdf, name='export_purchase_order_pdf'),
+    path('exported-files/', views_ordered.list_exported_purchase_orders, name='list_exported_files'),
+    path('exported-files/delete/', views_ordered.delete_exported_file, name='delete_exported_file'),
+    
     # no
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
     
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

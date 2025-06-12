@@ -377,3 +377,12 @@ class PurchaseOrder(models.Model):
     class Meta:
         db_table = 'purchase_order'
         
+class Stock(models.Model):
+    registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+    date = models.DateField(auto_now_add=True)
+    PartName = models.ForeignKey(PartName, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"Request {self.registered_no}"
+
+    class Meta:
+        db_table = 'stock'
