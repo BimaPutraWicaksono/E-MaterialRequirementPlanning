@@ -134,29 +134,14 @@ def purchase_order_delete(request, registered_no):
     return redirect('purchaseOrd')
 
 @login_required
-def approve_purchase_request(request, registered_no):
+def approve_purchase_order(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # Supervisor
-        if request.user.groups.filter(name='Supervisor').exists():
-            if action == 'approve_spv':
-                pr.approve_spv = True
-                pr.reason_spv = ''
-            elif action == 'disapprove_spv':
-                reason = request.POST.get('reason_spv', '').strip()
-                if not reason:
-                    messages.error(request, "Alasan penolakan harus diisi oleh Supervisor.")
-                    return redirect(request.META.get('HTTP_REFERER'))
-                pr.approve_spv = False
-                pr.reason_spv = reason
-            pr.save()
-            messages.success(request, "Supervisor approval updated.")
-
         # Senior Supervisor
-        elif request.user.groups.filter(name='SeniorSupervisor').exists():
+        if request.user.groups.filter(name='SeniorSupervisor').exists():
             if action == 'approve_sspv':
                 pr.approve_sspv = True
                 pr.reason_sspv = ''
@@ -200,7 +185,7 @@ def approve_purchase_request(request, registered_no):
             pr.save()
             messages.success(request, "Factory Manager approval updated.")
 
-        return redirect('purchaseReq')
+        return redirect('purchaseOrd')
 
 from django.shortcuts import get_object_or_404, redirect
 from .models import PurchaseRequest

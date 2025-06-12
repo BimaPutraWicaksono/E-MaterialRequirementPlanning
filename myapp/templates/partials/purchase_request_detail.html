@@ -15,9 +15,6 @@
           <tr>
             <th>Requested</th>
             <th>SPV Approved</th>
-            <th>SSPV Approved</th>
-            <th>Manager Approved</th>
-            <th>Factory Manager Approved</th>
           </tr>
         </thead>
         <tbody>
@@ -38,51 +35,12 @@
                 -
               {% endif %}
             </td>
-            <td>
-              {% if purchase_request.approve_sspv == True %}
-                <i class="fas fa-check text-success"></i>
-              {% elif purchase_request.approve_sspv == False %}
-                <i class="fas fa-times text-danger"></i>
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td>
-              {% if purchase_request.approve_manager == True %}
-                <i class="fas fa-check text-success"></i>
-              {% elif purchase_request.approve_manager == False %}
-                <i class="fas fa-times text-danger"></i>
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td>
-              {% if purchase_request.approve_factory_manager == True %}
-                <i class="fas fa-check text-success"></i>
-              {% elif purchase_request.approve_factory_manager == False %}
-                <i class="fas fa-times text-danger"></i>
-              {% else %}
-                -
-              {% endif %}
-            </td>
         </tbody>
       </table>
       <table class="clean-table">
         <tr>
           <td>{% if purchase_request.reason_spv %}SPV Reason{% endif %}</td>
           <td>{% if purchase_request.reason_spv %}<td>:</td><td>{{ purchase_request.reason_spv }}</td>{% endif %}</td>
-        </tr>
-        <tr>
-          <td>{% if purchase_request.reason_sspv %}SSPV Reason{% endif %}</td>
-          <td>{% if purchase_request.reason_sspv %}<td>:</td><td>{{ purchase_request.reason_sspv }}</td>{% endif %}</td>
-        </tr>
-        <tr>
-          <td>{% if purchase_request.reason_manager %}Manager Reason{% endif %}</td>
-          <td>{% if purchase_request.reason_manager %}: {{ purchase_request.reason_manager }}{% endif %}</td>
-        </tr>
-        <tr>
-          <td>{% if purchase_request.reason_factory_manager %}Factory Manager Reason{% endif %}</td>
-          <td>{% if purchase_request.reason_factory_manager %}: {{ purchase_request.reason_factory_manager }}{% endif %}</td>
         </tr>
       </table>
     </div>
@@ -150,72 +108,6 @@
         <button type="submit" class="btn btn-primary">Submit Supervisor Approval</button>
       {% endif %}
     {% endif %}
-
-    {% if request.user|has_group:"SeniorSupervisor" %}
-      {% if not purchase_request.approve_spv %}
-        <p class="text-danger">Approval is not complete</p>
-      {% elif purchase_request.approve_sspv %}
-        <p class="text-success">Already approved by Senior Supervisor.</p>
-      {% else %}
-        <!-- FORM APPROVAL SSPV -->
-        <div class="mb-3">
-          <label for="approve_sspv" class="form-label">Approved by Senior Supervisor:</label>
-          <select name="action" id="approve_sspv" class="form-select" onchange="toggleReason('sspv')">
-            <option value="approve_sspv">Yes</option>
-            <option value="disapprove_sspv">No</option>
-          </select>
-        </div>
-        <div class="mb-3" id="reason_sspv_div" style="display: none;">
-          <label for="reason_sspv" class="form-label">Reason for Disapproval (Senior Supervisor):</label>
-          <input type="text" name="reason_sspv" id="reason_sspv" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_sspv }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Submit Senior Supervisor Approval</button>
-      {% endif %}
-    {% endif %}
-
-    {% if request.user|has_group:"Manager" %}
-      {% if not purchase_request.approve_sspv %}
-        <p class="text-danger">Approval is not complete</p>
-      {% elif purchase_request.approve_manager %}
-        <p class="text-success">Already approved by Manager.</p>
-      {% else %}
-        <!-- FORM APPROVAL MANAGER -->
-        <div class="mb-3">
-          <label for="approve_manager" class="form-label">Approved by Manager:</label>
-          <select name="action" id="approve_manager" class="form-select" onchange="toggleReason('manager')">
-            <option value="approve_manager">Yes</option>
-            <option value="disapprove_manager">No</option>
-          </select>
-        </div>
-        <div class="mb-3" id="reason_manager_div" style="display: none;">
-          <label for="reason_manager" class="form-label">Reason for Disapproval (Manager):</label>
-          <input type="text" name="reason_manager" id="reason_manager" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_manager }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Submit Manager Approval</button>
-      {% endif %}
-    {% endif %}
-
-    {% if request.user|has_group:"FactoryManager" %}
-      {% if not purchase_request.approve_manager %}
-        <p class="text-danger">Approval is not complete</p>
-      {% elif purchase_request.approve_factory_manager %}
-        <p class="text-success">Already approved by Factory Manager</p>
-      {% else %}
-        <!-- FORM APPROVAL FACTORY MANAGER -->
-        <div class="mb-3">
-          <label for="approve_factory_manager" class="form-label">Approved by Factory Manager:</label>
-          <select name="action" id="approve_factory_manager" class="form-select" onchange="toggleReason('factory_manager')">
-            <option value="approve_factory_manager">Yes</option>
-            <option value="disapprove_factory_manager">No</option>
-          </select>
-        </div>
-        <div class="mb-3" id="reason_factory_manager_div" style="display: none;">
-          <label for="reason_factory_manager" class="form-label">Reason for Disapproval (Factory Manager):</label>
-          <input type="text" name="reason_factory_manager" id="reason_factory_manager" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_factory_manager }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Submit Factory Manager Approval</button>
-      {% endif %}
-    {% endif %}
   </form>
 </div>
 <style>
@@ -248,8 +140,5 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     toggleReason('spv');
-    toggleReason('sspv');
-    toggleReason('manager');
-    toggleReason('factory_manager');
   });
 </script>

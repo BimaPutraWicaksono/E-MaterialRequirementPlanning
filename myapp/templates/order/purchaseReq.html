@@ -9,9 +9,6 @@
           <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
           <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Pending</option>
           <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
-          <option value="approved_sspv" {% if filter_option == 'approved_sspv' %}selected{% endif %}>SSPV</option>
-          <option value="approved_manager" {% if filter_option == 'approved_manager' %}selected{% endif %}>Manager</option>
-          <option value="approved_factory_manager" {% if filter_option == 'approved_factory_manager' %}selected{% endif %}>Factory Manager</option>
           <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
       </select>
     </form>
@@ -28,13 +25,7 @@
         <tr>
           <td class="text-start align-middle">{{ pr.registered_no }}</td>
           <td class="text-center align-middle">
-            {% if pr.approve_factory_manager %}
-              Factory Manager <i class="fas fa-check text-success"></i>
-            {% elif pr.approve_manager %}
-              Manager <i class="fas fa-check text-success"></i>
-            {% elif pr.approve_sspv %}
-              SSPV <i class="fas fa-check text-success"></i>
-            {% elif pr.approve_spv %}
+            {% if pr.approve_spv %}
               SPV <i class="fas fa-check text-success"></i>
             {% elif pr.requested %}
               Requested <i class="fas fa-check text-success"></i>
@@ -56,8 +47,18 @@
                   </div>
                 {% endif %}
               {% endif %}
-              {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
-                <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+              {% if request.user|has_group:"Supervisor" %}
+                {% if not pr.approve_spv %}
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                {% endif %}
+                {% if pr.approve_spv %}
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                {% endif %}
+              {% endif %}
+              {% if request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
+                {% if pr.approve_spv %}
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                {% endif %}
               {% endif %}
             </div>
           </td>
@@ -68,9 +69,9 @@
     </tbody>
   </table>
   <div class="d-flex">
-    <div class="border border-warning rounded p-2 mt-1">
-      <strong>Note:</strong> The approval flow proceeds as follows: Requested <i class="fas fa-long-arrow-alt-right"></i> SPV <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager
-    </div>
+      <div class="border border-warning rounded p-2 mt-1">
+        <strong>Note:</strong> The approval flow proceeds as follows: Requested <i class="fas fa-long-arrow-alt-right"></i> SPV 
+      </div>
     {% if request.user|has_group:"Karyawan" %}
       <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
         Add Purchase Request
