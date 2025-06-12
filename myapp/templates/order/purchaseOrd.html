@@ -59,20 +59,29 @@
               <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
                 <td class="text-start align-middle">{{ pr.registered_no }}</td>               
                 <td class="text-center align-middle">
-                  {% if pr.approve_factory_manager %}
+                  {% if pr.approve_factory_manager is True %}
                     Factory Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_manager %}
+                  {% elif pr.approve_factory_manager is False %}
+                    Factory Manager <i class="fas fa-times text-danger"></i>
+                  {% elif pr.approve_manager is True %}
                     Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_sspv %}
+                  {% elif pr.approve_manager is False %}
+                    Manager <i class="fas fa-times text-danger"></i>
+                  {% elif pr.approve_sspv is True %}
                     SSPV <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_spv %}
+                  {% elif pr.approve_sspv is False %}
+                    SSPV <i class="fas fa-times text-danger"></i>
+                  {% elif pr.approve_spv is True %}
                     SPV <i class="fas fa-check text-success"></i>
+                  {% elif pr.approve_spv is False %}
+                    SPV <i class="fas fa-times text-danger"></i>
                   {% elif pr.requested %}
                     Requested <i class="fas fa-check text-success"></i>
                   {% else %}
                     <i class="fas fa-times text-danger"></i>
                   {% endif %}
                 </td>
+
                 <td class="text-center align-middle">
                   {% if request.user|has_group:"Supervisor" %}
                     {% if pr.registered_no not in po_registered_nos %}

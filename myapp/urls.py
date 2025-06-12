@@ -1,11 +1,12 @@
 
 from django.urls import path
 from . import views
+from . import views_auth
 from . import views_view
 from . import views_sparepart
 from . import views_order
 from . import views_ordered
-from . import views_auth
+from . import views_send_order
 
 
 urlpatterns = [
@@ -72,6 +73,10 @@ urlpatterns = [
     path('purchase-order/edit/<str:registered_no>/', views_ordered.purchase_order_edit, name='purchase_order_edit'),
     path('purchase-order/delete/<str:registered_no>/', views_ordered.purchase_order_delete, name='purchase_order_delete'),
     path('purchase-order/approve/<str:registered_no>/', views_ordered.approve_purchase_order, name='approve_purchase_order'),
+    
+    # purchase order send
+    path('purchase-send/', views_send_order.purchaseSend, name='purchaseSend'),
+    path('purchase-send/detail/<str:registered_no>/', views_send_order.purchase_send_detail, name='purchase_send_detail'),
     
     # supplier
     path('supplier/', views_ordered.supplier_list, name='supplier_list'),

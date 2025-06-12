@@ -152,7 +152,7 @@ def ajax_get_loading_parts(request):
         
         parts_list = unique_parts.values()
 
-        table_html = render_to_string('partials/loading_parts_table.html', {
+        table_html = render_to_string('order/partials/loading_parts_table.html', {
             'parts': parts_list
         })
         return JsonResponse({'table': table_html})
@@ -161,7 +161,7 @@ def ajax_get_loading_parts(request):
 def ajax_load_sections(request):
     departement_id = request.GET.get('departement_id')
     sections = Section.objects.filter(departement_id=departement_id).order_by('name')
-    html = render_to_string('partials/section_dropdown_list_options.html', {'sections': sections})
+    html = render_to_string('order/partials/section_dropdown_list_options.html', {'sections': sections})
     return JsonResponse(html, safe=False)
 
 
@@ -176,7 +176,7 @@ def purchase_request_detail(request, registered_no):
     }
 
     # Render template ke string
-    html = render_to_string('partials/purchase_request_detail.html', context, request=request)
+    html = render_to_string('order/partials/purchase_request_detail.html', context, request=request)
     return JsonResponse({'html': html})
 
 
@@ -274,7 +274,7 @@ def purchase_request_edit(request, registered_no):
         'registered_no': registered_no,
         'purchase_request': pr,
     }
-    return render(request, 'order/purchase_request_edit.html', context)
+    return render(request, 'order/partials/purchase_request_edit.html', context)
 
 @login_required
 def ajax_get_loading_parts_edit(request):
@@ -296,7 +296,7 @@ def ajax_get_loading_parts_edit(request):
             for d in details_qs:
                 existing_details[d.loading_part_result.partdesk_id] = d
 
-        table_html = render_to_string('partials/loading_parts_table_edit.html', {
+        table_html = render_to_string('order/partials/loading_parts_table_edit.html', {
             'parts': parts_list,
             'existing_details': existing_details
         })

@@ -1,0 +1,264 @@
+{% load user_tags %}
+{% load humanize %}
+<div class="p-3 border">
+  <h4 class="text-center"><u>PURCHASE ORDER</u></h4>
+
+    <div class="d-flex mt-2 mb-2 justify-content-between">
+      {% if created_po.supplier and created_po.supplier.name and created_po.supplier.address %}
+        <div class="p-3 border mr-3">
+          <table class="clean-table">
+            <tr>
+              <td class="text-center"><strong>{{ created_po.supplier.name }}</strong></td>
+            </tr>
+            <tr>
+              <td class="text-center">{{ created_po.supplier.address }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">Tel No: {{ created_po.supplier.tel_no }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">Fax No: {{ created_po.supplier.fax_no }}</td>
+            </tr>
+            <tr>
+              <td class="text-center">CC: {{ created_po.supplier.cc }}</td>
+            </tr>
+          </table>
+        </div>
+      {% endif %}
+      <!-- Tabel Kanan -->
+     
+        {% if created_po %}
+       
+          <table class="clean-table ml-3">
+            <tr><td><strong>Registered No</strong></td><td>:</td><td>{{ purchase_request.registered_no }}</td></tr>
+            <tr><td><strong>Date</strong></td><td>:</td><td>{{ created_po.date }}</td></tr>
+            <tr><td><strong>Term</strong></td><td>:</td><td>{{ created_po.term }}</td></tr>
+            <tr><td><strong>Delivery</strong></td><td>:</td><td>{{ created_po.delivery }}</td></tr>
+            <tr><td><strong>Shipped By</strong></td><td>:</td><td>{{ created_po.shipped_by }}</td></tr>
+          </table>
+          <table class="table table-bordered text-center " style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Requested</th>
+                <th>SPV</th>
+                <th>SSPV</th>
+                <th>Manager</th>
+                <th>Factory Manager</th>
+              </tr>
+            </thead>
+              <td>
+                {% if purchase_request.requested %}
+                  <i class="fas fa-check text-success"></i>
+                {% else %}
+                <i class="fas fa-times text-danger"></i>
+                {% endif %}
+              </td>
+              <td>
+                {% if purchase_request.approve_spv == True %}
+                <i class="fas fa-check text-success"></i>
+                {% elif purchase_request.approve_spv == False %}
+                <i class="fas fa-times text-danger"></i>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+              <td>
+                {% if purchase_request.approve_sspv == True %}
+                  <i class="fas fa-check text-success"></i>
+                  {% elif purchase_request.approve_sspv == False %}
+                  <i class="fas fa-times text-danger"></i>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if purchase_request.approve_manager == True %}
+                  <i class="fas fa-check text-success"></i>
+                {% elif purchase_request.approve_manager == False %}
+                <i class="fas fa-times text-danger"></i>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+              <td>
+                {% if purchase_request.approve_factory_manager == True %}
+                  <i class="fas fa-check text-success"></i>
+                {% elif purchase_request.approve_factory_manager == False %}
+                  <i class="fas fa-times text-danger"></i>
+                  {% else %}
+                  -
+                  {% endif %}
+              </td>
+            </tbody>
+          </table>
+        {% endif %}
+    </div>
+  {% if not created_po %}
+    <div>
+      <form method="POST" id="purchase-order-form">
+        {% csrf_token %}
+        <table class="clean-table">
+          <tr>
+            <td><strong>Term</strong></td><td>:</td>
+            <td>{{ po_form.term }}</td>
+          </tr>
+          <tr>
+            <td><strong>Delivery</strong></td><td>:</td>
+            <td>{{ po_form.delivery }}</td>
+          </tr>
+          <tr>
+            <td><strong>Supplier</strong></td><td>:</td>
+            <td>{{ po_form.supplier }}</td>
+          </tr>
+          <tr>
+            <td><strong>Shipped By</strong></td><td>:</td>
+            <td>{{ po_form.shipped_by }}</td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  {% endif %}
+  <div class="table-responsive mt-2 mb-2">
+    <table class="table table-bordered mt-3" id="table_approve">
+      <thead class="table-secondary">
+        <tr>
+          <th>No</th>
+          <th>Budget Ref No</th>
+          <th>Part Name</th>
+          <th>Terminal</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Amount</th>
+          <th>Deadline</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in request_items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.budget_ref_no }}</td>
+            <td>{{ item.loading_part_result.part_name }}</td>
+            <td>{{ item.loading_part_result.terminal }}</td>
+            <td>{{ item.result_average_round|floatformat:-1 }}</td>
+            <td>$ {{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+            <td>$ {{ item.amount|floatformat:"2"|intcomma }}</td>
+            <td>{{ item.deadline }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center">Tidak ada item.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table style="width: auto;" >
+      <tr>
+        <td><strong>AMOUNT</strong></td>
+        <td><strong>: $ {{ purchase_request.total_amount|floatformat:"2"|intcomma }}</strong></td>
+      </tr>
+    </table>
+  </div>
+    <form method="POST" action="{% url 'approve_purchase_order' purchase_request.registered_no %}" id="purchase-request-form">
+      {% csrf_token %}
+      {% if request.user|has_group:"SeniorSupervisor" %}
+        {% if not purchase_request.approve_spv %}
+          <p class="text-danger">Approval is not complete</p>
+        {% elif purchase_request.approve_sspv %}
+          <p class="text-success">You have already approved</p>
+        {% else %}
+          <!-- FORM APPROVAL SSPV -->
+          <div class="mb-3">
+            <label for="approve_sspv" class="form-label">Approved by Senior Supervisor:</label>
+            <select name="action" id="approve_sspv" class="form-select" onchange="toggleReason('sspv')">
+              <option value="approve_sspv">Yes</option>
+              <option value="disapprove_sspv">No</option>
+            </select>
+          </div> 
+          <div class="mb-3" id="reason_sspv_div" style="display: none;">
+            <label for="reason_sspv" class="form-label">Reason for Disapproval (Senior Supervisor):</label>
+            <input type="text" name="reason_sspv" id="reason_sspv" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_sspv }}">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Senior Supervisor Approval</button>
+        {% endif %}
+      {% endif %}
+
+      {% if request.user|has_group:"Manager" %}
+        {% if not purchase_request.approve_sspv %}
+          <p class="text-danger">Approval is not complete</p>
+        {% elif purchase_request.approve_manager %}
+          <p class="text-success">You have already approved</p>
+        {% else %}
+          <!-- FORM APPROVAL MANAGER -->
+          <div class="mb-3">
+            <label for="approve_manager" class="form-label">Approved by Manager:</label>
+            <select name="action" id="approve_manager" class="form-select" onchange="toggleReason('manager')">
+              <option value="approve_manager">Yes</option>
+              <option value="disapprove_manager">No</option>
+            </select>
+          </div>
+          <div class="mb-3" id="reason_manager_div" style="display: none;">
+            <label for="reason_manager" class="form-label">Reason for Disapproval (Manager):</label>
+            <input type="text" name="reason_manager" id="reason_manager" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_manager }}">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Manager Approval</button>
+        {% endif %}
+      {% endif %}
+
+      {% if request.user|has_group:"FactoryManager" %}
+        {% if not purchase_request.approve_manager %}
+          <p class="text-danger">Approval is not complete</p>
+        {% elif purchase_request.approve_factory_manager %}
+          <p class="text-success">You have already approved</p>
+        {% else %}
+          <!-- FORM APPROVAL FACTORY MANAGER -->
+          <div class="mb-3">
+            <label for="approve_factory_manager" class="form-label">Approved by Factory Manager:</label>
+            <select name="action" id="approve_factory_manager" class="form-select" onchange="toggleReason('factory_manager')">
+              <option value="approve_factory_manager">Yes</option>
+              <option value="disapprove_factory_manager">No</option>
+            </select>
+          </div>
+          <div class="mb-3" id="reason_factory_manager_div" style="display: none;">
+            <label for="reason_factory_manager" class="form-label">Reason for Disapproval (Factory Manager):</label>
+            <input type="text" name="reason_factory_manager" id="reason_factory_manager" class="form-control" placeholder="Enter reason" value="{{ purchase_request.reason_factory_manager }}">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Factory Manager Approval</button>
+        {% endif %}
+      {% endif %}
+    </form>
+  {% if not created_po %}
+    <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
+      Save Purchase Order
+    </button>
+  {% endif %}
+</div>
+<style>
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .clean-table td {
+    padding: 4px 8px;
+    background-color: white;
+    vertical-align: top;
+  }
+  .clean-table td:first-child {
+    white-space: nowrap;
+    width: 150px;
+  }
+  .clean-table td:nth-child(2) {
+    width: 10px;
+  }
+</style>
+<script>
+  new DataTable('#table_approve');
+
+  function toggleReason(role) {
+    const select = document.getElementById(`approve_${role}`);
+    const reasonDiv = document.getElementById(`reason_${role}_div`);
+    reasonDiv.style.display = select.value === `disapprove_${role}` ? 'block' : 'none';
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    toggleReason('spv');
+  });
+</script>

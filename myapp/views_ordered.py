@@ -99,7 +99,7 @@ def purchase_order_detail(request, registered_no):
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
     form = PurchaseOrderForm()
-    html = render(request, 'partials/purchase_order_detail.html', {
+    html = render(request, 'order/partials/purchase_order_detail.html', {
         'purchase_request': purchase_request,
         'request_items': request_items,
         'po_form': form,
@@ -122,7 +122,7 @@ def purchase_order_edit(request, registered_no):
     else:
         form = PurchaseOrderForm(instance=po)
 
-    return render(request, 'partials/purchase_order_edit.html', {
+    return render(request, 'order/partials/purchase_order_edit.html', {
         'form': form,
         'po': po,
     })

@@ -27,11 +27,13 @@
         <tr>
           <td class="text-start align-middle">{{ pr.registered_no }}</td>
           <td class="text-center align-middle">
-            {% if pr.approve_spv %} 
+            {% if pr.approve_spv is True %}
               SPV <i class="fas fa-check text-success"></i>
+            {% elif pr.approve_spv is False %}
+              SPV <i class="fas fa-times text-danger"></i>
             {% elif pr.requested %}
               Requested <i class="fas fa-check text-success"></i>
-            {% else %}
+            {% elif pr.approve_spv is False %}
               <i class="fas fa-times text-danger"></i>
             {% endif %}
           </td>
