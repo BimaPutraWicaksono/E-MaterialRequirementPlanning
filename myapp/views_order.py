@@ -120,31 +120,15 @@ def purchaseReq(request):
     # Tambahkan logika filter baru
     if filter_option == 'pending':
         requests = requests.filter(
-            approve_spv__isnull=True,
-            approve_sspv__isnull=True,
-            approve_manager__isnull=True,
-            approve_factory_manager__isnull=True
+            approve_spv__isnull=True
         )
     elif filter_option == 'approved_spv':
         requests = requests.filter(
-            approve_spv=True,
-            approve_sspv__isnull=True,
-            approve_manager__isnull=True,
-            approve_factory_manager__isnull=True
-        )
-    elif filter_option == 'approved_sspv':
-        requests = requests.filter(
-            approve_spv=True,
-            approve_sspv=True,
-            approve_manager__isnull=True,
-            approve_factory_manager__isnull=True
+            approve_spv=True
         )
     elif filter_option == 'rejected':
         requests = requests.filter(
-            Q(approve_spv=False) |
-            Q(approve_sspv=False) |
-            Q(approve_manager=False) |
-            Q(approve_factory_manager=False)
+            Q(approve_spv=False)
         )
 
     requests = requests.order_by('-date')

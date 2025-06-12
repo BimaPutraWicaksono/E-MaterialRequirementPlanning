@@ -1,11 +1,49 @@
 {% extends "base.html" %}
 {% load user_tags %}
 {% block content %}
+{% load humanize %}
 <div class="container mt-4">
   <h4>PURCHASE ORDER</h4>
-  
   {% if requests %}
-  <div class="table-responsive mb-4">
+    <div class="table-responsive mb-4">
+      {% if request.user|has_group:"Admin" %}
+        <table class="table table-bordered mt-3" id='table_purchase_req'>
+          <thead class="table-light text-center">
+            <tr>
+              <th>Registered No</th>
+              <th>Approval</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                <td class="text-start align-middle">{{ pr.registered_no }}</td>               
+                <td class="text-center align-middle">
+                  {% if pr.approve_factory_manager %}
+                    Factory Manager <i class="fas fa-check text-success"></i>
+                  {% elif pr.approve_manager %}
+                    Manager <i class="fas fa-check text-success"></i>
+                  {% elif pr.approve_sspv %}
+                    SSPV <i class="fas fa-check text-success"></i>
+                  {% elif pr.approve_spv %}
+                    SPV <i class="fas fa-check text-success"></i>
+                  {% elif pr.requested %}
+                    Requested <i class="fas fa-check text-success"></i>
+                  {% else %}
+                    <i class="fas fa-times text-danger"></i>
+                  {% endif %}
+                </td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                  <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                </td>
+              </tr>
+          </tbody>  
+        </table>
+        <div class="border border-warning rounded p-2 mt-1">
+          <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
+        </div>
+      {% endif %}
       {% comment %} tabel spv {% endcomment %}
       {% if request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
         <table class="table table-bordered mt-3" id='table_purchase_req'>
@@ -66,7 +104,7 @@
           <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
         </div>
       {% endif %}
-    {% comment %} tabel SSPV, Manager, FactoryManager {% endcomment %}
+      {% comment %} tabel SSPV, Manager, FactoryManager {% endcomment %}
       {% if request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
         <table class="table table-bordered mt-3" id='table_purchase_req'>
           <thead class="table-light text-center">
@@ -133,7 +171,6 @@
           <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
         </div>
       {% endif %}
-      
     </div>
   {% else %}
     <p>Tidak ada Purchase Order.</p>

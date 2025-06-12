@@ -112,7 +112,7 @@ from .models import Supplier
 class SupplierForm(forms.ModelForm):
     class Meta:
         model = Supplier
-        fields = ['name', 'address', 'tel_no', 'fax_no']
+        fields = ['name', 'address', 'tel_no', 'fax_no', 'cc']
         
 
 

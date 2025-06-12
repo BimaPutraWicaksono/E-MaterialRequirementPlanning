@@ -1,4 +1,5 @@
 {% load user_tags %}
+{% load humanize %}
 <div class="p-3 border">
   <h3>PURCHASE REQUISITION</h3>
 
@@ -67,8 +68,8 @@
             <td>{{ item.loading_part_result.part_name }}</td>
             <td>{{ item.loading_part_result.terminal }}</td>
             <td>{{ item.result_average_round|floatformat:-1 }}</td>
-            <td>$ {{ item.estimated_price }}</td>
-            <td>$ {{ item.amount }}</td>
+            <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+            <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
             <td>{{ item.deadline }}</td>
           </tr>
         {% empty %}
@@ -79,7 +80,7 @@
     <table style="width: auto;" >
       <tr>
         <td><strong>AMOUNT</strong></td>
-        <td><strong>: Rp. {{ purchase_request.total_amount }}</strong></td>
+        <td><strong>: ${{ purchase_request.total_amount|floatformat:"2"|intcomma }}</strong></td>
       </tr>
     </table>
   </div>

@@ -1,17 +1,19 @@
 {% extends "base.html" %} 
 {% load user_tags %}
 {% block content %}
+{% load humanize %}
+
 <div class="container mt-4">
   <h3>PURCHASE REQUISITION LIST</h3>
-    <form method="get" class="form-inline mb-3 justify-content-end">
-      <i class="fas fa-filter text-muted mr-2"></i>
-      <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
-          <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
-          <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Pending</option>
-          <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
-          <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
-      </select>
-    </form>
+  <form method="get" class="form-inline mb-3 justify-content-end">
+    <i class="fas fa-filter text-muted mr-2"></i>
+    <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
+        <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
+        <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
+        <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+  </form>
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
       <tr>
@@ -25,7 +27,7 @@
         <tr>
           <td class="text-start align-middle">{{ pr.registered_no }}</td>
           <td class="text-center align-middle">
-            {% if pr.approve_spv %}
+            {% if pr.approve_spv %} 
               SPV <i class="fas fa-check text-success"></i>
             {% elif pr.requested %}
               Requested <i class="fas fa-check text-success"></i>
@@ -59,6 +61,15 @@
                 {% if pr.approve_spv %}
                   <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                 {% endif %}
+              {% endif %}
+              {% if request.user|has_group:"Admin" %}
+                <div>
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                  <form method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </div>
               {% endif %}
             </div>
           </td>
@@ -122,7 +133,7 @@
             </div>
             <div id="loading-parts-table-container" class="mt-4"></div>
             <div class="mt-3">
-              <h5>Total Amount: <span id="total-amount-display">0</span></h5>
+              <h5>Total Amount: <span id="total-amount-display">$0.00</span></h5>
             </div>
             <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
             <div class="modal-footer">
@@ -188,9 +199,16 @@
         $(this).find('.amount').val(amount.toFixed(2));
         total += amount;
       });
-      $('#total-amount-display').text(total.toFixed(2));
+
+      const formattedTotal = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(total);
+
+      $('#total-amount-display').text(formattedTotal);
       $('#total-amount-hidden').val(total.toFixed(2));
     }
+
 
     $(document).on('input', '.est-price', updateAmounts);
 

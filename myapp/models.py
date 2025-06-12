@@ -345,6 +345,7 @@ class Supplier(models.Model):
     address = models.CharField(max_length=100)
     tel_no = models.CharField(max_length=100, unique=True)
     fax_no = models.CharField(max_length=100, unique=True)
+    cc = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         db_table = 'supplier'
