@@ -37,14 +37,23 @@ def create_section(request):
     return redirect('master_departement_section')
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.template.loader import render_to_string
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.db.models import Q
+from .models import PurchaseRequest, RequestItem, LoadingPartResult
+from .form import PurchaseRequestForm
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
 from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section
 from .form import PurchaseRequestForm
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 @login_required
 def purchaseReq(request):
+    user_departement = request.user.departement  # Ambil departemen user login
+
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
@@ -60,6 +69,7 @@ def purchaseReq(request):
                 total_amount = 0
 
             pr = form.save(commit=False)
+            pr.departement = user_departement  # Isi otomatis dari user login
             pr.total_amount = total_amount
             pr.save()
             pr.part_order.set(selected_carlines)
@@ -103,8 +113,10 @@ def purchaseReq(request):
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
+        # Filter section sesuai dengan departemen user
+        form.fields['section'].queryset = Section.objects.filter(departement=user_departement)
 
-    # Filter berdasarkan query parameter
+    # Filter data sesuai role user
     if 'filter' in request.GET:
         filter_option = request.GET['filter']
     else:
@@ -113,23 +125,16 @@ def purchaseReq(request):
         elif request.user.groups.filter(name='Supervisor').exists():
             filter_option = 'pending'
         else:
-            filter_option = 'all'  # fallback
+            filter_option = 'all'
 
     requests = PurchaseRequest.objects.all()
 
-    # Tambahkan logika filter baru
     if filter_option == 'pending':
-        requests = requests.filter(
-            approve_spv__isnull=True
-        )
+        requests = requests.filter(approve_spv__isnull=True)
     elif filter_option == 'approved_spv':
-        requests = requests.filter(
-            approve_spv=True
-        )
+        requests = requests.filter(approve_spv=True)
     elif filter_option == 'rejected':
-        requests = requests.filter(
-            Q(approve_spv=False)
-        )
+        requests = requests.filter(Q(approve_spv=False))
 
     requests = requests.order_by('-date')
 
@@ -137,8 +142,10 @@ def purchaseReq(request):
         'form': form,
         'requests': requests,
         'filter_option': filter_option,
+        'user_departement': user_departement,
     })
 
+from django.template.loader import render_to_string
 from datetime import date, timedelta
 
 @login_required

@@ -81,11 +81,16 @@ from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
 from .models import PurchaseRequest, RequestItem, PurchaseOrder
 from .form import PurchaseOrderForm
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from .models import PurchaseRequest, RequestItem, PurchaseOrder
+from .form import PurchaseOrderForm
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def purchase_order_detail(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    request_items = RequestItem.objects.filter(purchase_request=purchase_request)  # Perbaikan di sini
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request)
     po = PurchaseOrder.objects.filter(registered_no=purchase_request).last()
 
     if request.method == 'POST':
@@ -98,15 +103,26 @@ def purchase_order_detail(request, registered_no):
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-    form = PurchaseOrderForm()
+    # Ambil deadline paling atas (terlama)
+    earliest_deadline = request_items.exclude(deadline=None).order_by('deadline').first()
+    initial_data = {}
+    if earliest_deadline:
+        initial_data['delivery'] = earliest_deadline.deadline
+
+    form = PurchaseOrderForm(initial=initial_data)
+    
+    if 'delivery' in form.fields:
+        form.fields['delivery'].disabled = True
+        
     html = render(request, 'order/partials/purchase_order_detail.html', {
         'purchase_request': purchase_request,
         'request_items': request_items,
         'po_form': form,
-        'created_po': po, 
+        'created_po': po,
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
+
 
 from .models import PurchaseOrder, PurchaseRequest
 

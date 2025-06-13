@@ -118,12 +118,14 @@
                 <p>Purchase Order</p>
               </a>
             </li>
+            {% if request.user|has_group:"Karyawan" %}
             <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
               <a href="{% url 'list_exported_files' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-pdf"></i>
                 <p>Exported PO Files</p>
               </a>
             </li>
+            {% endif %}
             <li class="nav-item {% if request.resolver_match.url_name == 'scheduleConf' %}active{% endif %}">
               <a href="{% url 'scheduleConf' %}" class="nav-link">
                 <i class="nav-icon fas fa-calendar-check"></i>

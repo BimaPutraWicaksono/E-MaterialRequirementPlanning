@@ -111,7 +111,8 @@
                 </div>
                 <div class="mb-2">
                   <label><strong>Departement</strong></label><br>
-                  {{ form.departement }}
+                  <input type="text" class="form-control" value="{{ user_departement }}" readonly>
+                  <input type="hidden" name="departement" value="{{ user_departement.id }}">
                 </div>
                 <div class="mb-2">
                   <label><strong>Section</strong></label><br>
