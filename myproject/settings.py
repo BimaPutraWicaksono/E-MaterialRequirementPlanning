@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import environ
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# 1. Tentukan BASE_DIR dulu
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 2. Load .env
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # login url
 LOGIN_URL = '/e-mrp/login/'
@@ -153,3 +158,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # baru buat image
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# send email
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')

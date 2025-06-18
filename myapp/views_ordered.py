@@ -299,6 +299,61 @@ def delete_exported_file(request):
     else:
         return JsonResponse({'success': False, 'error': 'File not found'})
 
+# send email
+import os
+from django.conf import settings
+from django.core.mail import EmailMessage
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+@csrf_exempt
+@login_required
+@require_POST
+def send_exported_file_email(request):
+    filename = request.POST.get('filename')
+    recipient_email = request.POST.get('email')
+
+    if not filename or not recipient_email:
+        return JsonResponse({'success': False, 'error': 'Filename atau email tidak disediakan.'})
+
+    file_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders', filename)
+
+    if not os.path.exists(file_path):
+        return JsonResponse({'success': False, 'error': 'File tidak ditemukan.'})
+
+    try:
+        # Nama file tanpa ekstensi
+        filename_no_ext = os.path.splitext(filename)[0]
+
+        # Subjek email formal
+        subject = f' Purchase Order ({filename_no_ext})'
+
+        # Isi email formal
+        body = (
+            "Yth. Bapak/Ibu,\n\n"
+            f"Bersama email ini, kami lampirkan dokumen Purchase Order: {filename}.\n\n"
+            "Mohon untuk ditindaklanjuti sesuai prosedur yang berlaku. "
+            "Apabila terdapat hal yang perlu dikonfirmasi, silakan hubungi kami melalui email ini atau kontak yang tersedia.\n\n"
+            "Atas perhatian dan kerja samanya, kami ucapkan terima kasih.\n\n"
+            "Hormat kami,\n"
+            "[Nama Perusahaan Anda]"
+        )
+
+        email = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[recipient_email]
+        )
+        email.attach_file(file_path)
+        email.send()
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse

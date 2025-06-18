@@ -21,6 +21,13 @@
               <td class="text-center align-middle">{{ forloop.counter }}</td>
               <td class="align-middle">{{ file.name }}</td>
               <td class="text-center align-middle">
+                <form class="d-inline send-email-form">
+                  <input type="email" name="email" placeholder="Recipient email" required class="form-control form-control-sm d-inline w-auto" />
+                  <input type="hidden" name="filename" value="{{ file.name }}">
+                  <button type="submit" class="btn btn-sm btn-success">
+                    <i class="fas fa-paper-plane"></i> Send Email
+                  </button>
+                </form>
                 <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
                   <i class="fas fa-eye"></i> View
                 </a>
@@ -39,9 +46,9 @@
     </table>
   </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // Delete button
   document.querySelectorAll('.delete-file-btn').forEach(button => {
     button.addEventListener('click', function () {
       const filename = this.getAttribute('data-filename');
@@ -69,6 +76,38 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+
+  // Send Email button
+  document.querySelectorAll('.send-email-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const email = this.querySelector('input[name="email"]').value;
+      const filename = this.querySelector('input[name="filename"]').value;
+
+      fetch("{% url 'send_exported_file_email' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ filename, email })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Email berhasil dikirim!");
+        } else {
+          alert("Gagal mengirim email: " + (data.error || "Unknown error"));
+        }
+      })
+      .catch(error => {
+        alert("Terjadi kesalahan: " + error);
+      });
+    });
+  });
 });
 </script>
+
 {% endblock %}

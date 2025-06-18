@@ -91,6 +91,9 @@ urlpatterns = [
     path('exported-files/', views_ordered.list_exported_purchase_orders, name='list_exported_files'),
     path('exported-files/delete/', views_ordered.delete_exported_file, name='delete_exported_file'),
     
+    # send email
+    path('send-exported-file-email/', views_ordered.send_exported_file_email, name='send_exported_file_email'),
+    
     # no
     path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
