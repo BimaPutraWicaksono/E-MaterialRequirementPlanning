@@ -345,6 +345,7 @@ class Supplier(models.Model):
     address = models.CharField(max_length=100)
     tel_no = models.CharField(max_length=100, unique=True)
     fax_no = models.CharField(max_length=100, unique=True)
+    attn = models.CharField(max_length=100, null=True, blank=True)
     cc = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
@@ -377,12 +378,26 @@ class PurchaseOrder(models.Model):
     class Meta:
         db_table = 'purchase_order'
         
-class Stock(models.Model):
-    registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
-    date = models.DateField(auto_now_add=True)
-    PartName = models.ForeignKey(PartName, on_delete=models.CASCADE)
-    def __str__(self):
-        return f"Request {self.registered_no}"
+# class Schedule(models.Model):
+#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
 
-    class Meta:
-        db_table = 'stock'
+#     class Meta:
+#         db_table = 'schedule'
+
+# class AirWayBill(models.Model):
+#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+
+#     class Meta:
+#         db_table = 'air_way_bill'
+
+# class Invoice(models.Model):
+#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+
+#     class Meta:
+#         db_table = 'invoice'
+        
+# class Stock(models.Model):
+#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+
+#     class Meta:
+#         db_table = 'stock'

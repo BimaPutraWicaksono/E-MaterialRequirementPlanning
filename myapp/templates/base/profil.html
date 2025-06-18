@@ -3,6 +3,7 @@
   <div class="profil">
     <h6>Profil</h6>
     <h3>{{ request.user.username }}</h3>
+    Status: {{ request.user.groups.all|join:", " }}<br>
     <img src="{% static 'assets/dist/img/user.png'%}" class="profile" />
   </div>
   <div class="profil-footer">

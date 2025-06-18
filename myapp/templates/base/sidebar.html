@@ -95,9 +95,9 @@
             </ul>
           </li>
         {% endif %}
-
-         <!-- Order -->
-         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf airwayBill invoice' %}menu-open{% endif %}">
+        {% if not request.user|has_group:"Admin" %}
+          <!-- Order -->
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf airwayBill invoice' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -146,6 +146,7 @@
             </li>
           </ul>
         </li>
+        {% endif %}
         <!-- About Us -->
         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about departement' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
@@ -182,25 +183,26 @@
               </a>
             </li>
             {% endif %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+            {% comment %} <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
               <a href="{% url 'about' %}" class="nav-link">
                 <i class="nav-icon far fa-calendar-alt"></i>
                 <p>E-MRP</p>
               </a>
-            </li>
+            </li> {% endcomment %}
           </ul>
         </li>
-        <li class="nav-item has-treeview">
-            <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-              <a href="{% url 'home' %}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
-                <p>Stock</p>
-              </a>
-            </li>
-        </li>
+        {% if not request.user|has_group:"Admin" %}
+          <li class="nav-item has-treeview">
+              <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <a href="{% url 'home' %}" class="nav-link">
+                  <i class="nav-icon fas fa-home"></i>
+                  <p>Stock</p>
+                </a>
+              </li>
+          </li>
+        {% endif %}
       </ul>
     </nav>
-
     <!-- Loading Spinner -->
     <div id="loadingSpinner" class="d-none">
       <div class="spinner-overlay">

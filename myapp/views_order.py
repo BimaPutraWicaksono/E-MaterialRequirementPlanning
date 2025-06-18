@@ -127,7 +127,10 @@ def purchaseReq(request):
         else:
             filter_option = 'all'
 
-    requests = PurchaseRequest.objects.all()
+    if request.user.groups.filter(name='Admin').exists():
+        requests = PurchaseRequest.objects.all()
+    else:
+        requests = PurchaseRequest.objects.filter(departement=user_departement)
 
     if filter_option == 'pending':
         requests = requests.filter(approve_spv__isnull=True)

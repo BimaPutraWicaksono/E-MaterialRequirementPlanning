@@ -4,130 +4,23 @@
 {% load humanize %}
 <div class="container mt-4">
   <h4>PURCHASE ORDER</h4>
+
   {% if requests %}
     <div class="table-responsive mb-4">
-      {% if request.user|has_group:"Admin" %}
-        <table class="table table-bordered mt-3" id='table_purchase_req'>
-          <thead class="table-light text-center">
-            <tr>
-              <th>REGISTERED NO</th>
-              <th>APPROVAL</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-              <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
-                <td class="text-start align-middle">{{ pr.registered_no }}</td>               
-                <td class="text-center align-middle">
-                  {% if pr.approve_factory_manager %}
-                    Factory Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_manager %}
-                    Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_sspv %}
-                    SSPV <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_spv %}
-                    SPV <i class="fas fa-check text-success"></i>
-                  {% elif pr.requested %}
-                    Requested <i class="fas fa-check text-success"></i>
-                  {% else %}
-                    <i class="fas fa-times text-danger"></i>
-                  {% endif %}
-                </td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                  <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
-                </td>
-              </tr>
-          </tbody>  
-        </table>
-        <div class="border border-warning rounded p-2 mt-1">
-          <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
-        </div>
-      {% endif %}
-      {% comment %} tabel spv {% endcomment %}
-      {% if request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
-        <table class="table table-bordered mt-3" id='table_purchase_req'>
-          <thead class="table-light text-center">
-            <tr>
-              <th>REGISTERED NO</th>
-              <th>APPROVAL</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for pr in requests %}
-              <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
-                <td class="text-start align-middle">{{ pr.registered_no }}</td>               
-                <td class="text-center align-middle">
-                  {% if pr.approve_factory_manager is True %}
-                    Factory Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_factory_manager is False %}
-                    Factory Manager <i class="fas fa-times text-danger"></i>
-                  {% elif pr.approve_manager is True %}
-                    Manager <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_manager is False %}
-                    Manager <i class="fas fa-times text-danger"></i>
-                  {% elif pr.approve_sspv is True %}
-                    SSPV <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_sspv is False %}
-                    SSPV <i class="fas fa-times text-danger"></i>
-                  {% elif pr.approve_spv is True %}
-                    SPV <i class="fas fa-check text-success"></i>
-                  {% elif pr.approve_spv is False %}
-                    SPV <i class="fas fa-times text-danger"></i>
-                  {% elif pr.requested %}
-                    Requested <i class="fas fa-check text-success"></i>
-                  {% else %}
-                    <i class="fas fa-times text-danger"></i>
-                  {% endif %}
-                </td>
-
-                <td class="text-center align-middle">
-                  {% if request.user|has_group:"Supervisor" %}
-                    {% if pr.registered_no not in po_registered_nos %}
-                      {% if pr.approve_spv %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add Purchase Order</button>
-                      {% endif %}
-                    {% endif %}
-                    {% if pr.registered_no in po_registered_nos %}
-                      {% if not pr.approve_sspv %}
-                      <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-                      <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
-                      {% endif %}
-                      <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                    {% endif %}
-                  {% endif %}
-                  {% if request.user|has_group:"Karyawan" %}
-                    {% if pr.registered_no in po_registered_nos %}
-                      <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                    {% endif %}
-                  {% endif %}
-                </td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="4" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
-            {% endfor %}
-          </tbody>  
-        </table>
-        <div class="border border-warning rounded p-2 mt-1">
-          <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
-        </div>
-      {% endif %}
-      {% comment %} tabel SSPV, Manager, FactoryManager {% endcomment %}
-      {% if request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
-        <table class="table table-bordered mt-3" id='table_purchase_req'>
-          <thead class="table-light text-center">
-            <tr>
-              <th>REGISTERED NO</th>
-              <th>APPROVAL</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for pr in requests %}
-              {% if pr.registered_no in po_registered_nos %}
+      <table class="table table-bordered mt-3" id="table_purchase_req">
+        <thead class="table-light text-center">
+          <tr>
+            <th>REGISTERED NO</th>
+            <th>APPROVAL</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pr in requests %}
+            {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
+              {% if request.user|has_group:"Admin" %}
                 <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
-                  <td class="text-start align-middle">{{ pr.registered_no }}</td>               
+                  <td class="text-start align-middle">{{ pr.registered_no }}</td>
                   <td class="text-center align-middle">
                     {% if pr.approve_factory_manager %}
                       Factory Manager <i class="fas fa-check text-success"></i>
@@ -144,48 +37,119 @@
                     {% endif %}
                   </td>
                   <td class="text-center align-middle">
-                    {% if request.user|has_group:"SeniorSupervisor" %}
-                      {% if not pr.approve_sspv %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                      {% endif %}
-                      {% if pr.approve_sspv %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                      {% endif %}
+                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                    <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                  </td>
+                </tr>
+
+              {% elif request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
+                <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                  <td class="text-start align-middle">{{ pr.registered_no }}</td>
+                  <td class="text-center align-middle">
+                    {% if pr.approve_factory_manager is True %}
+                      Factory Manager <i class="fas fa-check text-success"></i>
+                    {% elif pr.approve_factory_manager is False %}
+                      Factory Manager <i class="fas fa-times text-danger"></i>
+                    {% elif pr.approve_manager is True %}
+                      Manager <i class="fas fa-check text-success"></i>
+                    {% elif pr.approve_manager is False %}
+                      Manager <i class="fas fa-times text-danger"></i>
+                    {% elif pr.approve_sspv is True %}
+                      SSPV <i class="fas fa-check text-success"></i>
+                    {% elif pr.approve_sspv is False %}
+                      SSPV <i class="fas fa-times text-danger"></i>
+                    {% elif pr.approve_spv is True %}
+                      SPV <i class="fas fa-check text-success"></i>
+                    {% elif pr.approve_spv is False %}
+                      SPV <i class="fas fa-times text-danger"></i>
+                    {% elif pr.requested %}
+                      Requested <i class="fas fa-check text-success"></i>
+                    {% else %}
+                      <i class="fas fa-times text-danger"></i>
                     {% endif %}
-                    {% if request.user|has_group:"Manager" %}
-                      {% if not pr.approve_manager and pr.approve_sspv %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                      {% endif %}
-                      {% if pr.approve_manager %}
+                  </td>
+                  <td class="text-center align-middle">
+                    {% if request.user|has_group:"Supervisor" %}
+                      {% if pr.registered_no not in po_registered_nos and pr.approve_spv %}
+                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add Purchase Order</button>
+                      {% elif pr.registered_no in po_registered_nos %}
+                        {% if not pr.approve_sspv %}
+                          <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                          <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                        {% endif %}
                         <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                       {% endif %}
-                    {% endif %}
-                    {% if request.user|has_group:"FactoryManager" and pr.approve_manager %}
-                      {% if not pr.approve_factory_manager %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                      {% endif %}
-                      {% if pr.approve_factory_manager %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                      {% endif %}
+                    {% elif request.user|has_group:"Karyawan" and pr.registered_no in po_registered_nos %}
+                      <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                     {% endif %}
                   </td>
                 </tr>
+
+              {% elif request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
+                {% if pr.registered_no in po_registered_nos %}
+                  <tr class="po-row has-po">
+                    <td class="text-start align-middle">{{ pr.registered_no }}</td>
+                    <td class="text-center align-middle">
+                      {% if pr.approve_factory_manager %}
+                        Factory Manager <i class="fas fa-check text-success"></i>
+                      {% elif pr.approve_manager %}
+                        Manager <i class="fas fa-check text-success"></i>
+                      {% elif pr.approve_sspv %}
+                        SSPV <i class="fas fa-check text-success"></i>
+                      {% elif pr.approve_spv %}
+                        SPV <i class="fas fa-check text-success"></i>
+                      {% elif pr.requested %}
+                        Requested <i class="fas fa-check text-success"></i>
+                      {% else %}
+                        <i class="fas fa-times text-danger"></i>
+                      {% endif %}
+                    </td>
+                    <td class="text-center align-middle">
+                      {% if request.user|has_group:"SeniorSupervisor" %}
+                        {% if not pr.approve_sspv %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                        {% else %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                        {% endif %}
+                      {% elif request.user|has_group:"Manager" %}
+                        {% if not pr.approve_manager and pr.approve_sspv %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                        {% elif pr.approve_manager %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                        {% endif %}
+                      {% elif request.user|has_group:"FactoryManager" %}
+                        {% if pr.approve_manager and not pr.approve_factory_manager %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                        {% elif pr.approve_factory_manager %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                        {% endif %}
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endif %}
               {% endif %}
-            {% empty %}
-              <tr><td colspan="4" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <div class="border border-warning rounded p-2 mt-1">
-          <strong>Note:</strong> The approval flow proceeds as follows: SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i> SSPV <i class="fas fa-long-arrow-alt-right"></i> Manager <i class="fas fa-long-arrow-alt-right"></i> FactoryManager 
-        </div>
-      {% endif %}
+            {% endif %}
+          {% empty %}
+            <tr><td colspan="3" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="border border-warning rounded p-2 mt-1">
+        <strong>Note:</strong> The approval flow proceeds as follows:
+        SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i>
+        SSPV <i class="fas fa-long-arrow-alt-right"></i>
+        Manager <i class="fas fa-long-arrow-alt-right"></i>
+        Factory Manager
+      </div>
     </div>
   {% else %}
     <p>Tidak ada Purchase Order.</p>
   {% endif %}
+
   <div id="detail-container" class="mt-5"></div>
 </div>
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

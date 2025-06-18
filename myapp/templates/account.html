@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% load user_tags %}
+{% block content %}
 <div class="container mt-5">
   <h1 class="mt-3 mb-5">Account</h1>
 
@@ -56,11 +58,13 @@
 
     
     <!-- Tombol Tambah Akun -->
-    <div class="d-flex justify-content-end">
-      <button class="btn upload-btn" onclick="openModal('modal-tambah')">
-        Create Account
-      </button>
-    </div>
+    {% if request.user|has_group:"Admin" %}
+      <div class="d-flex justify-content-end">
+        <button class="btn upload-btn" onclick="openModal('modal-tambah')">
+          Create Account
+        </button>
+      </div>
+    {% endif %}
   </div>
 
 <!-- Modal Tambah/Edit Akun -->

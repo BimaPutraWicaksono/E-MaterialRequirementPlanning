@@ -20,7 +20,7 @@
               <td class="text-center">Fax No.: {{ created_po.supplier.fax_no }}</td>
             </tr>
             <tr>
-              <td class="text-center">CC: {{ created_po.supplier.cc }}</td>
+              <td class="text-center">Attn: {{ created_po.supplier.attn }}</td>
             </tr>
             <tr>
               <td class="text-center">CC: {{ created_po.supplier.cc }}</td>
@@ -225,7 +225,7 @@
     </form>
   {% if not created_po %}
     <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
-      Save Purchase Order
+      Submit Purchase Order
     </button>
   {% endif %}
   {% if request.user|has_group:"Karyawan" %}

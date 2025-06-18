@@ -5,9 +5,10 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section
 from .form import PurchaseRequestForm
-
 @login_required
 def purchaseOrd(request):
+    user_departement = request.user.departement  # Ambil departemen dari user yang login
+
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         if form.is_valid():
@@ -23,13 +24,13 @@ def purchaseOrd(request):
                 total_amount = 0
 
             pr = form.save(commit=False)
+            pr.departement = user_departement  # Set departemen sesuai user login
             pr.total_amount = total_amount
             pr.save()
             pr.part_order.set(selected_carlines)
 
             pr.items.all().delete()
 
-            # Kumpulkan semua part unik dari seluruh carline
             all_parts = []
             seen_partdesk_ids = set()
 
@@ -67,15 +68,19 @@ def purchaseOrd(request):
             return redirect('purchaseOrd')
     else:
         form = PurchaseRequestForm()
-    
-    requests = PurchaseRequest.objects.all().order_by('-date')
+
+    # ❗ Filter berdasarkan departemen user login
+    requests = PurchaseRequest.objects.filter(departement=user_departement).order_by('-date')
+
+    # PO registered_no yang sudah dibuat
     po_registered_nos = set(PurchaseOrder.objects.values_list('registered_no__registered_no', flat=True))
-    
+
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
         'requests': requests,
         'po_registered_nos': po_registered_nos,
     })
+
 
 from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
