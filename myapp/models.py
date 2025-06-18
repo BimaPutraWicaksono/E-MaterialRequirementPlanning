@@ -342,6 +342,7 @@ from django.db import models
 
 class Supplier(models.Model):
     name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100, unique=True, blank=True, null=True)
     address = models.CharField(max_length=100)
     tel_no = models.CharField(max_length=100, unique=True)
     fax_no = models.CharField(max_length=100, unique=True)
@@ -371,6 +372,9 @@ class PurchaseOrder(models.Model):
     delivery = models.DateField(null=True, blank=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     shipped_by = models.ForeignKey(Shipped, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f"Request {self.registered_no}"

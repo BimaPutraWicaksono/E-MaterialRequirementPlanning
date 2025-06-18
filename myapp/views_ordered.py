@@ -252,6 +252,7 @@ def export_purchase_order_pdf(request, registered_no):
 import os
 from django.conf import settings
 from django.shortcuts import render
+from .models import PurchaseRequest, PurchaseOrder
 
 def list_exported_purchase_orders(request):
     folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
@@ -263,16 +264,27 @@ def list_exported_purchase_orders(request):
             if f.endswith('.pdf')
         ]
 
-    # Buat URL lengkap untuk ditampilkan di browser
-    file_urls = [
-        {
+    file_urls = []
+    for f in file_list:
+        try:
+            registered_no = f.replace("purchase_order_", "").replace(".pdf", "")
+            pr = PurchaseRequest.objects.get(registered_no=registered_no)
+            po = PurchaseOrder.objects.get(registered_no=pr)
+            supplier_name = po.supplier.name
+        except:
+            supplier_name = 'Unknown'
+
+        file_urls.append({
             'name': f,
-            'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f)
-        }
-        for f in file_list
-    ]
+            'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f),
+            'supplier_name': supplier_name,
+            'email_sent': getattr(po, 'email_sent', False),
+            'email_sent_at': po.email_sent_at if po else None
+        })
+
 
     return render(request, 'order/list_exported_files.html', {'files': file_urls})
+
 
 import os
 from django.conf import settings
@@ -307,16 +319,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from .models import PurchaseRequest, PurchaseOrder  # pastikan import model
+from django.utils import timezone
 
-@csrf_exempt
+
 @login_required
 @require_POST
 def send_exported_file_email(request):
     filename = request.POST.get('filename')
-    recipient_email = request.POST.get('email')
 
-    if not filename or not recipient_email:
-        return JsonResponse({'success': False, 'error': 'Filename atau email tidak disediakan.'})
+    if not filename:
+        return JsonResponse({'success': False, 'error': 'Filename tidak disediakan.'})
 
     file_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders', filename)
 
@@ -324,21 +337,32 @@ def send_exported_file_email(request):
         return JsonResponse({'success': False, 'error': 'File tidak ditemukan.'})
 
     try:
-        # Nama file tanpa ekstensi
+        # Ekstrak nomor dari nama file (format: purchase_order_<registered_no>.pdf)
+        registered_no = filename.replace("purchase_order_", "").replace(".pdf", "")
+        pr = PurchaseRequest.objects.get(registered_no=registered_no)
+        po = PurchaseOrder.objects.get(registered_no=pr)
+
+        # Cek apakah email sudah dikirim sebelumnya
+        if po.email_sent:
+            return JsonResponse({'success': False, 'error': 'Email sudah pernah dikirim.'})
+
+        recipient_email = po.supplier.email
+        if not recipient_email:
+            return JsonResponse({'success': False, 'error': 'Email supplier belum tersedia.'})
+    except (PurchaseRequest.DoesNotExist, PurchaseOrder.DoesNotExist, AttributeError):
+        return JsonResponse({'success': False, 'error': 'Data Purchase Order atau email supplier tidak ditemukan.'})
+
+    try:
         filename_no_ext = os.path.splitext(filename)[0]
-
-        # Subjek email formal
-        subject = f' Purchase Order ({filename_no_ext})'
-
-        # Isi email formal
+        subject = f'Purchase Order ({filename_no_ext})'
         body = (
-            "Yth. Bapak/Ibu,\n\n"
-            f"Bersama email ini, kami lampirkan dokumen Purchase Order: {filename}.\n\n"
-            "Mohon untuk ditindaklanjuti sesuai prosedur yang berlaku. "
-            "Apabila terdapat hal yang perlu dikonfirmasi, silakan hubungi kami melalui email ini atau kontak yang tersedia.\n\n"
-            "Atas perhatian dan kerja samanya, kami ucapkan terima kasih.\n\n"
-            "Hormat kami,\n"
-            "[Nama Perusahaan Anda]"
+            "Dear Sir or Madam\n\n"
+            f"We are pleased to attach the Purchase Order document: {filename}.\n"
+            "Please proceed according to the applicable procedures. "
+            "If you have any questions or need further clarification, feel free to reach out to us via this email or through the provided contact information.\n"
+            "We truly appreciate your attention and cooperation.\n\n"
+            "Best regards,\n"
+            "[PT. XYZ Indonesia]"
         )
 
         email = EmailMessage(
@@ -350,9 +374,15 @@ def send_exported_file_email(request):
         email.attach_file(file_path)
         email.send()
 
+        # Tandai email sudah dikirim
+        po.email_sent = True
+        po.email_sent_at = timezone.now()
+        po.save()
+
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
 
 
 from django.shortcuts import render, redirect, get_object_or_404

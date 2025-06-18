@@ -3,14 +3,17 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h4>Exported Purchase Orders</h4>
+  <h4>Send Purchase Orders</h4>
 
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3">
       <thead class="table-light text-center">
         <tr>
           <th>No</th>
-          <th>File Name</th>
+          <th>Purchase Order</th>
+          <th>Supplier</th>
+          <th>Status</th>
+          <th>Date</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -20,18 +23,34 @@
             <tr>
               <td class="text-center align-middle">{{ forloop.counter }}</td>
               <td class="align-middle">{{ file.name }}</td>
+              <td class="align-middle">{{ file.supplier_name }}</td>
+              <td class="align-middle">
+                {% if file.email_sent %}
+                  <span class="badge bg-success">Sent</span>
+                {% else %}
+                  <span class="badge bg-secondary">Not Sent</span>
+                {% endif %}
+              </td>
+              <td class="align-middle">
+                {% if file.email_sent_at %}
+                  {{ file.email_sent_at|date:"d M Y H:i" }}
+                {% else %}
+                  Belum dikirim
+                {% endif %}
+              </td>
               <td class="text-center align-middle">
                 <form class="d-inline send-email-form">
-                  <input type="email" name="email" placeholder="Recipient email" required class="form-control form-control-sm d-inline w-auto" />
                   <input type="hidden" name="filename" value="{{ file.name }}">
-                  <button type="submit" class="btn btn-sm btn-success">
-                    <i class="fas fa-paper-plane"></i> Send Email
+                  <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
+                    <i class="fas fa-eye"></i> View
+                  </a>
+                  <button type="submit" class="btn btn-sm btn-success"
+                    {% if file.email_sent %} disabled {% endif %}>
+                    <i class="fas fa-paper-plane"></i> Send
                   </button>
                 </form>
-                <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
-                  <i class="fas fa-eye"></i> View
-                </a>
-                <button class="btn btn-sm btn-danger delete-file-btn" data-filename="{{ file.name }}">
+                <button class="btn btn-sm btn-danger delete-file-btn"
+                  data-filename="{{ file.name }}">
                   <i class="fas fa-trash"></i> Delete
                 </button>
               </td>
@@ -39,13 +58,15 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="3" class="text-center">Tidak ada file Purchase Order yang telah diekspor.</td>
+            <td colspan="5" class="text-center">Tidak ada file Purchase Order yang telah diekspor.</td>
           </tr>
         {% endif %}
       </tbody>
+
     </table>
   </div>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   // Delete button
@@ -82,8 +103,13 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      const email = this.querySelector('input[name="email"]').value;
       const filename = this.querySelector('input[name="filename"]').value;
+      const sendBtn = this.querySelector('button[type="submit"]');
+      const originalText = sendBtn.innerHTML;
+
+      // Ubah tombol menjadi loading state
+      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+      sendBtn.disabled = true;
 
       fetch("{% url 'send_exported_file_email' %}", {
         method: "POST",
@@ -92,18 +118,24 @@ document.addEventListener('DOMContentLoaded', function () {
           "Accept": "application/json",
           "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: new URLSearchParams({ filename, email })
+        body: new URLSearchParams({ filename })
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
           alert("Email berhasil dikirim!");
+          location.reload();  // reload halaman untuk update status dan tanggal
         } else {
           alert("Gagal mengirim email: " + (data.error || "Unknown error"));
+          // Pulihkan tombol jika gagal
+          sendBtn.innerHTML = originalText;
+          sendBtn.disabled = false;
         }
       })
       .catch(error => {
         alert("Terjadi kesalahan: " + error);
+        sendBtn.innerHTML = originalText;
+        sendBtn.disabled = false;
       });
     });
   });

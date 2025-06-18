@@ -11,6 +11,7 @@
       <thead class="table-light text-center">
         <tr>
           <th>Name</th>
+          <th>Email</th>
           <th>Address</th>
           <th>Tel No</th>
           <th>Fax No</th>
@@ -23,6 +24,7 @@
         {% for supplier in suppliers %}
         <tr>
           <td class="text-start">{{ supplier.name }}</td>
+          <td class="text-start">{{ supplier.email }}</td>
           <td class="text-start">{{ supplier.address }}</td>
           <td class="text-center">{{ supplier.tel_no }}</td>
           <td class="text-center">{{ supplier.fax_no }}</td>

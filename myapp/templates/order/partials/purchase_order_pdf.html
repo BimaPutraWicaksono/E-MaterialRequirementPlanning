@@ -87,6 +87,7 @@
       <td class="info-left">
         {% if created_po.supplier %}
           <strong>{{ created_po.supplier.name|upper }}</strong><br>
+          {{ created_po.supplier.email }}<br>
           {{ created_po.supplier.address }}<br>
           Tel No: {{ created_po.supplier.tel_no }}<br>
           Fax No: {{ created_po.supplier.fax_no }}<br>

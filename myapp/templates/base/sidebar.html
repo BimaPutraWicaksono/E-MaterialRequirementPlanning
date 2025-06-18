@@ -122,7 +122,7 @@
             <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
               <a href="{% url 'list_exported_files' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-pdf"></i>
-                <p>Exported PO Files</p>
+                <p>Purchase Order Delivery</p>
               </a>
             </li>
             {% endif %}
@@ -192,14 +192,14 @@
           </ul>
         </li>
         {% if not request.user|has_group:"Admin" %}
-          <li class="nav-item has-treeview">
-              <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                <a href="{% url 'home' %}" class="nav-link">
-                  <i class="nav-icon fas fa-home"></i>
-                  <p>Stock</p>
-                </a>
-              </li>
-          </li>
+            {% comment %} <li class="nav-item has-treeview">
+                <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                  <a href="{% url 'home' %}" class="nav-link">
+                    <i class="nav-icon fas fa-home"></i>
+                    <p>Stock</p>
+                  </a>
+                </li>
+            </li> {% endcomment %}
         {% endif %}
       </ul>
     </nav>
