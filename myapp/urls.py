@@ -7,6 +7,7 @@ from . import views_view
 from . import views_sparepart
 from . import views_order
 from . import views_ordered
+from . import views_schedule
 
 
 urlpatterns = [
@@ -53,6 +54,12 @@ urlpatterns = [
     path('master/departement-section/', views_order.master_departement_section, name='master_departement_section'),
     path('master/departement/create/', views_order.create_departement, name='create_departement'),
     path('master/section/create/', views_order.create_section, name='create_section'),
+    
+
+    path('departement/edit/<int:id>/', views_order.update_departement, name='update_departement'),
+    path('departement/delete/<int:id>/', views_order.delete_departement, name='delete_departement'),
+    path('section/edit/<int:id>/', views_order.update_section, name='update_section'),
+    path('section/delete/<int:id>/', views_order.delete_section, name='delete_section'),
      
     #purchase request
     path('purchase-request/', views_order.purchaseReq, name='purchaseReq'),
@@ -94,8 +101,12 @@ urlpatterns = [
     # send email
     path('send-exported-file-email/', views_ordered.send_exported_file_email, name='send_exported_file_email'),
     
+    # shcedule confirmation
+    path('scheduleConf/', views_schedule.scheduleConf, name='scheduleConf'),
+    path('check-email/', views_schedule.check_email, name='check_email'),
+    path('delete_file/<str:filename>/', views_schedule.delete_file, name='delete_file'),
+    
     # no
-    path('scheduleConf/', views_order.scheduleConf, name='scheduleConf'),
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
     

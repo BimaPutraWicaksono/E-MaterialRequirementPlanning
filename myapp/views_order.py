@@ -24,6 +24,28 @@ def create_departement(request):
     return redirect('master_departement_section')
 
 @login_required()
+def update_departement(request, id):
+    departement = get_object_or_404(Departement, id=id)
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            departement.name = name
+            departement.save()
+            messages.success(request, 'Departement berhasil diperbarui.')
+        else:
+            messages.error(request, 'Nama tidak boleh kosong.')
+        return redirect('master_departement_section')
+    return render(request, 'departement/edit_departement.html', {'departement': departement})
+
+
+@login_required()
+def delete_departement(request, id):
+    departement = get_object_or_404(Departement, id=id)
+    departement.delete()
+    messages.success(request, 'Departement berhasil dihapus.')
+    return redirect('master_departement_section')
+
+@login_required()
 def create_section(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -34,6 +56,32 @@ def create_section(request):
             messages.success(request, 'Section berhasil ditambahkan.')
         else:
             messages.error(request, 'Semua field Section harus diisi.')
+    return redirect('master_departement_section')
+
+
+@login_required()
+def update_section(request, id):
+    section = get_object_or_404(Section, id=id)
+    departements = Departement.objects.all()
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        departement_id = request.POST.get('departement')
+        if name and departement_id:
+            section.name = name
+            section.departement_id = departement_id
+            section.save()
+            messages.success(request, 'Section berhasil diperbarui.')
+        else:
+            messages.error(request, 'Semua field harus diisi.')
+        return redirect('master_departement_section')
+    return render(request, 'departement/edit_section.html', {'section': section, 'departements': departements})
+
+
+@login_required()
+def delete_section(request, id):
+    section = get_object_or_404(Section, id=id)
+    section.delete()
+    messages.success(request, 'Section berhasil dihapus.')
     return redirect('master_departement_section')
 
 from django.contrib.auth.decorators import login_required
@@ -318,16 +366,6 @@ def ajax_get_loading_parts_edit(request):
             'existing_details': existing_details
         })
         return JsonResponse({'table': table_html})
-
-# purchase order
-@login_required()
-def purchaseOrd(request):
-    return render(request, 'order/purchaseOrd.html')
-
-# schedule confirmation
-@login_required()
-def scheduleConf(request):
-    return render(request, 'order/scheduleConf.html')
 
 # Airway bill
 @login_required()

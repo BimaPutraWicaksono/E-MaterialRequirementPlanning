@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>List Schedule Confirmation</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if existing_files %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Actions</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in existing_files %}
+                <tr>
+                    <td>{{ file }}</td>
+                    <td>
+                        <!-- Tombol View -->
+                        <a href="{{ MEDIA_URL }}email_files/{{ file }}" target="_blank" class="btn btn-success btn-sm">
+                            View
+                        </a>
+                        <!-- Tombol Delete -->
+                        <button class="btn btn-danger btn-sm" onclick="deleteFile('{{ file }}', this)">
+                            Delete
+                        </button>
+                    </td>
+                    <td class="text-center"><span class="badge bg-secondary">Folder</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <p>No existing files available in the folder.</p>
+    {% endif %}
+
+    <form class="justify-content-end d-flex" id="search-email-form" action="{% url 'check_email' %}" method="get">
+        <button id="search-email-btn" type="submit" class="btn btn-primary mb-3">
+            <i class="fas fa-search"></i> Search Email
+        </button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('search-email-form');
+    const button = document.getElementById('search-email-btn');
+
+    form.addEventListener('submit', function () {
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        button.disabled = true;
+    });
+});
+
+function deleteFile(filename, btn) {
+    if (confirm(`Yakin ingin menghapus file "${filename}"?`)) {
+        fetch("{% url 'delete_file' 'FILENAME_PLACEHOLDER' %}".replace('FILENAME_PLACEHOLDER', filename), {
+            method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Hapus baris dari tabel
+                btn.closest('tr').remove();
+            } else {
+                alert(data.message || 'Gagal menghapus file');
+            }
+        });
+    }
+}
+</script>
+
+{% endblock %}

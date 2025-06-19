@@ -380,7 +380,8 @@ class PurchaseOrder(models.Model):
         return f"Request {self.registered_no}"
 
     class Meta:
-        db_table = 'purchase_order'
+        db_table = 'purchase_order' 
+        
         
 # class Schedule(models.Model):
 #     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)

@@ -44,11 +44,10 @@
       width: 100%;
     }
 
-  .po-detail td {
-    padding: 2px 4px;
-    line-height: 0.9;
-  }
-
+    .po-detail td {
+      padding: 2px 4px;
+      line-height: 0.9;
+    }
 
     .po-detail tr {
       padding: 4px 6px;
@@ -75,13 +74,60 @@
       text-align: right;
       font-weight: bold;
     }
+
+    .company-header {
+      width: 100%;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+
+    .company-header td {
+      vertical-align: top;
+    }
+
+    .company-left {
+      text-align: left;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .company-right {
+      text-align: right;
+    }
+
+    .company-right div {
+      line-height: 0.6;
+      font-weight: 300;
+    }
+
+    .company-name {
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 0.9;
+    }
+
   </style>
 </head>
 <body>
 
-<h2>PURCHASE ORDER</h2>
+<!-- Header Perusahaan -->
+<table class="company-header">
+  <tr>
+    <td class="company-left">XYZ</td>
+    <hr style="margin-top: 1px; margin-bottom: 20px;">
+    <td class="company-right">
+      <div class="company-name"><b>PT. XYZ INDONESIA</b></div>
+      <div>KAWASAN MALANG INDUSTRI PERSADA KAV. A-1</div>
+      <div>LOWOKWARU - MALANG 65323</div>
+      <div>EAST JAVA - INDONESIA</div>
+      <div>Phone: +6282543765234 Fax: +6282543765233</div>
+    </td>
+  </tr>
+</table>
+
 
 <div class="section">
+  <h2>PURCHASE ORDER</h2>
   <table class="info-table">
     <tr>
       <td class="info-left">

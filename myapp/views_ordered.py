@@ -7,7 +7,7 @@ from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section
 from .form import PurchaseRequestForm
 @login_required
 def purchaseOrd(request):
-    user_departement = request.user.departement  # Ambil departemen dari user yang login
+    user_departement = request.user.departement
 
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
@@ -291,6 +291,7 @@ from django.conf import settings
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import PurchaseRequest, PurchaseOrder
 
 @login_required
 @require_POST
@@ -305,6 +306,22 @@ def delete_exported_file(request):
     if os.path.exists(file_path):
         try:
             os.remove(file_path)
+
+            # Ambil registered_no dari nama file
+            registered_no = filename.replace("purchase_order_", "").replace(".pdf", "")
+            
+            try:
+                # Update field email_sent dan email_sent_at ke default
+                pr = PurchaseRequest.objects.get(registered_no=registered_no)
+                po = PurchaseOrder.objects.get(registered_no=pr)
+                po.email_sent = False
+                po.email_sent_at = None
+                po.save()
+            except PurchaseRequest.DoesNotExist:
+                pass
+            except PurchaseOrder.DoesNotExist:
+                pass
+
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
