@@ -10,37 +10,46 @@
         {% endfor %}
     {% endif %}
 
-    {% if existing_files %}
+    {% if files %}
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Filename</th>
+                    {% comment %} <th>Subject</th>
+                    <th>Sender</th>
+                    <th>Date</th> {% endcomment %}
                     <th>Actions</th>
-                    <th>Source</th>
+                    {% comment %} <th>Source</th> {% endcomment %}
                 </tr>
             </thead>
             <tbody>
-                {% for file in existing_files %}
+                {% for file in files %}
                 <tr>
-                    <td>{{ file }}</td>
-                    <td>
-                        <!-- Tombol View -->
-                        <a href="{{ MEDIA_URL }}email_files/{{ file }}" target="_blank" class="btn btn-success btn-sm">
+                    <td>{{ file.filename }}</td>
+                    {% comment %} <td>{{ file.subject|default:"-" }}</td>
+                    <td>{{ file.sender|default:"-" }}</td>
+                    <td>{{ file.date|default:"-" }}</td> {% endcomment %}
+                    <td class="text-center">
+                        <a href="{{ media_url }}email_files/{{ file.filename }}" target="_blank" class="btn btn-success btn-sm">
                             View
                         </a>
-                        <!-- Tombol Delete -->
-                        <button class="btn btn-danger btn-sm" onclick="deleteFile('{{ file }}', this)">
+                        <button class="btn btn-danger btn-sm" onclick="deleteFile('{{ file.filename }}', this)">
                             Delete
                         </button>
                     </td>
-                    <td class="text-center"><span class="badge bg-secondary">Folder</span></td>
+                    {% comment %} <td class="text-center">
+                        {% if file.source == "Email" %}
+                            <span class="badge bg-primary">{{ file.source }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ file.source }}</span>
+                        {% endif %}
+                    </td> {% endcomment %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
     {% else %}
-        <p>No existing files available in the folder.</p>
+        <p>No files found.</p>
     {% endif %}
 
     <form class="justify-content-end d-flex" id="search-email-form" action="{% url 'check_email' %}" method="get">
@@ -69,7 +78,6 @@ function deleteFile(filename, btn) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Hapus baris dari tabel
                 btn.closest('tr').remove();
             } else {
                 alert(data.message || 'Gagal menghapus file');
