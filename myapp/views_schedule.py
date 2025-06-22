@@ -33,8 +33,8 @@ def scheduleConf(request):
                     subject = subject.decode(encoding or "utf-8")
 
                 if "purchase order" in subject.lower():
-                    # Ekstrak '2w' dari subject
-                    match = re.search(r"purchase_order_(\w+)", subject.lower())
+                    # Ekstrak dari subject
+                    match = re.search(r"(?i)purchase_order_(\w+)", subject)  # (?i) artinya case-insensitive
                     if match:
                         extracted_registered_no = match.group(1)
                     else:
