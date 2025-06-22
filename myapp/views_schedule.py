@@ -1,115 +1,84 @@
 # myapp/views_schedule.py
 import imaplib
 import email
-import os
+from email.header import decode_header
+import re
+from datetime import datetime
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.conf import settings
-from django.http import FileResponse, HttpResponseRedirect
-from django.urls import reverse
+from .models import ScheduleConf
 from django.contrib import messages
 
-@login_required
-def check_email(request):
-    email_user = settings.EMAIL_HOST_USER
-    email_pass = settings.EMAIL_HOST_PASSWORD
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+def scheduleConf(request):
+    if request.method == 'POST':
+        today = datetime.now().date()
 
-    try:
-        mail.login(email_user, email_pass)
+        # Login ke IMAP server
+        mail = imaplib.IMAP4_SSL("imap.gmail.com")  # sesuaikan server jika bukan Gmail
+        mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
         mail.select("inbox")
 
-        status, messages = mail.search(None, 'ALL')
-        email_ids = messages[0].split()
-        latest_email_ids = email_ids[-10:]  # Ambil hanya 10 email terbaru
+        # Cari email hari ini saja
+        result, data = mail.search(None, f'(SINCE "{today.strftime("%d-%b-%Y")}")')
 
-        downloaded_files = []
-        download_dir = os.path.join(settings.MEDIA_ROOT, "email_files")
-        os.makedirs(download_dir, exist_ok=True)
-
-        for eid in reversed(latest_email_ids):
-            status, data = mail.fetch(eid, "(RFC822)")
-            raw_email = data[0][1]
-            msg = email.message_from_bytes(raw_email)
-
-            subject = msg.get("subject", "")
-            sender = msg.get("from", "")
-            date = msg.get("date", "")
-
-            for part in msg.walk():
-                if part.get_content_maintype() == "multipart":
-                    continue
-                if part.get("Content-Disposition") is None:
+        if result == "OK":
+            for num in data[0].split():
+                res, msg_data = mail.fetch(num, "(RFC822)")
+                if res != "OK":
                     continue
 
-                filename = part.get_filename()
-                if filename and filename.lower().endswith(".pdf") and "schedule confirmation" in filename.lower():
-                    filepath = os.path.join(download_dir, filename)
-                    if not os.path.exists(filepath):
-                        with open(filepath, "wb") as f:
-                            f.write(part.get_payload(decode=True))
+                msg = email.message_from_bytes(msg_data[0][1])
+                subject, encoding = decode_header(msg["Subject"])[0]
+                if isinstance(subject, bytes):
+                    subject = subject.decode(encoding or "utf-8")
 
-                        downloaded_files.append({
-                            "filename": filename,
-                            "saved_path": filepath,
-                            "subject": subject,
-                            "sender": sender,
-                            "date": date,
-                        })
+                if "purchase order" in subject.lower():
+                    # Ekstrak hanya bagian 2w dari format "Purchase Order (purchase_order_2w)"
+                    match = re.search(r"purchase_order_(\w+)", subject.lower())
+                    if match:
+                        registered_no = match.group(1)  # "2w"
+                    else:
+                        continue  # Jika format tidak sesuai, skip
 
-        request.session['downloaded_files'] = downloaded_files
+                    if not ScheduleConf.objects.filter(registered_no=registered_no).exists():
+                        acc_rej = None
+                        date_found = None
 
-    except Exception as e:
-        messages.error(request, f"Gagal memeriksa email: {str(e)}")
+                        # Ambil isi pesan
+                        body = ""
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                if part.get_content_type() == "text/plain":
+                                    try:
+                                        body = part.get_payload(decode=True).decode()
+                                        break
+                                    except:
+                                        continue
+                        else:
+                            body = msg.get_payload(decode=True).decode()
 
-    finally:
+                        body_lower = body.lower()
+
+                        if "accept" in body_lower:
+                            acc_rej = True
+                            date_match = re.search(r"\d{4}-\d{2}-\d{2}", body)
+                            if date_match:
+                                date_found = datetime.strptime(date_match.group(), "%Y-%m-%d").date()
+                        elif "reject" in body_lower:
+                            acc_rej = False
+
+                        ScheduleConf.objects.create(
+                            registered_no=registered_no,
+                            acc_rej=acc_rej,
+                            date=date_found
+                        )
+
+            messages.success(request, "Email berhasil diproses.")
+        else:
+            messages.error(request, "Tidak dapat mengambil email.")
+
         mail.logout()
+        return redirect('scheduleConf')
 
-    return redirect('scheduleConf')
-
-@login_required()
-def scheduleConf(request):
-    # Ambil file baru dari session
-    new_files = request.session.pop('downloaded_files', [])
-
-    # Ambil file lama dari folder
-    email_files_dir = os.path.join(settings.MEDIA_ROOT, 'email_files')
-    existing_files = []
-
-    if os.path.exists(email_files_dir):
-        for fname in os.listdir(email_files_dir):
-            if fname.lower().endswith('.pdf'):
-                # Hindari duplikasi jika file sudah ada di new_files
-                if not any(f['filename'] == fname for f in new_files):
-                    existing_files.append({
-                        "filename": fname,
-                        "subject": "",
-                        "sender": "",
-                        "date": "",
-                        "source": "Folder"
-                    })
-
-    # Tandai source untuk file baru
-    for f in new_files:
-        f['source'] = 'Email'
-
-    all_files = new_files + existing_files
-
-    return render(request, 'schedule_conf/scheduleConf.html', {
-        'files': all_files,
-        'media_url': settings.MEDIA_URL,
-    })
-
-
-# Tambahkan view untuk delete file
-from django.http import JsonResponse
-
-@login_required
-def delete_file(request, filename):
-    file_path = os.path.join(settings.MEDIA_ROOT, 'email_files', filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'error', 'message': 'File not found'}, status=404)
+    all_data = ScheduleConf.objects.all()
+    return render(request, 'schedule_conf/scheduleConf.html', {'data': all_data})

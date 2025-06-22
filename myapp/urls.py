@@ -103,8 +103,6 @@ urlpatterns = [
     
     # shcedule confirmation
     path('scheduleConf/', views_schedule.scheduleConf, name='scheduleConf'),
-    path('check-email/', views_schedule.check_email, name='check_email'),
-    path('delete_file/<str:filename>/', views_schedule.delete_file, name='delete_file'),
     
     # no
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),

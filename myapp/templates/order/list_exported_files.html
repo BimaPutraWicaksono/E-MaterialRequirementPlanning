@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load user_tags %}
 
 {% block content %}
 <div class="container mt-4">
@@ -14,7 +15,7 @@
           <th>Supplier</th>
           <th>Status</th>
           <th>Date</th>
-          <th>Action</th>
+          <th>Action</th> 
         </tr>
       </thead>
       <tbody>
@@ -44,15 +45,19 @@
                   <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
                     <i class="fas fa-eye"></i> View
                   </a>
-                  <button type="submit" class="btn btn-sm btn-success"
-                    {% if file.email_sent %} disabled {% endif %}>
-                    <i class="fas fa-paper-plane"></i> Send
-                  </button>
+                  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                    <button type="submit" class="btn btn-sm btn-success"
+                      {% if file.email_sent %} disabled {% endif %}>
+                      <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                  {% endif %}
                 </form>
-                <button class="btn btn-sm btn-danger delete-file-btn"
-                  data-filename="{{ file.name }}">
-                  <i class="fas fa-trash"></i> Delete
-                </button>
+                {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                  <button class="btn btn-sm btn-danger delete-file-btn"
+                    data-filename="{{ file.name }}">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

@@ -1,90 +1,47 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h2>List Schedule Confirmation</h2>
+<div class="container mt-4">
+  <h2>Schedule Confirmation</h2>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Search Email</button>
+  </form>
 
-    {% if files %}
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Filename</th>
-                    {% comment %} <th>Subject</th>
-                    <th>Sender</th>
-                    <th>Date</th> {% endcomment %}
-                    <th>Actions</th>
-                    {% comment %} <th>Source</th> {% endcomment %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for file in files %}
-                <tr>
-                    <td>{{ file.filename }}</td>
-                    {% comment %} <td>{{ file.subject|default:"-" }}</td>
-                    <td>{{ file.sender|default:"-" }}</td>
-                    <td>{{ file.date|default:"-" }}</td> {% endcomment %}
-                    <td class="text-center">
-                        <a href="{{ media_url }}email_files/{{ file.filename }}" target="_blank" class="btn btn-success btn-sm">
-                            View
-                        </a>
-                        <button class="btn btn-danger btn-sm" onclick="deleteFile('{{ file.filename }}', this)">
-                            Delete
-                        </button>
-                    </td>
-                    {% comment %} <td class="text-center">
-                        {% if file.source == "Email" %}
-                            <span class="badge bg-primary">{{ file.source }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ file.source }}</span>
-                        {% endif %}
-                    </td> {% endcomment %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No files found.</p>
-    {% endif %}
+  {% if messages %}
+    <ul class="mt-3">
+      {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-    <form class="justify-content-end d-flex" id="search-email-form" action="{% url 'check_email' %}" method="get">
-        <button id="search-email-btn" type="submit" class="btn btn-primary mb-3">
-            <i class="fas fa-search"></i> Search Email
-        </button>
-    </form>
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Accepted/Rejected</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+      <tr>
+        <td>{{ row.registered_no }}</td>
+        <td>
+          {% if row.acc_rej == True %}
+            ✅ Accept
+          {% elif row.acc_rej == False %}
+            ❌ Reject
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ row.date|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('search-email-form');
-    const button = document.getElementById('search-email-btn');
-
-    form.addEventListener('submit', function () {
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-        button.disabled = true;
-    });
-});
-
-function deleteFile(filename, btn) {
-    if (confirm(`Yakin ingin menghapus file "${filename}"?`)) {
-        fetch("{% url 'delete_file' 'FILENAME_PLACEHOLDER' %}".replace('FILENAME_PLACEHOLDER', filename), {
-            method: 'GET',
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                btn.closest('tr').remove();
-            } else {
-                alert(data.message || 'Gagal menghapus file');
-            }
-        });
-    }
-}
-</script>
-
 {% endblock %}
