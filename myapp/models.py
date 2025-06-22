@@ -383,7 +383,7 @@ class PurchaseOrder(models.Model):
         db_table = 'purchase_order' 
         
 class ScheduleConf(models.Model):
-    registered_no = models.CharField(max_length=100, unique=True)
+    registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
     date = models.DateField(null=True, blank=True)
     acc_rej = models.BooleanField(null=True, blank=True)
     

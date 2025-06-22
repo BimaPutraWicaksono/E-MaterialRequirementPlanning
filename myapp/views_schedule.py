@@ -1,4 +1,4 @@
-# myapp/views_schedule.py
+# views_schedule.py
 import imaplib
 import email
 from email.header import decode_header
@@ -6,19 +6,19 @@ import re
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.conf import settings
-from .models import ScheduleConf
+from .models import ScheduleConf, PurchaseRequest
 from django.contrib import messages
 
 def scheduleConf(request):
     if request.method == 'POST':
         today = datetime.now().date()
 
-        # Login ke IMAP server
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")  # sesuaikan server jika bukan Gmail
+        # Koneksi IMAP
+        mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
         mail.select("inbox")
 
-        # Cari email hari ini saja
+        # Ambil email hari ini
         result, data = mail.search(None, f'(SINCE "{today.strftime("%d-%b-%Y")}")')
 
         if result == "OK":
@@ -33,18 +33,23 @@ def scheduleConf(request):
                     subject = subject.decode(encoding or "utf-8")
 
                 if "purchase order" in subject.lower():
-                    # Ekstrak hanya bagian 2w dari format "Purchase Order (purchase_order_2w)"
+                    # Ekstrak '2w' dari subject
                     match = re.search(r"purchase_order_(\w+)", subject.lower())
                     if match:
-                        registered_no = match.group(1)  # "2w"
+                        extracted_registered_no = match.group(1)
                     else:
-                        continue  # Jika format tidak sesuai, skip
+                        continue
 
-                    if not ScheduleConf.objects.filter(registered_no=registered_no).exists():
+                    try:
+                        purchase_request = PurchaseRequest.objects.get(registered_no=extracted_registered_no)
+                    except PurchaseRequest.DoesNotExist:
+                        continue  # Skip jika tidak ditemukan
+
+                    # Cek apakah ScheduleConf untuk PR ini sudah ada
+                    if not ScheduleConf.objects.filter(registered_no=purchase_request).exists():
                         acc_rej = None
                         date_found = None
 
-                        # Ambil isi pesan
                         body = ""
                         if msg.is_multipart():
                             for part in msg.walk():
@@ -67,15 +72,16 @@ def scheduleConf(request):
                         elif "reject" in body_lower:
                             acc_rej = False
 
+                        # Simpan ke ScheduleConf
                         ScheduleConf.objects.create(
-                            registered_no=registered_no,
+                            registered_no=purchase_request,
                             acc_rej=acc_rej,
                             date=date_found
                         )
 
             messages.success(request, "Email berhasil diproses.")
         else:
-            messages.error(request, "Tidak dapat mengambil email.")
+            messages.error(request, "Gagal mengakses inbox email.")
 
         mail.logout()
         return redirect('scheduleConf')

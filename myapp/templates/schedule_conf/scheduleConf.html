@@ -2,46 +2,45 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>Schedule Confirmation</h2>
+    <h2>Schedule Confirmation</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Search Email</button>
+    </form>
 
-  <form method="POST">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Search Email</button>
-  </form>
-
-  {% if messages %}
-    <ul class="mt-3">
-      {% for message in messages %}
-        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <table class="table mt-4">
-    <thead>
-      <tr>
-        <th>Subject</th>
-        <th>Accepted/Rejected</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in data %}
-      <tr>
-        <td>{{ row.registered_no }}</td>
-        <td>
-          {% if row.acc_rej == True %}
-            ✅ Accept
-          {% elif row.acc_rej == False %}
-            ❌ Reject
-          {% else %}
-            -
-          {% endif %}
-        </td>
-        <td>{{ row.date|default:"-" }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <table class="table table-bordered mt-4">
+        <thead class="table-light">
+            <tr>
+                <th>NO</th>
+                <th>REGISTERED NO</th>
+                <th>ACCEPTED / REJECTED</th>
+                <th>DATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if data %}
+                {% for row in data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ row.registered_no.registered_no }}</td>
+                    <td>
+                        {% if row.acc_rej == True %}
+                            Accepted
+                        {% elif row.acc_rej == False %}
+                            Rejected
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+                    <td>{{ row.date|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Tidak ada data yang tersedia.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
