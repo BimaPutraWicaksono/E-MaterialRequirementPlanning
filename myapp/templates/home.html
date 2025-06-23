@@ -1,7 +1,48 @@
-{% extends "base.html" %} {% block content %} {% load user_tags %}
+{% extends "base.html" %}
+{% block content %}
+{% load user_tags %}
 <div class="container">
   <div class="main-content">
-    
+    <h2>Status Approval Purchase</h2>
+    <div class="chart-container" style="width: 35%;">
+      <canvas id="approvalChart"></canvas>
+    </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const ctx = document.getElementById('approvalChart').getContext('2d');
+  const approvalChart = new Chart(ctx, {
+    type: 'bar',  
+    data: {
+      labels: {{ chart_data.labels|safe }},
+      datasets: [{
+        label: 'Jumlah',
+        data: {{ chart_data.counts|safe }},
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(255, 205, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(54, 162, 235, 0.6)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+</script>
 {% endblock %}
