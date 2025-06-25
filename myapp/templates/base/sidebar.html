@@ -97,7 +97,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf airwayBill invoice' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill invoice' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -106,12 +106,14 @@
             </p>
           </a>
           <ul class="nav nav-treeview">
+            {% if not request.user|has_group:"SeniorSupervisor" and not request.user|has_group:"Manager" and not request.user|has_group:"FactoryManager" %}
             <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
               <a href="{% url 'purchaseReq' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-plus"></i>
                 <p>Purchase Request</p>
               </a>
             </li>
+            {% endif %}
             <li class="nav-item {% if request.resolver_match.url_name == 'purchaseOrd' %}active{% endif %}">
               <a href="{% url 'purchaseOrd' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-arrow-down"></i>
@@ -132,8 +134,8 @@
                 </a>
               </li>
             {% endif %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'airwayBill' %}active{% endif %}">
-              <a href="{% url 'airwayBill' %}" class="nav-link">
+            <li class="nav-item {% if request.resolver_match.url_name == 'import_airwaybill' %}active{% endif %}">
+              <a href="{% url 'import_airwaybill' %}" class="nav-link">
                 <i class="nav-icon fas fa-dolly-flatbed"></i>
                 <p>Airway Bill</p>
               </a>
@@ -203,6 +205,12 @@
         {% endif %}
       </ul>
     </nav>
+    <!-- Logout Pinned Bottom -->
+    <div class="sidebar-logout">
+      <a href="javascript:void(0);" class="nav-link text-danger" id="logoutButton">
+        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+      </a>
+    </div>
     <!-- Loading Spinner -->
     <div id="loadingSpinner" class="d-none">
       <div class="spinner-overlay">
@@ -213,7 +221,17 @@
     </div>
   </div>
 </aside>
+<style>
 
+.sidebar-logout {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+</style>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Tambahkan event listener untuk setiap link dalam submenu
@@ -232,4 +250,27 @@
       document.getElementById("loadingSpinner").classList.remove("d-none");
     });
   });
+
+  document.getElementById("logoutButton").addEventListener("click", function () {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: 'custom-swal-popup',
+        confirmButton: 'custom-swal-confirm-button',
+        cancelButton: 'custom-swal-cancel-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    });
+  });
 </script>
+

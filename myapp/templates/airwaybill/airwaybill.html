@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+{% load user_tags %}
+<div class="container">
+  <div class="main-content">
+    <h2>Import Air Waybill</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="excel_file">Upload Excel File (.xlsx)</label>
+        <input type="file" class="form-control" name="excel_file" required>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Import</button>
+    </form>
+
+    <hr>
+
+    <h3 class="mt-4">Data Air Waybill</h3>
+    <table class="table table-bordered mt-2">
+        <thead>
+            <tr>
+            <th>No</th>
+            <th>Airwaybill No</th>
+            <th>Registered (PR No)</th>
+            <th>Date</th>
+            <th>Weight</th>
+            <th>Shipping Cost</th>
+            <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for awb in air_waybills %}
+            <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ awb.airwaybill_no }}</td>
+            <td>{{ awb.registered_no.registered_no }}</td>
+            <td>{{ awb.date }}</td>
+            <td>{{ awb.weight }}</td>
+            <td>{{ awb.shipping_cost }}</td>
+            <td>
+                <a href="{% url 'airwaybill_detail' awb.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
+            </td>
+            </tr>
+            {% empty %}
+            <tr>
+            <td colspan="7">Belum ada data AirWayBill yang tersimpan.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

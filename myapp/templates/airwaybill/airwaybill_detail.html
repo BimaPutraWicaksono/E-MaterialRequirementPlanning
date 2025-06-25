@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="p-3 border">
+  <h4 class="text-center"><u>AIRWAY BILL</u></h4>
+
+  <div class="d-flex mt-2 mb-2 justify-content-between">
+    {% if created_po.supplier %}
+      <div class="p-3 border mr-3">
+        <table class="clean-table">
+          <tr><td class="text-center"><strong>{{ created_po.supplier.name }}</strong></td></tr>
+          <tr><td class="text-center"><strong>{{ created_po.supplier.email }}</strong></td></tr>
+          <tr><td class="text-center">{{ created_po.supplier.address }}</td></tr>
+          <tr><td class="text-center">Tel No.: {{ created_po.supplier.tel_no }}</td></tr>
+          <tr><td class="text-center">Fax No.: {{ created_po.supplier.fax_no }}</td></tr>
+          <tr><td class="text-center">Attn: {{ created_po.supplier.attn }}</td></tr>
+          <tr><td class="text-center">CC: {{ created_po.supplier.cc }}</td></tr>
+        </table>
+      </div>
+    {% endif %}
+
+    <table class="clean-table ml-3">
+      <tr><td><strong>NO</strong></td><td>:</td><td>{{ purchase_request.registered_no }}</td></tr>
+      <tr><td><strong>DATE</strong></td><td>:</td><td>{{ created_po.date }}</td></tr>
+      <tr><td><strong>TERM</strong></td><td>:</td><td>{{ created_po.term }}</td></tr>
+      <tr><td><strong>DELIVERY</strong></td><td>:</td><td>{{ created_po.delivery }}</td></tr>
+      <tr><td><strong>SHIPPED BY</strong></td><td>:</td><td>{{ created_po.shipped_by }}</td></tr>
+    </table>
+  </div>
+
+  <div class="table-responsive mt-2 mb-2">
+    <table class="table table-bordered mt-3">
+      <thead class="table-secondary">
+        <tr>
+          <th>NO</th>
+          <th>PR NO.</th>
+          <th>DESCRIPTION OF GOODS</th>
+          <th>QTY</th>
+          <th>UNIT PRICE</th>
+          <th>AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in request_items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.budget_ref_no }}</td>
+            <td>{{ item.loading_part_result.terminal }}-{{ item.loading_part_result.part_name }}</td>
+            <td>{{ item.result_average_round|floatformat:-1 }}</td>
+            <td>$ {{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+            <td>$ {{ item.amount|floatformat:"2"|intcomma }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center">Tidak ada item.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table style="width: auto;">
+      <tr>
+        <td><strong>AMOUNT</strong></td>
+        <td><strong>: $ {{ purchase_request.total_amount|floatformat:"2"|intcomma }}</strong></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

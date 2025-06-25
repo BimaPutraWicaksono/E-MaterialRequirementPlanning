@@ -8,6 +8,7 @@ from . import views_sparepart
 from . import views_order
 from . import views_ordered
 from . import views_schedule
+from . import views_airwaybill
 
 
 urlpatterns = [
@@ -104,6 +105,10 @@ urlpatterns = [
     # shcedule confirmation
     path('scheduleConf/', views_schedule.scheduleConf, name='scheduleConf'),
     
+    # airwaybil
+    path('airwaybill/import/', views_airwaybill.import_airwaybill, name='import_airwaybill'),
+    path('airwaybill-detail/<str:registered_no>/', views_airwaybill.airwaybill_detail, name='airwaybill_detail'),
+
     # no
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),
     path('invoice/', views_order.invoice, name='invoice'),
