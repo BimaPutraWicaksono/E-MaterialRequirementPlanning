@@ -393,17 +393,15 @@ class ScheduleConf(models.Model):
     class Meta:
         db_table = 'schedule_conf' 
         
-# class Schedule(models.Model):
-#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
 
-#     class Meta:
-#         db_table = 'schedule'
-
-# class AirWayBill(models.Model):
-#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
-
-#     class Meta:
-#         db_table = 'air_way_bill'
+class AirWayBill(models.Model):
+    airwaybill_no = models.CharField(max_length=100, unique=True)
+    registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+    date = models.DateField(null=True, blank=True)
+    weight = models.CharField(max_length=100)
+    shipping_cost = models.CharField(max_length=100)   
+    class Meta:
+        db_table = 'air_way_bill'
 
 # class Invoice(models.Model):
 #     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
