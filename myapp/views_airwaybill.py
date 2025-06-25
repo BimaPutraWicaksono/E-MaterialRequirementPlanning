@@ -19,7 +19,7 @@ def import_airwaybill(request):
         shipping_cost = str(sheet['D8'].value).strip()
 
         try:
-            purchase_request = PurchaseRequest.objects.get(pr_no=registered_no_str)
+            purchase_request = PurchaseRequest.objects.get(registered_no=registered_no_str)
         except PurchaseRequest.DoesNotExist:
             messages.error(request, f"PurchaseRequest dengan PR No '{registered_no_str}' tidak ditemukan.")
             return redirect('import_airwaybill')
