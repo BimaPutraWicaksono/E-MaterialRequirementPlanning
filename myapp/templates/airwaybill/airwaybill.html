@@ -11,14 +11,13 @@
       {% endfor %}
     {% endif %}
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST">
       {% csrf_token %}
-      <div class="form-group">
-        <label for="excel_file">Upload Excel File (.xlsx)</label>
-        <input type="file" class="form-control" name="excel_file" required>
-      </div>
-      <button type="submit" class="btn btn-primary mt-2">Import</button>
+      <button type="submit" class="btn btn-primary mt-2">
+        Ambil dari Email (Subject: AIRWAYBILL)
+      </button>
     </form>
+
 
     <hr>
 

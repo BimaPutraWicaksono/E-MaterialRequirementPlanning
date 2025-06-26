@@ -3,12 +3,20 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import AirWayBill, PurchaseRequest, PurchaseOrder, RequestItem
-
+from django.conf import settings
+import imaplib
+import email
+from email.header import decode_header
+from io import BytesIO
 
 @login_required
 def import_airwaybill(request):
-    if request.method == 'POST' and request.FILES.get('excel_file'):
-        excel_file = request.FILES['excel_file']
+    if request.method == 'POST':
+        excel_file, error_message = get_excel_from_email()
+        if not excel_file:
+            messages.error(request, error_message or "Gagal mengambil file.")
+            return redirect('import_airwaybill')
+
         wb = openpyxl.load_workbook(excel_file)
         sheet = wb.active
 
@@ -43,6 +51,41 @@ def import_airwaybill(request):
     return render(request, 'airwaybill/airwaybill.html', {
         'air_waybills': air_waybills,
     })
+
+def get_excel_from_email():
+    import imaplib
+    import email
+    from email.header import decode_header
+    from io import BytesIO
+
+    try:
+        mail = imaplib.IMAP4_SSL(settings.EMAIL_HOST)
+        mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        mail.select("inbox")
+
+        status, messages = mail.search(None, '(SUBJECT "AIRWAYBILL")')
+        email_ids = messages[0].split()
+        if not email_ids:
+            return None, "Tidak ditemukan email dengan subject 'AIRWAYBILL'."
+
+        latest_email_id = email_ids[-1]
+        status, msg_data = mail.fetch(latest_email_id, "(RFC822)")
+        raw_email = msg_data[0][1]
+
+        msg = email.message_from_bytes(raw_email)
+
+        for part in msg.walk():
+            content_disposition = part.get("Content-Disposition", "")
+            if "attachment" in content_disposition:
+                filename = part.get_filename()
+                if filename and filename.endswith(".xlsx"):
+                    file_data = part.get_payload(decode=True)
+                    return BytesIO(file_data), None
+
+        return None, "Tidak ditemukan file Excel di attachment."
+    except Exception as e:
+        return None, f"Terjadi kesalahan saat mengambil email: {str(e)}"
+
 
 
 @login_required

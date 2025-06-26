@@ -8,7 +8,9 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from .models import ScheduleConf, PurchaseRequest
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def scheduleConf(request):
     if request.method == 'POST':
         today = datetime.now().date()
