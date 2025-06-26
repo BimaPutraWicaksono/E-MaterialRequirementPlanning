@@ -113,6 +113,8 @@ urlpatterns = [
     
     # invoice
     path('invoice/import/', views_invoice.import_invoice, name='import_invoice'),
+    path('invoice/detail/<str:registered_no>/', views_invoice.invoice_detail, name='invoice_detail'),
+
 
     # no
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),

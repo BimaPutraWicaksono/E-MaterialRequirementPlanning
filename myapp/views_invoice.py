@@ -1,5 +1,6 @@
 import openpyxl
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Invoice, PurchaseRequest
 from django.core.exceptions import ObjectDoesNotExist
@@ -49,3 +50,19 @@ def import_invoice(request):
             return redirect('import_invoice')
 
     return render(request, 'invoice/invoice.html', {'invoices': invoices})
+
+from .models import PurchaseOrder, RequestItem
+
+@login_required
+def invoice_detail(request, registered_no):
+    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request)
+    po = PurchaseOrder.objects.filter(registered_no=purchase_request).last()
+    invoice = Invoice.objects.filter(registered_no=purchase_request).last()
+
+    return render(request, 'invoice/invoice_detail.html', {
+        'purchase_request': purchase_request,
+        'request_items': request_items,
+        'created_po': po,
+        'invoice': invoice,
+    })

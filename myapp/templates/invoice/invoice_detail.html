@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid p-3 border mr-3 ml-3">
+  <h4 class="text-center"><u>INVOICE</u></h4>
+
+  <div class="d-flex mt-2 mb-2 gap-3">
+    <div class="flex-fill">
+      <table class="clean-table mb-3 w-100">
+        <tr><td><strong>INVOICE NO</strong></td><td>:</td><td>{{ invoice.invoice_no }}</td></tr>
+        <tr><td><strong>DATE</strong></td><td>:</td><td>{{ invoice.date }}</td></tr>
+        <tr><td><strong>AMOUNT</strong></td><td>:</td><td>$ {{ invoice.last_amount|floatformat:"2"|intcomma }}</td></tr>
+      </table>
+    </div>
+    <div class="flex-fill">
+      <table class="clean-table w-100">
+        <tr>
+          <td class="company-right border">
+            <div><u>Supplier Information:</u></div>
+            <div class="company-name"><b>{{ created_po.supplier.name }}</b></div>
+            <div>{{ created_po.supplier.address }}</div>
+            <div>Tel No.: {{ created_po.supplier.tel_no }}</div>
+            <div>Fax No.: {{ created_po.supplier.fax_no }}</div>
+            <div>Attn: {{ created_po.supplier.attn }} - CC: {{ created_po.supplier.cc }}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="flex-fill">
+      <table class="clean-table w-100 border">
+        <tr>
+          <td class="company-right">
+            <div><u>Consigneo's Name and Address:</u></div>
+            <div class="company-name"><b>PT. XYZ INDONESIA</b></div>
+            <div>KAWASAN MALANG INDUSTRI PERSADA KAV. A-1</div>
+            <div>LOWOKWARU - MALANG 65323</div>
+            <div>EAST JAVA - INDONESIA</div>
+            <div>Phone: +6282543765234 Fax: +6282543765233</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-responsive mt-2 mb-2">
+    <table class="table table-bordered mt-3">
+      <thead class="table-secondary">
+        <tr>
+          <th>NO</th>
+          <th>PR NO.</th>
+          <th>DESCRIPTION OF GOODS</th>
+          <th>QTY</th>
+          <th>UNIT PRICE</th>
+          <th>AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in request_items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.budget_ref_no }}</td>
+          <td>{{ item.loading_part_result.terminal }}-{{ item.loading_part_result.part_name }}</td>
+          <td>{{ item.result_average_round|floatformat:-1 }}</td>
+          <td>$ {{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+          <td>$ {{ item.amount|floatformat:"2"|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center">Tidak ada item.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table style="width: auto;">
+      <tr>
+        <td><strong>AMOUNT</strong></td>
+        <td><strong>: $ {{ purchase_request.total_amount|floatformat:"2"|intcomma }}</strong></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<style>
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .clean-table td {
+    padding: 4px 8px;
+    background-color: white;
+    vertical-align: top;
+  }
+  .clean-table td:first-child {
+    white-space: nowrap;
+    width: 150px;
+  }
+  .clean-table td:nth-child(2) {
+    width: 10px;
+  }
+</style>
+{% endblock %}

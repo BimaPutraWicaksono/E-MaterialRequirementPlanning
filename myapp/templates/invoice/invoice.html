@@ -30,6 +30,7 @@
         <th>Registered No</th>
         <th>Tanggal</th>
         <th>Last Amount</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
@@ -39,6 +40,9 @@
         <td>{{ invoice.registered_no.registered_no }}</td>
         <td>{{ invoice.date }}</td>
         <td>${{ invoice.last_amount|floatformat:2 }}</td>
+        <td>
+          <a href="{% url 'invoice_detail' invoice.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
