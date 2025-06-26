@@ -17,9 +17,10 @@
     <div class="flex-fill">
       <table class="clean-table w-100">
         <tr>
-          <td class="company-right">
+          <td class="company-right border">
+            <div><u>Shipped Name and Address:</u></div>
             <div class="company-name"><b>{{ created_po.supplier.name }}</b></div>
-            <div>{{ created_po.supplier.email }}</div>
+            {% comment %} <div>{{ created_po.supplier.email }}</div> {% endcomment %}
             <div>{{ created_po.supplier.address }}</div>
             <div>Tel No.: {{ created_po.supplier.tel_no }}</div>
             <div>Fax No.: {{ created_po.supplier.fax_no }}</div>
@@ -29,9 +30,10 @@
       </table>
     </div>
     <div class="flex-fill">
-      <table class="clean-table w-100">
+      <table class="clean-table w-100 border">
         <tr>
           <td class="company-right">
+            <div><u>Consigneo's Name and Address:</u></div>
             <div class="company-name"><b>PT. XYZ INDONESIA</b></div>
             <div>KAWASAN MALANG INDUSTRI PERSADA KAV. A-1</div>
             <div>LOWOKWARU - MALANG 65323</div>
