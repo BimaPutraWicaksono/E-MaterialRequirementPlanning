@@ -140,8 +140,8 @@
                 <p>Airway Bill</p>
               </a>
             </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'invoice' %}active{% endif %}">
-              <a href="{% url 'invoice' %}" class="nav-link">
+            <li class="nav-item {% if request.resolver_match.url_name == 'import_invoice' %}active{% endif %}">
+              <a href="{% url 'import_invoice' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-invoice-dollar"></i>
                 <p>Invoice</p>
               </a>
