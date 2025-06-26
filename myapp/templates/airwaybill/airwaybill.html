@@ -3,26 +3,24 @@
 {% load user_tags %}
 <div class="container">
   <div class="main-content">
-    <h2>Import Air Waybill</h2>
+    <h2>AIRWAYBILL</h2>
 
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-
-    <form method="POST">
+    <form method="POST" onsubmit="showLoading(this)">
       {% csrf_token %}
-      <button type="submit" class="btn btn-primary mt-2">
-        Ambil dari Email (Subject: AIRWAYBILL)
+      <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
+        <span id="btnText">Search Email</span>
+        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
       </button>
     </form>
-
-
+    {% if messages %}
+    Note:
+      {% for message in messages %}
+        <div class="{{ message.tags }}"> {{ message }}</div>
+      {% endfor %}
+    {% endif %}
     <hr>
 
-    <h3 class="mt-4">Data Air Waybill</h3>
-    <table class="table table-bordered mt-2">
+    <table class="table table-bordered mt-2" id="table_airwaybill">
         <thead>
             <tr>
             <th>No</th>
@@ -56,4 +54,17 @@
     </table>
   </div>
 </div>
+<script>
+  function showLoading(form) {
+    const button = form.querySelector("#searchBtn");
+    const btnText = button.querySelector("#btnText");
+    const btnSpinner = button.querySelector("#btnSpinner");
+
+    // Ganti text dengan loading spinner
+    btnText.textContent = "Loading...";
+    btnSpinner.classList.remove("d-none");
+    button.disabled = true;
+  }
+</script>
+
 {% endblock %}

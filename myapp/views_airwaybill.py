@@ -12,79 +12,96 @@ from io import BytesIO
 @login_required
 def import_airwaybill(request):
     if request.method == 'POST':
-        excel_file, error_message = get_excel_from_email()
-        if not excel_file:
-            messages.error(request, error_message or "Gagal mengambil file.")
+        excel_files, error_message = get_excel_from_email()
+        if not excel_files:
+            messages.error(request, error_message or "No files retrieved.")
             return redirect('import_airwaybill')
 
-        wb = openpyxl.load_workbook(excel_file)
-        sheet = wb.active
+        for excel_file in excel_files:
+            try:
+                wb = openpyxl.load_workbook(excel_file)
+                sheet = wb.active
 
-        airwaybill_no = str(sheet['D4'].value).strip()
-        registered_no_str = str(sheet['D5'].value).strip()
-        date = sheet['D6'].value
-        weight = str(sheet['D7'].value).strip()
-        shipping_cost = str(sheet['D8'].value).strip()
+                airwaybill_no = str(sheet['D4'].value).strip()
+                registered_no_str = str(sheet['D5'].value).strip()
+                date = sheet['D6'].value
+                weight = str(sheet['D7'].value).strip()
+                shipping_cost = str(sheet['D8'].value).strip()
 
-        try:
-            purchase_request = PurchaseRequest.objects.get(registered_no=registered_no_str)
-        except PurchaseRequest.DoesNotExist:
-            messages.error(request, f"PurchaseRequest dengan PR No '{registered_no_str}' tidak ditemukan.")
-            return redirect('import_airwaybill')
+                try:
+                    purchase_request = PurchaseRequest.objects.get(registered_no=registered_no_str)
+                except PurchaseRequest.DoesNotExist:
+                    messages.error(request, f"PR No '{registered_no_str}' not found.")
+                    continue
 
-        if AirWayBill.objects.filter(airwaybill_no=airwaybill_no).exists():
-            messages.warning(request, f"AirWayBill dengan nomor '{airwaybill_no}' sudah ada.")
-        else:
-            AirWayBill.objects.create(
-                airwaybill_no=airwaybill_no,
-                registered_no=purchase_request,
-                date=date,
-                weight=weight,
-                shipping_cost=shipping_cost
-            )
-            messages.success(request, f"AirWayBill '{airwaybill_no}' berhasil disimpan.")
+                if AirWayBill.objects.filter(airwaybill_no=airwaybill_no).exists():
+                    messages.warning(request, f"AirWayBill '{airwaybill_no}' already exists.")
+                else:
+                    AirWayBill.objects.create(
+                        airwaybill_no=airwaybill_no,
+                        registered_no=purchase_request,
+                        date=date,
+                        weight=weight,
+                        shipping_cost=shipping_cost
+                    )
+                    messages.success(request, f"AirWayBill '{airwaybill_no}' saved.")
+
+            except Exception as e:
+                messages.error(request, f"Failed to process a file: {str(e)}")
 
         return redirect('import_airwaybill')
 
-    # Ambil semua data AirWayBill untuk ditampilkan
     air_waybills = AirWayBill.objects.select_related('registered_no').all()
     return render(request, 'airwaybill/airwaybill.html', {
         'air_waybills': air_waybills,
     })
 
-def get_excel_from_email():
-    import imaplib
-    import email
-    from email.header import decode_header
-    from io import BytesIO
+from datetime import datetime
+import email.utils
 
+def get_excel_from_email():
     try:
         mail = imaplib.IMAP4_SSL(settings.EMAIL_HOST)
         mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
         mail.select("inbox")
 
+        # Cari semua email dengan SUBJECT 'AIRWAYBILL'
         status, messages = mail.search(None, '(SUBJECT "AIRWAYBILL")')
         email_ids = messages[0].split()
         if not email_ids:
-            return None, "Tidak ditemukan email dengan subject 'AIRWAYBILL'."
+            return [], "Subject 'AIRWAYBILL' not found."
 
-        latest_email_id = email_ids[-1]
-        status, msg_data = mail.fetch(latest_email_id, "(RFC822)")
-        raw_email = msg_data[0][1]
+        today = datetime.now().date()
+        excel_files = []
 
-        msg = email.message_from_bytes(raw_email)
+        for email_id in reversed(email_ids):  # cek dari terbaru ke terlama
+            status, msg_data = mail.fetch(email_id, "(RFC822)")
+            raw_email = msg_data[0][1]
+            msg = email.message_from_bytes(raw_email)
 
-        for part in msg.walk():
-            content_disposition = part.get("Content-Disposition", "")
-            if "attachment" in content_disposition:
-                filename = part.get_filename()
-                if filename and filename.endswith(".xlsx"):
-                    file_data = part.get_payload(decode=True)
-                    return BytesIO(file_data), None
+            # Ambil tanggal email dan cocokan dengan hari ini
+            msg_date_tuple = email.utils.parsedate_tz(msg["Date"])
+            if msg_date_tuple is None:
+                continue
+            msg_date = datetime.fromtimestamp(email.utils.mktime_tz(msg_date_tuple)).date()
+            if msg_date != today:
+                continue  # Skip jika bukan email hari ini
 
-        return None, "Tidak ditemukan file Excel di attachment."
+            # Cek semua attachment dan ambil file .xlsx
+            for part in msg.walk():
+                content_disposition = part.get("Content-Disposition", "")
+                if "attachment" in content_disposition:
+                    filename = part.get_filename()
+                    if filename and filename.endswith(".xlsx"):
+                        file_data = part.get_payload(decode=True)
+                        excel_files.append(BytesIO(file_data))
+
+        if not excel_files:
+            return [], "No Excel attachments found for today."
+
+        return excel_files, None
     except Exception as e:
-        return None, f"Terjadi kesalahan saat mengambil email: {str(e)}"
+        return [], f"An error occurred while retrieving emails: {str(e)}"
 
 
 

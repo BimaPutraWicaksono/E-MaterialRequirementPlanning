@@ -2,11 +2,15 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Schedule Confirmation</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Search Email</button>
+    <h2>SCHEDULE CONFIRMATION</h2>
+    <form method="post" onsubmit="showLoading(this)">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary" id="searchBtn">
+        <span id="btnText">Search Email</span>
+        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    </button>
     </form>
+
 
     <table class="table table-bordered mt-4" id="table_schedule">
         <thead class="table-light">
@@ -43,4 +47,16 @@
         </tbody>
     </table>
 </div>
+<script>
+  function showLoading(form) {
+    const button = form.querySelector("#searchBtn");
+    const btnText = button.querySelector("#btnText");
+    const btnSpinner = button.querySelector("#btnSpinner");
+
+    btnText.textContent = "Loading...";
+    btnSpinner.classList.remove("d-none");
+    button.disabled = true;
+  }
+</script>
+
 {% endblock %}
