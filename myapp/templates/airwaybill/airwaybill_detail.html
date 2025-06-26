@@ -1,31 +1,46 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% block content %}
-<div class="p-3 border">
+<div class="container-fluid p-3 border mr-3 ml-3">
   <h4 class="text-center"><u>AIRWAY BILL</u></h4>
-
-  <div class="d-flex mt-2 mb-2 justify-content-between">
-    {% if created_po.supplier %}
-      <div class="p-3 border mr-3">
-        <table class="clean-table">
-          <tr><td class="text-center"><strong>{{ created_po.supplier.name }}</strong></td></tr>
-          <tr><td class="text-center"><strong>{{ created_po.supplier.email }}</strong></td></tr>
-          <tr><td class="text-center">{{ created_po.supplier.address }}</td></tr>
-          <tr><td class="text-center">Tel No.: {{ created_po.supplier.tel_no }}</td></tr>
-          <tr><td class="text-center">Fax No.: {{ created_po.supplier.fax_no }}</td></tr>
-          <tr><td class="text-center">Attn: {{ created_po.supplier.attn }}</td></tr>
-          <tr><td class="text-center">CC: {{ created_po.supplier.cc }}</td></tr>
-        </table>
-      </div>
-    {% endif %}
-
-    <table class="clean-table ml-3">
-      <tr><td><strong>NO</strong></td><td>:</td><td>{{ purchase_request.registered_no }}</td></tr>
-      <tr><td><strong>DATE</strong></td><td>:</td><td>{{ created_po.date }}</td></tr>
-      <tr><td><strong>TERM</strong></td><td>:</td><td>{{ created_po.term }}</td></tr>
-      <tr><td><strong>DELIVERY</strong></td><td>:</td><td>{{ created_po.delivery }}</td></tr>
-      <tr><td><strong>SHIPPED BY</strong></td><td>:</td><td>{{ created_po.shipped_by }}</td></tr>
-    </table>
+  
+  <div class="d-flex mt-2 mb-2 gap-3">
+    <div class="flex-fill">
+      <table class="clean-table mb-3 w-100">
+        <tr><td><strong>AIR WAYBILL NO.</strong></td><td>:</td><td>{{ airwaybill.airwaybill_no }}</td></tr>
+        {# <tr><td><strong>REGISTERED NO</strong></td><td>:</td><td>{{ airwaybill.registered_no.registered_no }}</td></tr> #}
+        <tr><td><strong>DATE</strong></td><td>:</td><td>{{ airwaybill.date }}</td></tr>
+        <tr><td><strong>WEIGHT</strong></td><td>:</td><td>{{ airwaybill.weight }}</td></tr>
+        <tr><td><strong>SHIPPING COST</strong></td><td>:</td><td>$ {{ airwaybill.shipping_cost }}</td></tr>
+      </table>
+    </div>
+    <div class="flex-fill">
+      <table class="clean-table w-100">
+        <tr>
+          <td class="company-right">
+            <div class="company-name"><b>{{ created_po.supplier.name }}</b></div>
+            <div>{{ created_po.supplier.email }}</div>
+            <div>{{ created_po.supplier.address }}</div>
+            <div>Tel No.: {{ created_po.supplier.tel_no }}</div>
+            <div>Fax No.: {{ created_po.supplier.fax_no }}</div>
+            <div>Attn: {{ created_po.supplier.attn }} - CC: {{ created_po.supplier.cc }}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="flex-fill">
+      <table class="clean-table w-100">
+        <tr>
+          <td class="company-right">
+            <div class="company-name"><b>PT. XYZ INDONESIA</b></div>
+            <div>KAWASAN MALANG INDUSTRI PERSADA KAV. A-1</div>
+            <div>LOWOKWARU - MALANG 65323</div>
+            <div>EAST JAVA - INDONESIA</div>
+            <div>Phone: +6282543765234 Fax: +6282543765233</div>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 
   <div class="table-responsive mt-2 mb-2">
@@ -55,6 +70,7 @@
         {% endfor %}
       </tbody>
     </table>
+    
     <table style="width: auto;">
       <tr>
         <td><strong>AMOUNT</strong></td>
@@ -64,4 +80,23 @@
   </div>
 </div>
 
+<style>
+  .clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  .clean-table td {
+    padding: 4px 8px;
+    background-color: white;
+    vertical-align: top;
+  }
+  .clean-table td:first-child {
+    white-space: nowrap;
+    width: 150px;
+  }
+  .clean-table td:nth-child(2) {
+    width: 10px;
+  }
+</style>
 {% endblock %}
