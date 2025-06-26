@@ -1,24 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-5">
-  <h2>Import Invoice Excel</h2>
+  <h2>INVOICE</h2>
+
+  <form method="POST" onsubmit="showLoading(this)">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
+      <span id="btnText">Search Email</span>
+      <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    </button>
+  </form>
 
   {% if messages %}
-    <ul class="mt-3">
-      {% for message in messages %}
-        <li class="text-{{ message.tags }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
+  Note:
+    {% for message in messages %}
+      <div class="{{ message.tags }}"> {{ message }}</div>
+    {% endfor %}
   {% endif %}
 
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="form-group mt-3">
-      <label for="excel_file">Upload Excel File:</label>
-      <input type="file" name="excel_file" class="form-control-file" required>
-    </div>
-    <button type="submit" class="btn btn-primary mt-3">Import</button>
-  </form>
 
   {% if invoices %}
   <hr>
@@ -51,4 +50,19 @@
     <p class="mt-4">Belum ada data invoice yang tersimpan.</p>
   {% endif %}
 </div>
+<script>
+  function showLoading(form) {
+    const button = form.querySelector("#searchBtn");
+    const btnText = button.querySelector("#btnText");
+    const btnSpinner = button.querySelector("#btnSpinner");
+
+    // Tampilkan spinner dan ubah teks tombol
+    btnText.textContent = "Loading...";
+    btnSpinner.classList.remove("d-none");
+
+    // Nonaktifkan tombol agar tidak diklik lagi
+    button.disabled = true;
+  }
+</script>
+
 {% endblock %}
