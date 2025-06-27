@@ -29,7 +29,7 @@
 
 .nav-link {
     color: white !important;
-    padding: 12px 15px;
+    padding: 5px 10px;
     border-radius: 10px !important;
     transition: background 0.3s ease, color 0.3s ease;
 }
@@ -71,4 +71,9 @@
 .nav-sidebar .nav-treeview .nav-link {
     font-size: 14px !important; /* lebih kecil dari default */
     padding-left: 2rem !important; /* menjorok ke kanan */
+}
+
+.sidebar-logout {
+  /* position: absolute; */
+  bottom: 20px;
 }

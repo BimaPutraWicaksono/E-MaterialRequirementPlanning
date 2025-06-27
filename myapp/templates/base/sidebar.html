@@ -10,16 +10,13 @@
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         
         <!-- Home -->
-        <li class="nav-item has-treeview">
-            <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-              <a href="{% url 'home' %}" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
-                <p>Home</p>
-              </a>
-            </li>
+        <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+          <a href="{% url 'home' %}" class="nav-link">
+            <i class="nav-icon fas fa-home"></i>
+            <p>Home</p>
+          </a>
         </li>
         <!-- Sparepart -->
-        
         {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
         <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'applicator' or request.resolver_match.url_name == 'loadingPart' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
@@ -97,7 +94,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill invoice' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -221,17 +218,6 @@
     </div>
   </div>
 </aside>
-<style>
-
-.sidebar-logout {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  padding: 0 1rem;
-}
-
-</style>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Tambahkan event listener untuk setiap link dalam submenu
