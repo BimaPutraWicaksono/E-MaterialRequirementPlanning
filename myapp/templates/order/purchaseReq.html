@@ -17,7 +17,9 @@
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
       <tr>
+        <th>Date</th>
         <th>Registered No</th>
+        <th>Request By</th>
         <th>Approval Stages</th>
         <th>Action</th>
       </tr>
@@ -25,7 +27,9 @@
     <tbody>
       {% for pr in requests %}
         <tr>
+          <td class="text-start align-middle">{{ pr.date }}</td>
           <td class="text-start align-middle">{{ pr.registered_no }}</td>
+          <td class="text-start align-middle">{{ pr.created_by }}</td>
           <td class="text-center align-middle">
             {% if pr.approve_spv is True %}
               SPV <i class="fas fa-check text-success"></i>
@@ -77,7 +81,7 @@
           </td>
         </tr>
       {% empty %}
-        <tr><td colspan="3" class="text-center"></td></tr>
+        <tr><td colspan="4" class="text-center">No data available.</td></tr>
       {% endfor %}
     </tbody>
   </table>

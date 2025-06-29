@@ -117,8 +117,9 @@ def purchaseReq(request):
                 total_amount = 0
 
             pr = form.save(commit=False)
-            pr.departement = user_departement  # Isi otomatis dari user login
+            pr.departement = user_departement 
             pr.total_amount = total_amount
+            pr.created_by = request.user  
             pr.save()
             pr.part_order.set(selected_carlines)
 
@@ -161,13 +162,11 @@ def purchaseReq(request):
             return redirect('purchaseReq')
     else:
         form = PurchaseRequestForm()
-        # Filter section sesuai dengan departemen user
         form.fields['section'].queryset = Section.objects.filter(departement=user_departement)
 
     # Filter data sesuai role user
-    if 'filter' in request.GET:
-        filter_option = request.GET['filter']
-    else:
+    filter_option = request.GET.get('filter')
+    if not filter_option:
         if request.user.groups.filter(name='Karyawan').exists():
             filter_option = 'all'
         elif request.user.groups.filter(name='Supervisor').exists():
@@ -195,6 +194,7 @@ def purchaseReq(request):
         'filter_option': filter_option,
         'user_departement': user_departement,
     })
+
 
 from django.template.loader import render_to_string
 from datetime import date, timedelta
