@@ -400,6 +400,7 @@ class AirWayBill(models.Model):
     date = models.DateField(null=True, blank=True)
     weight = models.CharField(max_length=100)
     shipping_cost = models.CharField(max_length=100)   
+    
     class Meta:
         db_table = 'air_way_bill'
         
@@ -408,12 +409,17 @@ class Invoice(models.Model):
     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
     date = models.DateField(null=True, blank=True)
     last_amount = models.FloatField(default=0)
+    
     class Meta:
         db_table = 'invoice'
 
         
-# class Stock(models.Model):
-#     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)
+class Stock(models.Model):
+    part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-#     class Meta:
-#         db_table = 'stock'
+    class Meta:
+        db_table = 'stock'
+
+

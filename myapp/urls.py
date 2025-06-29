@@ -10,6 +10,7 @@ from . import views_ordered
 from . import views_schedule
 from . import views_airwaybill
 from . import views_invoice
+from . import views_stock
 
 
 
@@ -115,6 +116,8 @@ urlpatterns = [
     path('invoice/import/', views_invoice.import_invoice, name='import_invoice'),
     path('invoice/detail/<str:registered_no>/', views_invoice.invoice_detail, name='invoice_detail'),
 
+    # stock
+    path('stock/', views_stock.stock_list, name='stock_list'),
 
     # no
     path('airwayBill/', views_order.airwayBill, name='airwayBill'),

@@ -94,7 +94,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice stock_list' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -143,6 +143,14 @@
                 <p>Invoice</p>
               </a>
             </li>
+            {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+            <li class="nav-item {% if request.resolver_match.url_name == 'stock_list' %}active{% endif %}">
+              <a href="{% url 'stock_list' %}" class="nav-link">
+                <i class="nav-icon fas fa-boxes"></i>
+                <p>Stock</p>
+              </a>
+            </li>
+            {% endif %}
           </ul>
         </li>
         {% endif %}
@@ -182,24 +190,8 @@
               </a>
             </li>
             {% endif %}
-            {% comment %} <li class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-              <a href="{% url 'about' %}" class="nav-link">
-                <i class="nav-icon far fa-calendar-alt"></i>
-                <p>E-MRP</p>
-              </a>
-            </li> {% endcomment %}
           </ul>
         </li>
-        {% if not request.user|has_group:"Admin" %}
-            {% comment %} <li class="nav-item has-treeview">
-                <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                  <a href="{% url 'home' %}" class="nav-link">
-                    <i class="nav-icon fas fa-home"></i>
-                    <p>Stock</p>
-                  </a>
-                </li>
-            </li> {% endcomment %}
-        {% endif %}
         <li class="sidebar-logout">
           <a href="javascript:void(0);" class="nav-link text-danger" id="logoutButton">
             <i class="fas fa-sign-out-alt ml-2 mr-2"></i> Logout
