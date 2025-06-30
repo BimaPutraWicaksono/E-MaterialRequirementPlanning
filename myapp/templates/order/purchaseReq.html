@@ -21,7 +21,7 @@
         <th>REQUEST BY</th>
         <th>REGISTERED NO</th>
         <th>APPROVAL</th>
-        <th>ACTION</th>
+        <th>DETAIL</th>
         <th>EDIT</th>
         <th>DELETE</th>
       </tr>
@@ -57,7 +57,7 @@
 
             <!-- Edit -->
             <td class="text-center align-middle">
-              {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+              {% if request.user|has_group:"Karyawan" or not pr.approve_spv or pr.approve_spv is False %}
                 <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
               {% endif %}
             </td>
