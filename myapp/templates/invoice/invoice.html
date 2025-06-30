@@ -14,27 +14,25 @@
   {% if messages %}
   Note:
     {% for message in messages %}
-      <div class="{{ message.tags }}"> {{ message }}</div>
+      <div class="{{ message.tags }}"> {{ message }}</div> 
     {% endfor %}
   {% endif %}
-
-
-  {% if invoices %}
   <hr>
-  <h3 class="mt-4">Data Invoice</h3>
   <table class="table table-bordered mt-3">
     <thead>
       <tr>
-        <th>Invoice No</th>
-        <th>Registered No</th>
-        <th>Tanggal</th>
-        <th>Last Amount</th>
-        <th>Action</th>
+        <th>NO</th>
+        <th>INVOICE NO</th>
+        <th>REGISTERED [PO]</th>
+        <th>DATE</th>
+        <th>LAST AMOUNT</th>
+        <th>ACTION</th>
       </tr>
     </thead>
     <tbody>
       {% for invoice in invoices %}
       <tr>
+        <td>{{ forloop.counter }}</td>
         <td>{{ invoice.invoice_no }}</td>
         <td>{{ invoice.registered_no.registered_no }}</td>
         <td>{{ invoice.date }}</td>
@@ -43,12 +41,13 @@
           <a href="{% url 'invoice_detail' invoice.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
         </td>
       </tr>
+      {% empty %}
+        <tr>
+        <td colspan="6">Belum ada data Invoice yang tersimpan.</td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
-  {% else %}
-    <p class="mt-4">Belum ada data invoice yang tersimpan.</p>
-  {% endif %}
 </div>
 <script>
   function showLoading(form) {

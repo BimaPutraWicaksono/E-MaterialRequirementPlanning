@@ -7,7 +7,7 @@
   <div class="d-flex mt-2 mb-2 gap-3">
     <div class="flex-fill">
       <table class="clean-table mb-3 w-100">
-        <tr><td><strong>AIR WAYBILL NO.</strong></td><td>:</td><td>{{ airwaybill.airwaybill_no }}</td></tr>
+        <tr><td><strong>AIRWAY BILL NO.</strong></td><td>:</td><td>{{ airwaybill.airwaybill_no }}</td></tr>
         {# <tr><td><strong>REGISTERED NO</strong></td><td>:</td><td>{{ airwaybill.registered_no.registered_no }}</td></tr> #}
         <tr><td><strong>DATE</strong></td><td>:</td><td>{{ airwaybill.date }}</td></tr>
         <tr><td><strong>WEIGHT</strong></td><td>:</td><td>{{ airwaybill.weight }}</td></tr>
@@ -68,7 +68,7 @@
             <td>$ {{ item.amount|floatformat:"2"|intcomma }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="6" class="text-center">Tidak ada item.</td></tr>
+          <tr><td colspan="6" class="text-center">No data available.</td></tr>
         {% endfor %}
       </tbody>
     </table>

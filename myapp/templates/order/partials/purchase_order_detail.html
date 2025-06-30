@@ -99,7 +99,7 @@
           </table>
         {% endif %}
     </div>
-  {% if not created_po %}
+  {% if not created_po %} 
     <div>
       <form method="POST" id="purchase-order-form">
         {% csrf_token %}
@@ -147,7 +147,7 @@
             <td>$ {{ item.amount|floatformat:"2"|intcomma }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="8" class="text-center">Tidak ada item.</td></tr>
+          <tr><td colspan="8" class="text-center">No data available.</td></tr>
         {% endfor %}
       </tbody>
     </table>

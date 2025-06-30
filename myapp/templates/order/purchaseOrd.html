@@ -101,7 +101,7 @@
                   <td class="text-center align-middle">
                     {% if request.user|has_group:"Supervisor" %}
                       {% if pr.registered_no not in po_registered_nos and pr.approve_spv %}
-                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add Purchase Order</button>
+                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add PO</button>
                       {% elif pr.registered_no in po_registered_nos %}
                         <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                       {% endif %}
@@ -194,7 +194,7 @@
       </div>
     </div>
   {% else %}
-    <p>Tidak ada Purchase Order.</p>
+    <p>No data available.</p>
   {% endif %}
 
   <div id="detail-container" class="mt-5"></div>

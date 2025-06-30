@@ -125,7 +125,7 @@ def purchase_order_detail(request, registered_no):
     form = PurchaseOrderForm(initial=initial_data)
 
     if 'delivery' in form.fields:
-        form.fields['delivery'].disabled = True
+        form.fields['delivery'].widget.attrs['readonly'] = True
 
     html = render(request, 'order/partials/purchase_order_detail.html', {
         'purchase_request': purchase_request,

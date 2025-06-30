@@ -10,12 +10,16 @@
     <table class="table table-bordered mt-3" id="table_delivery">
       <thead class="table-light text-center">
         <tr>
-          <th>No</th>
-          <th>Purchase Order</th>
-          <th>Supplier</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Action</th> 
+          <th>NO</th>
+          <th>PURCHASE ORDER</th>
+          <th>SUPPLIER</th>
+          <th>STATUS</th>
+          <th>DATE</th>
+          <th>VIEW</th> 
+          {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+            <th>SEND</th> 
+            <th>DELETE</th>   
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -39,26 +43,36 @@
                   Belum dikirim
                 {% endif %}
               </td>
+              <!-- TD 1: View -->
               <td class="text-center align-middle">
-                <form class="d-inline send-email-form">
-                  <input type="hidden" name="filename" value="{{ file.name }}">
-                  <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
-                    <i class="fas fa-eye"></i> View
-                  </a>
-                  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
+                  <i class="fas fa-eye"></i> View
+                </a>
+              </td>
+
+              <!-- TD 2: Send -->
+              {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                <td class="text-center align-middle">
+                  <form class="d-inline send-email-form">
+                    <input type="hidden" name="filename" value="{{ file.name }}">
                     <button type="submit" class="btn btn-sm btn-success"
                       {% if file.email_sent %} disabled {% endif %}>
                       <i class="fas fa-paper-plane"></i> Send
                     </button>
-                  {% endif %}
-                </form>
-                {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                  </form>
+                </td>
+              {% endif %}
+
+              <!-- TD 3: Delete -->
+              {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                <td class="text-center align-middle">
                   <button class="btn btn-sm btn-danger delete-file-btn"
                     data-filename="{{ file.name }}">
                     <i class="fas fa-trash"></i> Delete
                   </button>
-                {% endif %}
-              </td>
+                </td>
+              {% endif %}
+
             </tr>
           {% endfor %}
         {% else %}

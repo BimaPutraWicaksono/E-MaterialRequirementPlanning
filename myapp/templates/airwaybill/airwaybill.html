@@ -3,7 +3,7 @@
 {% load user_tags %}
 <div class="container">
   <div class="main-content">
-    <h2>AIRWAYBILL</h2>
+    <h2>AIRWAY BILL</h2>
 
     <form method="POST" onsubmit="showLoading(this)">
       {% csrf_token %}
@@ -23,13 +23,13 @@
     <table class="table table-bordered mt-2" id="table_airwaybill">
         <thead>
             <tr>
-            <th>No</th>
-            <th>Airwaybill No</th>
-            <th>Registered (PR No)</th>
-            <th>Date</th>
-            <th>Weight</th>
-            <th>Shipping Cost</th>
-            <th>Action</th>
+            <th>NO</th>
+            <th>AIRWAY BILL</th>
+            <th>REGISTERED [PO]</th>
+            <th>DATE</th>
+            <th>WEIGHT</th>
+            <th>SHIPPING COST</th>
+            <th>ACTION</th>
             </tr>
         </thead>
         <tbody>
@@ -46,9 +46,9 @@
             </td>
             </tr> 
             {% empty %}
-            <tr>
-            <td colspan="7">Belum ada data AirWayBill yang tersimpan.</td>
-            </tr>
+              <tr>
+              <td colspan="7">Belum ada data AIRWAY BILL yang tersimpan.</td>
+              </tr>
             {% endfor %}
         </tbody>
     </table>
