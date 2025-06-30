@@ -13,17 +13,12 @@ def get_applicator_carline(terminal_data, applicator):
 
 
 @register.filter
-def dict_get(d, key):
-    if d and key in d:
-        return d.get(key)
-    return ''
-
-@register.filter
 def dict_get(dictionary, key):
     try:
-        return dictionary[key]
-    except KeyError:
+        return dictionary.get(key)
+    except (AttributeError, KeyError, TypeError):
         return None
+
 
 @register.filter
 def get_item(dictionary, key):
@@ -46,3 +41,7 @@ def deep_get(data, path):
         return data
     except (KeyError, TypeError):
         return None
+    
+@register.filter
+def attr(obj, attr_name):
+    return getattr(obj, attr_name, None)

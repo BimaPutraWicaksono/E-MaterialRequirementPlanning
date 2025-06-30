@@ -74,11 +74,18 @@ def purchaseOrd(request):
 
     # PO registered_no yang sudah dibuat
     po_registered_nos = set(PurchaseOrder.objects.values_list('registered_no__registered_no', flat=True))
+    
+    purchase_orders = {
+        po.registered_no.registered_no: po
+        for po in PurchaseOrder.objects.select_related('created_by').all()
+    }
+
 
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
         'requests': requests,
         'po_registered_nos': po_registered_nos,
+        'purchase_orders': purchase_orders,
     })
 
 
@@ -103,6 +110,7 @@ def purchase_order_detail(request, registered_no):
         if form.is_valid():
             po = form.save(commit=False)
             po.registered_no = purchase_request
+            po.created_by = request.user
             po.save()
             return JsonResponse({'success': True})
         else:
@@ -115,18 +123,19 @@ def purchase_order_detail(request, registered_no):
         initial_data['delivery'] = earliest_deadline.deadline
 
     form = PurchaseOrderForm(initial=initial_data)
-    
+
     if 'delivery' in form.fields:
         form.fields['delivery'].disabled = True
-        
+
     html = render(request, 'order/partials/purchase_order_detail.html', {
         'purchase_request': purchase_request,
         'request_items': request_items,
         'po_form': form,
-        'created_po': po,
+        'created_po': po,  # ← Nilai ini aman walaupun None
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
+
 
 
 from .models import PurchaseOrder, PurchaseRequest
@@ -254,6 +263,7 @@ from django.conf import settings
 from django.shortcuts import render
 from .models import PurchaseRequest, PurchaseOrder
 
+
 def list_exported_purchase_orders(request):
     folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
     file_list = []
@@ -266,6 +276,7 @@ def list_exported_purchase_orders(request):
 
     file_urls = []
     for f in file_list:
+        po = None  # ✅ inisialisasi untuk menghindari UnboundLocalError
         try:
             registered_no = f.replace("purchase_order_", "").replace(".pdf", "")
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
@@ -282,8 +293,8 @@ def list_exported_purchase_orders(request):
             'email_sent_at': po.email_sent_at if po else None
         })
 
-
     return render(request, 'order/list_exported_files.html', {'files': file_urls})
+
 
 
 import os

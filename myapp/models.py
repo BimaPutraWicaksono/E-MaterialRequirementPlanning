@@ -379,6 +379,8 @@ class PurchaseOrder(models.Model):
     email_sent = models.BooleanField(default=False)
     email_sent_at = models.DateTimeField(null=True, blank=True)
     
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    
     def __str__(self):
         return f"Request {self.registered_no}"
 

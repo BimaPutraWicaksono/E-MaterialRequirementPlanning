@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load user_tags %}
+{% load custom_filters %}
 {% block content %}
 {% load humanize %}
 <div class="container mt-4">
@@ -10,9 +11,13 @@
       <table class="table table-bordered mt-3" id="table_purchase_req">
         <thead class="table-light text-center">
           <tr>
+            <th>DATE</th>
+            <th>REQUEST BY</th>
             <th>REGISTERED NO</th>
             <th>APPROVAL</th>
-            <th>ACTION</th>
+            <th>DETAIL</th>
+            <th>EDIT</th>
+            <th>DELETE</th>
           </tr>
         </thead>
         <tbody>
@@ -20,6 +25,12 @@
             {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
               {% if request.user|has_group:"Admin" %}
                 <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                  <td class="text-center align-middle">
+                    {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
+                  </td>
+                  <td class="text-center align-middle">
+                    {{ purchase_orders|dict_get:pr.registered_no|attr:"created_by"|default:"-" }}
+                  </td>
                   <td class="text-start align-middle">{{ pr.registered_no }}</td>
                   <td class="text-center align-middle">
                     {% if pr.approve_factory_manager %}
@@ -36,14 +47,29 @@
                       <i class="fas fa-times text-danger"></i>
                     {% endif %}
                   </td>
+                  <!-- TD 1: Kosong (tidak ada Add PO di sini) -->
+                  <td class="text-center align-middle"></td>
+
+                  <!-- TD 2: Delete -->
                   <td class="text-center align-middle">
-                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                     <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
                   </td>
+
+                  <!-- TD 3: Detail -->
+                  <td class="text-center align-middle">
+                    <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                  </td>
+
                 </tr>
 
               {% elif request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
                 <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                  <td class="text-center align-middle">
+                    {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
+                  </td>
+                  <td class="text-center align-middle">
+                    {{ purchase_orders|dict_get:pr.registered_no|attr:"created_by"|default:"-" }}
+                  </td>
                   <td class="text-start align-middle">{{ pr.registered_no }}</td>
                   <td class="text-center align-middle">
                     {% if pr.approve_factory_manager is True %}
@@ -68,26 +94,45 @@
                       <i class="fas fa-times text-danger"></i>
                     {% endif %}
                   </td>
+
+                  <!-- TD 1: Add Purchase Order / Detail -->
                   <td class="text-center align-middle">
                     {% if request.user|has_group:"Supervisor" %}
                       {% if pr.registered_no not in po_registered_nos and pr.approve_spv %}
                         <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Add Purchase Order</button>
                       {% elif pr.registered_no in po_registered_nos %}
-                        {% if not pr.approve_sspv %}
-                          <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-                          <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
-                        {% endif %}
                         <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                       {% endif %}
                     {% elif request.user|has_group:"Karyawan" and pr.registered_no in po_registered_nos %}
                       <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                     {% endif %}
                   </td>
+
+                  <!-- TD 2: Edit -->
+                  <td class="text-center align-middle">
+                    {% if request.user|has_group:"Supervisor" and pr.registered_no in po_registered_nos and not pr.approve_sspv %}
+                      <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                    {% endif %}
+                  </td>
+
+                  <!-- TD 3: Delete -->
+                  <td class="text-center align-middle">
+                    {% if request.user|has_group:"Supervisor" and pr.registered_no in po_registered_nos and not pr.approve_sspv %}
+                      <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                    {% endif %}
+                  </td>
+
                 </tr>
 
               {% elif request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
                 {% if pr.registered_no in po_registered_nos %}
                   <tr class="po-row has-po">
+                    <td class="text-center align-middle">
+                      {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
+                    </td>
+                    <td class="text-center align-middle">
+                      {{ purchase_orders|dict_get:pr.registered_no|attr:"created_by"|default:"-" }}
+                    </td>
                     <td class="text-start align-middle">{{ pr.registered_no }}</td>
                     <td class="text-center align-middle">
                       {% if pr.approve_factory_manager %}
@@ -104,33 +149,49 @@
                         <i class="fas fa-times text-danger"></i>
                       {% endif %}
                     </td>
+                    <!-- TD 1: Approve -->
                     <td class="text-center align-middle">
                       {% if request.user|has_group:"SeniorSupervisor" %}
                         {% if not pr.approve_sspv %}
                           <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% else %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                         {% endif %}
                       {% elif request.user|has_group:"Manager" %}
                         {% if not pr.approve_manager and pr.approve_sspv %}
                           <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% elif pr.approve_manager %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                         {% endif %}
                       {% elif request.user|has_group:"FactoryManager" %}
                         {% if pr.approve_manager and not pr.approve_factory_manager %}
                           <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% elif pr.approve_factory_manager %}
+                        {% endif %}
+                      {% endif %}
+                    </td>
+
+                    <!-- TD 2: Kosong -->
+                    <td class="text-center align-middle"></td>
+
+                    <!-- TD 3: Detail -->
+                    <td class="text-center align-middle">
+                      {% if request.user|has_group:"SeniorSupervisor" %}
+                        {% if pr.approve_sspv %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                        {% endif %}
+                      {% elif request.user|has_group:"Manager" %}
+                        {% if pr.approve_manager %}
+                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                        {% endif %}
+                      {% elif request.user|has_group:"FactoryManager" %}
+                        {% if pr.approve_factory_manager %}
                           <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                         {% endif %}
                       {% endif %}
                     </td>
+
                   </tr>
                 {% endif %}
               {% endif %}
             {% endif %}
           {% empty %}
-            <tr><td colspan="3" class="text-center">Tidak ada Purchase Request yang disetujui.</td></tr>
+            <tr><td colspan="4" class="text-center">No data available.</td></tr>
           {% endfor %}
         </tbody>
       </table>
