@@ -160,8 +160,6 @@
               {% endif %}
             {% endif %}
           {% endif %}
-
-
             {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
               <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
                 <a href="{% url 'list_exported_files' %}" class="nav-link">
@@ -218,30 +216,30 @@
               </a>
             </li>
             {% if request.user|has_group:"Admin" %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
-              <a href="{% url 'master_departement_section' %}" class="nav-link">
-                <i class="nav-icon fas fa-user-cog"></i>
-                <p>Dept/Sect</p>
-              </a>
-            </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'supplier_list' %}active{% endif %}">
-              <a href="{% url 'supplier_list' %}" class="nav-link">
-                <i class="nav-icon fas fa-user-cog"></i>
-                <p>Supplier</p>
-              </a>
-            </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'shipped_list' %}active{% endif %}">
-              <a href="{% url 'shipped_list' %}" class="nav-link">
-                <i class="nav-icon fas fa-user-cog"></i>
-                <p>Shipped</p>
-              </a>
-            </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
-              <a href="{% url 'purchaseReq' %}" class="nav-link">
-                <i class="nav-icon fas fa-cart-plus"></i>
-                <p>Purchase Request</p>
-              </a>
-            </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
+                <a href="{% url 'master_departement_section' %}" class="nav-link">
+                  <i class="nav-icon fas fa-sitemap"></i>
+                  <p>Dept/Sect</p>
+                </a>
+              </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'supplier_list' %}active{% endif %}">
+                <a href="{% url 'supplier_list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-truck"></i>
+                  <p>Supplier</p>
+                </a>
+              </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'shipped_list' %}active{% endif %}">
+                <a href="{% url 'shipped_list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-shipping-fast"></i>
+                  <p>Shipped</p>
+                </a>
+              </li>
+              <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
+                <a href="{% url 'purchaseReq' %}" class="nav-link">
+                  <i class="nav-icon fas fa-cart-plus"></i>
+                  <p>Purchase Request</p>
+                </a>
+              </li>
             {% endif %}
           </ul>
         </li>
