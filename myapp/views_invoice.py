@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Invoice, PurchaseRequest
+from .models import Invoice, PurchaseRequest, AirWayBill
+from django.db.models import Prefetch
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from io import BytesIO
@@ -56,7 +57,19 @@ def get_invoice_excel_from_email():
 
 @login_required
 def import_invoice(request):
-    invoices = Invoice.objects.select_related('registered_no').all()
+    po_qs = PurchaseOrder.objects.select_related("supplier").order_by("-id")
+    awb_qs = AirWayBill.objects.only("shipping_cost")
+
+    pr_qs = PurchaseRequest.objects.prefetch_related(
+        Prefetch("purchaseorder_set", queryset=PurchaseOrder.objects.select_related("supplier")),
+        Prefetch("airwaybill", queryset=AirWayBill.objects.only("shipping_cost")),
+    )
+
+    invoices = (
+        Invoice.objects
+        .select_related("registered_no")
+        .prefetch_related(Prefetch("registered_no", queryset=pr_qs))
+    )
 
     if request.method == 'POST':
         excel_files, error_message = get_invoice_excel_from_email()
@@ -110,17 +123,18 @@ def import_invoice(request):
 
 
 from .models import PurchaseOrder, RequestItem
+from .models import AirWayBill, Supplier
 
 @login_required
 def invoice_detail(request, registered_no):
-    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
-    request_items = RequestItem.objects.filter(purchase_request=purchase_request)
-    po = PurchaseOrder.objects.filter(registered_no=purchase_request).last()
-    invoice = Invoice.objects.filter(registered_no=purchase_request).last()
+    pr  = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    po  = PurchaseOrder.objects.select_related("supplier").filter(registered_no=pr).last()
+    awb = AirWayBill.objects.filter(registered_no=pr).last()
 
-    return render(request, 'invoice/invoice_detail.html', {
-        'purchase_request': purchase_request,
-        'request_items': request_items,
-        'created_po': po,
-        'invoice': invoice,
+    return render(request, "invoice/invoice_detail.html", {
+        "purchase_request":pr,
+        "request_items":RequestItem.objects.filter(purchase_request=pr),
+        "created_po":po,
+        "invoice":Invoice.objects.filter(registered_no=pr).last(),
+        "awb":awb,
     })

@@ -366,13 +366,3 @@ def ajax_get_loading_parts_edit(request):
             'existing_details': existing_details
         })
         return JsonResponse({'table': table_html})
-
-# Airway bill
-@login_required()
-def airwayBill(request):
-    return render(request, 'order/airwayBill.html')
-
-# invoice
-@login_required()
-def invoice(request):
-    return render(request, 'order/invoice.html')

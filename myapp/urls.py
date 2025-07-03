@@ -7,7 +7,6 @@ from . import views_view
 from . import views_sparepart
 from . import views_order
 from . import views_ordered
-from . import views_schedule
 from . import views_airwaybill
 from . import views_invoice
 from . import views_stock
@@ -104,9 +103,7 @@ urlpatterns = [
     
     # send email
     path('send-exported-file-email/', views_ordered.send_exported_file_email, name='send_exported_file_email'),
-    
-    # shcedule confirmation
-    path('scheduleConf/', views_schedule.scheduleConf, name='scheduleConf'),
+    path('e-mrp/exported-files/', views_ordered.list_exported_purchase_orders, name='list_exported_purchase_orders'),
     
     # airwaybil
     path('airwaybill/import/', views_airwaybill.import_airwaybill, name='import_airwaybill'),
@@ -118,10 +115,6 @@ urlpatterns = [
 
     # stock
     path('stock/', views_stock.stock_list, name='stock_list'),
-
-    # no
-    path('airwayBill/', views_order.airwayBill, name='airwayBill'),
-    path('invoice/', views_order.invoice, name='invoice'),
     
 ]
 

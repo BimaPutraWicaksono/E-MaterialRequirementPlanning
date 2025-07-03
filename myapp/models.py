@@ -289,7 +289,7 @@ class Section(models.Model):
     
     class Meta:
         db_table = 'section' 
-
+ 
 class PurchaseRequest(models.Model):
     registered_no = models.CharField(max_length=100, unique=True)
     departement = models.ForeignKey(Departement, on_delete=models.SET_NULL, null=True, blank=True)

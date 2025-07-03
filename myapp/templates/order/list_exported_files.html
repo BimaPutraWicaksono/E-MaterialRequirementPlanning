@@ -4,7 +4,7 @@
  
 {% block content %}
 <div class="container mt-4">
-  <h4>Send Purchase Orders</h4>
+  <h4>PURCHASE ORDER</h4>
 
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3" id="table_delivery">
@@ -90,6 +90,18 @@
 
     </table>
   </div>
+  <!-- Tombol search email -->
+  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+    <form method="post" onsubmit="showLoading(this)" class="mb-3 d-flex justify-content-end">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="search_email">
+      <button type="submit" class="btn btn-primary" id="searchBtn">
+        <span id="btnText">Request Status</span>
+        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"
+              role="status" aria-hidden="true"></span>
+      </button>
+    </form>
+  {% endif %}
 </div>
 
 <script>
@@ -165,6 +177,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+function showLoading(form){
+  const btn=form.querySelector("#searchBtn");
+  btn.querySelector("#btnText").textContent="Loading…";
+  btn.querySelector("#btnSpinner").classList.remove("d-none");
+  btn.disabled=true;
+}
 </script>
 
 {% endblock %}

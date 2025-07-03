@@ -5,21 +5,6 @@
   <div class="main-content">
     <h2>AIRWAY BILL</h2>
 
-    <form method="POST" onsubmit="showLoading(this)">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
-        <span id="btnText">Search Email</span>
-        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-      </button>
-    </form>
-    {% if messages %}
-    Note:
-      {% for message in messages %}
-        <div class="{{ message.tags }}"> {{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    <hr>
-
     <table class="table table-bordered mt-2" id="table_airwaybill">
         <thead>
             <tr>
@@ -27,7 +12,9 @@
             <th>AIRWAY BILL</th>
             <th>REGISTERED [PO]</th>
             <th>DATE</th>
-            <th>WEIGHT</th>
+            <th>SUPPLIER</th>
+            <th>SHIPPED BY</th>
+            <th>PART AMOUNT</th>
             <th>SHIPPING COST</th>
             <th>ACTION</th>
             </tr>
@@ -39,20 +26,27 @@
             <td>{{ awb.airwaybill_no }}</td>
             <td>{{ awb.registered_no.registered_no }}</td>
             <td>{{ awb.date }}</td>
-            <td>{{ awb.weight }}</td>
+            <td>{{ awb.registered_no.purchaseorder.supplier.name }}</td>
+            <td>{{ awb.registered_no.purchaseorder.shipped_by.name }}</td>
+            <td>{{ awb.registered_no.total_amount }}</td>
             <td>{{ awb.shipping_cost }}</td>
             <td>
                 <a href="{% url 'airwaybill_detail' awb.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
             </td>
             </tr> 
             {% empty %}
-              <tr>
-              <td colspan="7">Belum ada data AIRWAY BILL yang tersimpan.</td>
-              </tr>
+              <tr><td colspan="7" class="text-center">No data available.</td></tr>
             {% endfor %}
         </tbody>
     </table>
   </div>
+  <form method="POST" onsubmit="showLoading(this)" class="d-flex justify-content-end">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
+      <span id="btnText">Search Email</span>
+      <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    </button>
+  </form>
 </div>
 <script>
   function showLoading(form) {

@@ -258,25 +258,114 @@ def export_purchase_order_pdf(request, registered_no):
     # Redirect ke halaman list setelah sukses
     return redirect('list_exported_files')
 
+# views_ordered.py
 import os
+import imaplib                                           
+import email                                              
+from email.header import decode_header                    
+import re                                                 
+from datetime import datetime                             
+
 from django.conf import settings
-from django.shortcuts import render
-from .models import PurchaseRequest, PurchaseOrder
+from django.contrib import messages                       
+from django.contrib.auth.decorators import login_required 
+from django.shortcuts import render, redirect
 
-from .models import PurchaseRequest, PurchaseOrder, ScheduleConf  # pastikan ScheduleConf sudah diimpor
+from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
 
+
+@login_required                                          
 def list_exported_purchase_orders(request):
-    folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
+
+    if request.method == "POST" and request.POST.get("action") == "search_email":
+        today = datetime.now().date()
+
+        try:
+            mail = imaplib.IMAP4_SSL("imap.gmail.com")
+            mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            mail.select("inbox")
+
+            result, data = mail.search(None, f'(SINCE "{today.strftime("%d-%b-%Y")}")')
+            if result == "OK":
+                for num in data[0].split():
+                    res, msg_data = mail.fetch(num, "(RFC822)")
+                    if res != "OK":
+                        continue
+
+                    msg = email.message_from_bytes(msg_data[0][1])
+                    subject, enc = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(enc or "utf-8")
+
+                    if "purchase order" not in subject.lower():
+                        continue
+
+                    match = re.search(r"(?i)Purchase_Order_([\w\-]+)", subject)
+                    if not match:
+                        continue
+                    registered_no = match.group(1)
+
+                    try:
+                        pr = PurchaseRequest.objects.get(registered_no=registered_no)
+                    except PurchaseRequest.DoesNotExist:
+                        continue
+
+                    if ScheduleConf.objects.filter(registered_no=pr).exists():
+                        continue       # sudah tercatat
+
+                    # --- ambil isi email
+                    body = ""
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            if part.get_content_type() == "text/plain":
+                                body = part.get_payload(decode=True).decode(errors="ignore")
+                                break
+                    else:
+                        body = msg.get_payload(decode=True).decode(errors="ignore")
+
+                    body_lower = body.lower()
+                    acc_rej = None
+                    schedule_date = None
+
+                    if "accept" in body_lower:
+                        acc_rej = True
+                        date_match = re.search(r"\d{4}-\d{2}-\d{2}", body)
+                        if date_match:
+                            schedule_date = datetime.strptime(date_match.group(), "%Y-%m-%d").date()
+                    elif "reject" in body_lower:
+                        acc_rej = False
+
+                    ScheduleConf.objects.create(
+                        registered_no=pr,
+                        acc_rej=acc_rej,
+                        date=schedule_date,
+                    )
+
+                messages.success(request, "Email berhasil diproses.")
+            else:
+                messages.error(request, "Gagal mengakses inbox email.")
+        except Exception as e:
+            messages.error(request, f"Gagal memeriksa email: {e}")
+        finally:
+            try:
+                mail.logout()
+            except Exception:
+                pass
+
+        # agar URL tetap bersih (hindari form‑resubmit)
+        return redirect("list_exported_purchase_orders")
+
+
+    folder_path = os.path.join(settings.MEDIA_ROOT, "purchase_orders")
     file_list = [
-        f for f in os.listdir(folder_path)
-        if f.endswith('.pdf')
+        f for f in os.listdir(folder_path) if f.endswith(".pdf")
     ] if os.path.exists(folder_path) else []
 
     file_urls = []
     for f in file_list:
         registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
 
-        supplier_name = 'Unknown'
+        supplier_name = "Unknown"
         acc_rej = None
         schedule_date = None
         po = None
@@ -285,27 +374,25 @@ def list_exported_purchase_orders(request):
             po = PurchaseOrder.objects.get(registered_no=pr)
             supplier_name = po.supplier.name
 
-            # Ambil acc_rej dari ScheduleConf
-            schedule_conf = ScheduleConf.objects.filter(registered_no=pr).first()
-            if schedule_conf:
-                acc_rej = schedule_conf.acc_rej
-                schedule_date = schedule_conf.date
+            sc = ScheduleConf.objects.filter(registered_no=pr).first()
+            if sc:
+                acc_rej = sc.acc_rej
+                schedule_date = sc.date
         except (PurchaseRequest.DoesNotExist, PurchaseOrder.DoesNotExist):
             pass
 
         file_urls.append({
-            'name': f,
-            'registered_no': registered_no,
-            'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f),
-            'supplier_name': supplier_name,
-            'email_sent': getattr(po, 'email_sent', False) if po else False,
-            'email_sent_at': po.email_sent_at if po else None,
-            'acc_rej': acc_rej,
-            'schedule_date': schedule_date,
+            "name": f,
+            "registered_no": registered_no,
+            "url": os.path.join(settings.MEDIA_URL, "purchase_orders", f),
+            "supplier_name": supplier_name,
+            "email_sent": getattr(po, "email_sent", False) if po else False,
+            "email_sent_at": po.email_sent_at if po else None,
+            "acc_rej": acc_rej,
+            "schedule_date": schedule_date,
         })
 
-    return render(request, 'order/list_exported_files.html', {'files': file_urls})
-
+    return render(request, "order/list_exported_files.html", {"files": file_urls})
 
 
 import os

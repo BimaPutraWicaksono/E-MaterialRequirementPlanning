@@ -143,7 +143,7 @@
             <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
               <a href="{% url 'list_exported_files' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-pdf"></i>
-                <p>Send Purchase Order</p>
+                <p>Purchase Order Status</p>
               </a>
             </li>
           {% else %}
@@ -169,14 +169,6 @@
                 <a href="{% url 'list_exported_files' %}" class="nav-link">
                   <i class="nav-icon fas fa-file-pdf"></i>
                   <p>Purchase Order</p>
-                </a>
-              </li>
-            {% endif %}
-            {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-              <li class="nav-item {% if request.resolver_match.url_name == 'scheduleConf' %}active{% endif %}">
-                <a href="{% url 'scheduleConf' %}" class="nav-link">
-                  <i class="nav-icon fas fa-calendar-check"></i>
-                  <p>Schedule Confirmation</p>
                 </a>
               </li>
             {% endif %}

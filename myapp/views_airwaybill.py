@@ -26,7 +26,9 @@ def import_airwaybill(request):
                 registered_no_str = str(sheet['D5'].value).strip()
                 date = sheet['D6'].value
                 weight = str(sheet['D7'].value).strip()
-                shipping_cost = str(sheet['D8'].value).strip()
+                shipping_cost_raw = str(sheet['D8'].value).strip()
+                shipping_cost = shipping_cost_raw.replace('$', '').replace(',', '').strip()
+
 
                 try:
                     purchase_request = PurchaseRequest.objects.get(registered_no=registered_no_str)
@@ -103,7 +105,7 @@ def get_excel_from_email():
     except Exception as e:
         return [], f"An error occurred while retrieving emails: {str(e)}"
 
-
+ 
 
 @login_required
 def airwaybill_detail(request, registered_no):
