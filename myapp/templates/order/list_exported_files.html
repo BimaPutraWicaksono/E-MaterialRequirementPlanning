@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load user_tags %}
-
+ 
 {% block content %}
 <div class="container mt-4">
   <h4>Send Purchase Orders</h4>
@@ -55,8 +55,9 @@
                 <td class="text-center align-middle">
                   <form class="d-inline send-email-form">
                     <input type="hidden" name="filename" value="{{ file.name }}">
-                    <button type="submit" class="btn btn-sm btn-success"
-                      {% if file.email_sent %} disabled {% endif %}>
+                    <button type="submit"
+                      class="btn btn-sm {% if file.email_sent %}btn-warning{% else %}btn-success{% endif %}"
+                      {% if file.email_sent %}disabled{% endif %}>
                       <i class="fas fa-paper-plane"></i> Send
                     </button>
                   </form>

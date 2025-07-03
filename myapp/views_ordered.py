@@ -246,7 +246,7 @@ def export_purchase_order_pdf(request, registered_no):
     # Path untuk menyimpan PDF
     directory = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
     os.makedirs(directory, exist_ok=True)
-    filename = f"purchase_order_{registered_no}.pdf"
+    filename = f"Purchase_Order_{registered_no}.pdf"
     filepath = os.path.join(directory, filename)
 
     with open(filepath, "wb") as f:
@@ -276,9 +276,9 @@ def list_exported_purchase_orders(request):
 
     file_urls = []
     for f in file_list:
-        po = None  # ✅ inisialisasi untuk menghindari UnboundLocalError
+        po = None 
         try:
-            registered_no = f.replace("purchase_order_", "").replace(".pdf", "")
+            registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
             po = PurchaseOrder.objects.get(registered_no=pr)
             supplier_name = po.supplier.name
@@ -319,7 +319,7 @@ def delete_exported_file(request):
             os.remove(file_path)
 
             # Ambil registered_no dari nama file
-            registered_no = filename.replace("purchase_order_", "").replace(".pdf", "")
+            registered_no = filename.replace("Purchase_Order_", "").replace(".pdf", "")
             
             try:
                 # Update field email_sent dan email_sent_at ke default
@@ -366,7 +366,7 @@ def send_exported_file_email(request):
 
     try:
         # Ekstrak nomor dari nama file (format: purchase_order_<registered_no>.pdf)
-        registered_no = filename.replace("purchase_order_", "").replace(".pdf", "")
+        registered_no = filename.replace("Purchase_Order_", "").replace(".pdf", "")
         pr = PurchaseRequest.objects.get(registered_no=registered_no)
         po = PurchaseOrder.objects.get(registered_no=pr)
 
@@ -382,7 +382,7 @@ def send_exported_file_email(request):
 
     try:
         filename_no_ext = os.path.splitext(filename)[0]
-        subject = f'Purchase Order ({filename_no_ext})'
+        subject = f'{filename_no_ext}'
         body = (
             "Dear Sir or Madam\n\n"
             f"We are pleased to attach the Purchase Order document: {filename}.\n"
