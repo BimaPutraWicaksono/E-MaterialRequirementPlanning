@@ -263,6 +263,8 @@ from django.conf import settings
 from django.shortcuts import render
 from .models import PurchaseRequest, PurchaseOrder
 
+from .models import PurchaseRequest, PurchaseOrder, ScheduleConf  # pastikan ScheduleConf sudah diimpor
+
 def list_exported_purchase_orders(request):
     folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
     file_list = [
@@ -275,24 +277,35 @@ def list_exported_purchase_orders(request):
         registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
 
         supplier_name = 'Unknown'
+        acc_rej = None
+        schedule_date = None
         po = None
         try:
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
             po = PurchaseOrder.objects.get(registered_no=pr)
             supplier_name = po.supplier.name
+
+            # Ambil acc_rej dari ScheduleConf
+            schedule_conf = ScheduleConf.objects.filter(registered_no=pr).first()
+            if schedule_conf:
+                acc_rej = schedule_conf.acc_rej
+                schedule_date = schedule_conf.date
         except (PurchaseRequest.DoesNotExist, PurchaseOrder.DoesNotExist):
-            pass  # biarkan supplier_name tetap 'Unknown'
+            pass
 
         file_urls.append({
             'name': f,
-            'registered_no': registered_no,        # ← NEW
+            'registered_no': registered_no,
             'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f),
             'supplier_name': supplier_name,
             'email_sent': getattr(po, 'email_sent', False) if po else False,
-            'email_sent_at': po.email_sent_at if po else None
+            'email_sent_at': po.email_sent_at if po else None,
+            'acc_rej': acc_rej,
+            'schedule_date': schedule_date,
         })
 
     return render(request, 'order/list_exported_files.html', {'files': file_urls})
+
 
 
 import os

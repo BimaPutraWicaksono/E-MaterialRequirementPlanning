@@ -13,8 +13,8 @@
           <th>NO</th>
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
-          <th>STATUS</th>
-          <th>DATE</th>
+          <th>SENT STATUS</th>
+          <th>REQUEST STATUS</th>
           <th>VIEW</th> 
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th> 
@@ -33,17 +33,21 @@
               <td class="align-middle">
                 {% if file.email_sent %}
                   <span class="badge bg-success">Sent</span>
+                  {{ file.email_sent_at|date:"d M Y H:i" }}
                 {% else %}
                   <span class="badge bg-secondary">Not Sent</span>
                 {% endif %}
               </td>
-              <td class="align-middle">
-                {% if file.email_sent_at %}
-                  {{ file.email_sent_at|date:"d M Y H:i" }}
+              <td class="align-middle text-center">
+                {% if file.acc_rej == True %}
+                  <span class="badge bg-success">Accepted</span> {{ file.schedule_date|date:"d M Y" }}
+                {% elif file.acc_rej == False %}
+                  <span class="badge bg-danger">Rejected</span><br>
                 {% else %}
-                  Belum dikirim
+                  <span class="badge bg-secondary">Pending</span><br>
                 {% endif %}
               </td>
+
               <!-- TD 1: View -->
               <td class="text-center align-middle">
                 <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
