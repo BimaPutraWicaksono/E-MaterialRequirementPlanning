@@ -27,7 +27,8 @@
           {% for file in files %}
             <tr>
               <td class="text-center align-middle">{{ forloop.counter }}</td>
-              <td class="align-middle">{{ file.name }}</td>
+              <td class="align-middle">{{ file.registered_no }}</td>
+              {% comment %} <td class="align-middle">{{ file.name }}</td> {% endcomment %}
               <td class="align-middle">{{ file.supplier_name }}</td>
               <td class="align-middle">
                 {% if file.email_sent %}

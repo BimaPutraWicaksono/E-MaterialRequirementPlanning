@@ -263,38 +263,36 @@ from django.conf import settings
 from django.shortcuts import render
 from .models import PurchaseRequest, PurchaseOrder
 
-
 def list_exported_purchase_orders(request):
     folder_path = os.path.join(settings.MEDIA_ROOT, 'purchase_orders')
-    file_list = []
-
-    if os.path.exists(folder_path):
-        file_list = [
-            f for f in os.listdir(folder_path)
-            if f.endswith('.pdf')
-        ]
+    file_list = [
+        f for f in os.listdir(folder_path)
+        if f.endswith('.pdf')
+    ] if os.path.exists(folder_path) else []
 
     file_urls = []
     for f in file_list:
-        po = None 
+        registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
+
+        supplier_name = 'Unknown'
+        po = None
         try:
-            registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
             po = PurchaseOrder.objects.get(registered_no=pr)
             supplier_name = po.supplier.name
-        except:
-            supplier_name = 'Unknown'
+        except (PurchaseRequest.DoesNotExist, PurchaseOrder.DoesNotExist):
+            pass  # biarkan supplier_name tetap 'Unknown'
 
         file_urls.append({
             'name': f,
+            'registered_no': registered_no,        # ← NEW
             'url': os.path.join(settings.MEDIA_URL, 'purchase_orders', f),
             'supplier_name': supplier_name,
-            'email_sent': getattr(po, 'email_sent', False),
+            'email_sent': getattr(po, 'email_sent', False) if po else False,
             'email_sent_at': po.email_sent_at if po else None
         })
 
     return render(request, 'order/list_exported_files.html', {'files': file_urls})
-
 
 
 import os
