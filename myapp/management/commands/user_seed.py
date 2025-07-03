@@ -9,12 +9,21 @@ class Command(BaseCommand):
     help = "Seed the User table with test data and assign departments"
 
     users = [
-        {"username": "admin", "password": "1234", "group": "Admin", "departement": "IT"},
-        {"username": "karyawan", "password": "1234", "group": "Karyawan", "departement": "IT"},
-        {"username": "supervisor", "password": "1234", "group": "Supervisor", "departement": "IT"},
-        {"username": "senior_supervisor", "password": "1234", "group": "SeniorSupervisor", "departement": "IT"},
-        {"username": "manager", "password": "1234", "group": "Manager", "departement": "IT"},
-        {"username": "factory_manager", "password": "1234", "group": "FactoryManager", "departement": "IT"},
+        {"username": "Andi", "password": "1234", "group": "Admin", "departement": "IT"},
+        {"username": "Nevara", "password": "1234", "group": "Karyawan", "departement": "IT"},
+        {"username": "Altisha", "password": "1234", "group": "Supervisor", "departement": "IT"},
+        {"username": "Rendi", "password": "1234", "group": "SeniorSupervisor", "departement": "IT"},
+        {"username": "Praz", "password": "1234", "group": "Manager", "departement": "IT"},
+        {"username": "Bima", "password": "1234", "group": "FactoryManager", "departement": "IT"},
+        
+        {"username": "Diouf", "password": "1234", "group": "Admin", "departement": "MTC"},
+        {"username": "Riza", "password": "1234", "group": "Karyawan", "departement": "MTC"},
+        {"username": "Nala", "password": "1234", "group": "Supervisor", "departement": "MTC"},
+        {"username": "Tasya", "password": "1234", "group": "SeniorSupervisor", "departement": "MTC"},
+        {"username": "Muti", "password": "1234", "group": "Manager", "departement": "MTC"},
+        {"username": "Ara", "password": "1234", "group": "FactoryManager", "departement": "MTC"},
+        
+        {"username": "Ninda", "password": "1234", "group": "Karyawan", "departement": "Stock Control"},
     ]
 
     def handle(self, *args, **kwargs):
