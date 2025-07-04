@@ -462,21 +462,41 @@ def machineLoadingCalculate(request, name):
                 aggregated_results_termA[termA_name][month] = 0
             aggregated_results_termA[termA_name][month] += result.result
 
+    # Simpan termB
+    for termB_name, months_data in aggregated_results_termB.items():
+        for month, result in months_data.items():
+            if not CalculationResultLoading.objects.filter(carline=carline, terminal=termB_name, month=month, year=year).exists():
+                CalculationResultLoading.objects.create(
+                    carline=carline,
+                    terminal=termB_name,
+                    month=month,
+                    year=year,
+                    result=result
+                )
+
+    # Simpan termA
+    for termA_name, months_data in aggregated_results_termA.items():
+        for month, result in months_data.items():
+            if not CalculationResultLoading.objects.filter(carline=carline, terminal=termA_name, month=month, year=year).exists():
+                CalculationResultLoading.objects.create(
+                    carline=carline,
+                    terminal=termA_name,
+                    month=month,
+                    year=year,
+                    result=result
+                )
+
+    # Gabungkan hanya untuk ditampilkan, TIDAK disimpan ke DB
     for term in set(aggregated_results_termB.keys()).union(set(aggregated_results_termA.keys())):
         if term:
             aggregated_results_combined[term] = {}
             for month in set(aggregated_results_termB.get(term, {}).keys()).union(aggregated_results_termA.get(term, {}).keys()):
-                combined_result = aggregated_results_termB.get(term, {}).get(month, 0) + aggregated_results_termA.get(term, {}).get(month, 0)
+                combined_result = (
+                    aggregated_results_termB.get(term, {}).get(month, 0) +
+                    aggregated_results_termA.get(term, {}).get(month, 0)
+                )
                 aggregated_results_combined[term][month] = combined_result
 
-                if not CalculationResultLoading.objects.filter(carline=carline, terminal=term, month=month, year=year).exists():
-                    CalculationResultLoading.objects.create(
-                        carline=carline,
-                        terminal=term,
-                        month=month,
-                        year=year,
-                        result=combined_result
-                    )
 
     def sort_key(item):
         return item if isinstance(item, str) else ""
@@ -510,10 +530,10 @@ def requirementPartAllCarline(request):
             terminal__gt='',
             carline__isnull=False
         ).values(
-            'carline__name', 'terminal', 'month', 'year'  # ✅ Tambah year
+            'carline__name', 'terminal', 'month', 'year' 
         ).annotate(
             total_result=Sum('result')
-        ).order_by('carline__name', 'terminal', 'year', 'month')  # ✅ Urutkan juga by year
+        ).order_by('carline__name', 'terminal', 'year', 'month')  
 
         # Susun dictionary: (carline, terminal, year) -> month -> result
         aggregated_results = {}
