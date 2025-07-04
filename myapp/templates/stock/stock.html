@@ -1,6 +1,77 @@
 {% extends "base.html" %}
-
 {% block content %}
+
 <div class="container mt-4">
+    <h2>Purchase Request Connected to AirWayBill</h2>
+
+    <table class="table table-bordered mt-3">
+        <thead class="table-light text-center">
+            <tr>
+                <th>Registered No</th>
+                <th>Departement</th>
+                <th>Section</th>
+                <th>Purchase By</th>
+                <th>Total Amount</th>
+                <th>AirWayBill No</th>
+                <th>Shipping Cost</th>
+                <th>Date</th>
+                <th>Detail</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in connected_requests %}
+            <tr>
+                <td>{{ request.registered_no }}</td>
+                <td>{{ request.departement.name }}</td>
+                <td>{{ request.section.name }}</td>
+                <td>{{ request.purchase_by }}</td>
+                <td>{{ request.total_amount }}</td>
+                <td>{{ request.airwaybill.airwaybill_no }}</td>
+                <td>{{ request.airwaybill.shipping_cost }}</td>
+                <td>{{ request.airwaybill.date }}</td>
+                <td>
+                    <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
+                </td>
+
+
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+
+<!-- Modal Detail Bootstrap 4 -->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Request Item Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        Loading...
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function showDetail(url) {
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            $('#modalContent').html(data.html);
+            $('#detailModal').modal('show');
+        })
+        .catch(err => {
+            alert("Failed to load detail.");
+            console.error(err);
+        });
+}
+</script>
+
 {% endblock %}

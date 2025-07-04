@@ -98,7 +98,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice stock_list' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice add_stock' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -185,8 +185,8 @@
               </a>
             </li>
             {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'stock_list' %}active{% endif %}">
-              <a href="{% url 'stock_list' %}" class="nav-link">
+            <li class="nav-item {% if request.resolver_match.url_name == 'add_stock' %}active{% endif %}">
+              <a href="{% url 'add_stock' %}" class="nav-link">
                 <i class="nav-icon fas fa-boxes"></i>
                 <p>Stock</p>
               </a>
