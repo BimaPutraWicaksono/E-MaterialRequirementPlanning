@@ -194,7 +194,7 @@ class Load_applicator(models.Model):
     name = models.CharField(max_length=100)
     loading = models.IntegerField()
     image = models.ImageField(upload_to='applicator_images/', blank=True, null=True)  # New image field
-
+ 
     class Meta:
         db_table = 'stroke'
 
@@ -258,7 +258,7 @@ class LoadingPartResult(models.Model):
 
     class Meta:
         db_table = 'loading_part_result'
-        unique_together = ('carline', 'part_name', 'terminal', 'month')
+        unique_together = ('carline', 'part_name', 'terminal', 'month') 
 
 from datetime import datetime
 

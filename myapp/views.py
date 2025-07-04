@@ -664,7 +664,7 @@ def process_terminal_mappings():
 
 # Roundup Loading
 import math
-from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, CalculationResultLoading
+from .models import AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, CalculationResultLoading
 def process_last_roundup():
     terminal_mappings = TerminalNameMapping.objects.select_related(
         'terminal__calculation_result__carline', 'name', 'month'

@@ -129,37 +129,54 @@ from django.urls import reverse
 
 
 # Stroke Part
-@login_required()
+# myapp/views.py
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.db import transaction
+from .models import Load_applicator, LoadingPartResult
+
+@login_required
 def strokePart(request):
     applicators = Load_applicator.objects.all()
 
-    # Handle add
+    # ----- ADD -----
     if request.method == 'POST' and 'add' in request.POST:
         name = request.POST['name']
         loading = request.POST['loading']
-        image = request.FILES.get('image')  # Handle file upload
+        image = request.FILES.get('image')
         Load_applicator.objects.create(name=name, loading=loading, image=image)
         return redirect(reverse('strokePart'))
 
-    # Handle edit
+    # ----- EDIT -----
     if request.method == 'POST' and 'edit' in request.POST:
         applicator_id = request.POST['applicator_id']
         applicator = get_object_or_404(Load_applicator, id=applicator_id)
         applicator.name = request.POST['name']
         applicator.loading = request.POST['loading']
         if 'image' in request.FILES:
-            applicator.image = request.FILES['image']  # Handle file upload
+            applicator.image = request.FILES['image']
         applicator.save()
         return redirect(reverse('strokePart'))
 
-    # Handle delete
+    # ----- DELETE -----
     if request.method == 'POST' and 'delete' in request.POST:
         applicator_id = request.POST['applicator_id']
         applicator = get_object_or_404(Load_applicator, id=applicator_id)
-        applicator.delete()
+
+        # Pastikan semuanya di‑hapus dalam satu transaksi
+        with transaction.atomic():
+            # Hapus semua baris LoadingPartResult yang part_name‑nya sama
+            LoadingPartResult.objects.filter(
+                part_name__iexact=applicator.name   # abaikan besar‑kecil huruf
+            ).delete()
+            # Hapus stroke part‑nya sendiri
+            applicator.delete()
+
         return redirect(reverse('strokePart'))
 
     return render(request, 'strokePart.html', {'applicators': applicators})
+
 
 #  about us
 @login_required()
