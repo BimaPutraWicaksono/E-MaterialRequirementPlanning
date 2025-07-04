@@ -721,13 +721,11 @@ def process_last_roundup():
 from django.contrib.auth.decorators import login_required 
 from django.shortcuts import render
 from .models import Carline, LoadingPartResult, PartDesk
-from django.db.models import Avg
+from django.db.models import Q
 import math
 
 @login_required
 def loadingPart(request):
-    from django.db.models import Q
-
     terminal_data = process_terminal_mappings()
     grouped_data, grouped_data_ceil = process_last_roundup()
     months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -741,9 +739,9 @@ def loadingPart(request):
             for part_name, terminals in parts.items():
                 for terminal, month_values in terminals.items():
                     key = (carline, part_name, terminal)
-                    temp_storage.setdefault(key, [])
+                    temp_storage.setdefault(key, {"last_loading_values": [], "rounded_loading_values": []})
 
-                    # Temukan PartDesk yang cocok berdasarkan partName dan applicatorNumber
+                    # Cari PartDesk berdasarkan partName & applicatorNumber
                     matched_partdesk = PartDesk.objects.filter(
                         partName__partName=part_name,
                         applicatorNumber__applicatorNumber=terminal
@@ -762,7 +760,9 @@ def loadingPart(request):
                         )
 
                         if last_loading is not None and rounded_loading is not None:
-                            temp_storage[key].append(rounded_loading)
+                            # Simpan nilai asli & pembulatan terpisah
+                            temp_storage[key]["last_loading_values"].append(last_loading)
+                            temp_storage[key]["rounded_loading_values"].append(rounded_loading)
 
                             carline_obj = carline_cache[carline]
 
@@ -785,22 +785,24 @@ def loadingPart(request):
                                 obj.partdesk = matched_partdesk
                                 obj.save()
 
-    # Update nilai rata-rata hanya sekali per kombinasi part
-    for (carline, part_name, terminal), values in temp_storage.items():
+    # Hitung rata-rata dari last_loading
+    for (carline, part_name, terminal), values_dict in temp_storage.items():
+        values = values_dict["last_loading_values"]
         if values:
             avg_val = round(sum(values) / len(values), 3)
-            avg_ceil = math.ceil(avg_val)  # ➕ Pembulatan ke atas
+            avg_ceil = math.ceil(avg_val)
             carline_obj = carline_cache[carline]
+
             LoadingPartResult.objects.filter(
                 carline=carline_obj,
                 part_name=part_name,
                 terminal=terminal
             ).update(
                 average=avg_val,
-                average_round=avg_ceil  # ➕ Update field baru
+                average_round=avg_ceil
             )
 
-   # Siapkan hasil loading ke dalam dictionary
+    # Siapkan hasil untuk template
     all_results = LoadingPartResult.objects.select_related(
         'carline', 'partdesk', 'partdesk__partName', 'partdesk__applicatorNumber'
     )
@@ -820,7 +822,6 @@ def loadingPart(request):
                 "average_round": result.average_round,
                 "partdesk": result.partdesk,
             }
-
 
     context = {
         "terminal_data": terminal_data,
