@@ -2,100 +2,96 @@
 {% block content %}
 {% load user_tags %}
 
-<div class="container">
-  
-  <!-- Bagian Chart Approval -->
-  <div class="main-content">
-    <h2>STATUS APPROVAL PURCHASE</h2>
-    <div class="chart-container" style="width: 35%;">
-      <canvas id="approvalChart"></canvas>
+<div class="container mt-4">
+    <div class="row">
+        
+        <!-- Grafik Approval di Kiri -->
+        <div class="col-md-6">
+            <h4>STATUS APPROVAL PURCHASE</h4>
+            <div class="p-3 border rounded shadow-sm">
+                <canvas id="approvalChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Stock Summary di Kanan -->
+        <div class="col-md-6">
+            <h4>STOCK SUMMARY</h4>
+            <div class="table-responsive mt-3 p-2 border rounded shadow-sm">
+                <table class="table table-bordered" id="table_stock_list">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>No</th>
+                            <th>Part Name</th>
+                            <th>Total Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stock_summary %}
+                        <tr class="text-center">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ stock.part__partName|default:"<i>No Part</i>" }}</td>
+                            <td>{{ stock.total_qty }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No stock data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-  </div>
-
-  <!-- Bagian Tabel Stock -->
-  <h2 class="mt-5">STOCK SUMMARY</h2>
-  <div class="table-responsive">
-    <table class="table table-bordered mt-3" id="table_stock_list">
-      <thead class="table-light text-center">
-        <tr>
-          <th>No</th>
-          <th>Part Name</th>
-          <th>Quantity</th>
-          <th>Created At</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for stock in stocks %}
-        <tr class="text-center">
-          <td>{{ forloop.counter }}</td>
-          <td>
-            {% if stock.part %}
-              {{ stock.part.partName }}
-            {% else %}
-              <i>No Part</i>
-            {% endif %}
-          </td>
-          <td>{{ stock.quantity }}</td>
-          <td>{{ stock.created_at|date:"Y-m-d H:i" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="4" class="text-center">No stock data available.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
 </div>
 
-<!-- Chart JS untuk Approval -->
+<!-- Chart JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ctx = document.getElementById('approvalChart').getContext('2d');
-  const approvalChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{ chart_data.labels|safe }},
-      datasets: [{
-        label: 'Jumlah',
-        data: {{ chart_data.counts|safe }},
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(255, 159, 64, 0.6)',
-          'rgba(255, 205, 86, 0.6)',
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(54, 162, 235, 0.6)'
-        ],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { precision: 0 }
+    const ctx = document.getElementById('approvalChart').getContext('2d');
+    const approvalChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.labels|safe }},
+            datasets: [{
+                label: 'Jumlah',
+                data: {{ chart_data.counts|safe }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(255, 205, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            }
         }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true }
-      }
-    }
-  });
+    });
 </script>
 
-<!-- Aktifkan DataTable untuk Stock -->
+<!-- DataTable -->
 <script>
-  $(document).ready(function () {
-    $('#table_stock_list').DataTable({
-      lengthChange: true,
-      lengthMenu: [[5, 10, 50, -1], [5, 10, 50, "All"]],
-      autoWidth: false,
-      scrollX: true
+    $(document).ready(function () {
+        $('#table_stock_list').DataTable({
+            lengthChange: true,
+            lengthMenu: [[5, 10, 50, -1], [5, 10, 50, "All"]],
+            autoWidth: false,
+            scrollX: true
+        });
     });
-  });
 </script>
 
 {% endblock %}

@@ -1,11 +1,18 @@
+from django.db.models import Sum
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from myapp.models import PurchaseRequest, Stock
+from myapp.models import PurchaseRequest, Stock, PartName
 
 @login_required()
 def home(request):
     requests = PurchaseRequest.objects.all()
-    stocks = Stock.objects.select_related('part').all().order_by('-created_at')
+
+    # Agregasi stock per Part
+    stock_summary = (
+        Stock.objects.values('part__partName')
+        .annotate(total_qty=Sum('quantity'))
+        .order_by('part__partName')
+    )
 
     count_not_processed = requests.filter(approve_spv__isnull=True).count()
     count_spv = requests.filter(approve_spv=True, approve_sspv__isnull=True).count()
@@ -30,6 +37,6 @@ def home(request):
                 count_factory_manager,
             ]
         },
-        'stocks': stocks,
+        'stock_summary': stock_summary,
     }
     return render(request, 'home.html', context)
