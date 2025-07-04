@@ -29,32 +29,39 @@ def requestItemDetail(request, pk):
     ).all()
 
     if request.method == 'POST':
-        selected = request.POST.getlist('selected_items')
-        
-        for item_id in selected:
-            part_id = request.POST.get(f'part_id_{item_id}')
-            qty = request.POST.get(f'qty_{item_id}')
+        selected = set(request.POST.getlist('selected_items'))
 
-            if part_id and qty:
-                part = PartName.objects.filter(id=part_id).first()
-                if part:
-                    # Cek apakah sudah ada Stock berdasarkan part + source_request_item
-                    stock_obj = Stock.objects.filter(part=part, source_request_item=item_id).first()
+        for item in items:
+            partdesk = item.loading_part_result.partdesk if item.loading_part_result else None
+            part = partdesk.partName if partdesk else None
+            item_id = item.id
+            qty = item.result_average_round
 
-                    if stock_obj:
-                        stock_obj.quantity += int(float(qty))
-                        stock_obj.save()
-                    else:
-                        Stock.objects.create(
-                            part=part,
-                            quantity=int(float(qty)),
-                            source_request_item_id=item_id
-                        )
+            if not part:
+                continue  # Skip jika tidak ada part
 
-        messages.success(request, "Stock berhasil disimpan.")
-        return redirect('request_item_detail', pk=purchase_request.id)
+            # Cek existing stock
+            stock_obj = Stock.objects.filter(part=part, source_request_item=item_id).first()
 
-    # Ambil semua item.id yang sudah pernah masuk Stock
+            if str(item_id) in selected:
+                # Centang: Tambah atau Update stock
+                if stock_obj:
+                    stock_obj.quantity = int(float(qty))
+                    stock_obj.save()
+                else:
+                    Stock.objects.create(
+                        part=part,
+                        quantity=int(float(qty)),
+                        source_request_item_id=item_id
+                    )
+            else:
+                # Tidak dicentang: Hapus stock jika ada
+                if stock_obj:
+                    stock_obj.delete()
+
+        return redirect(f"{request.path}?success=1")
+
+
     existing_item_ids = set(Stock.objects.filter(source_request_item__isnull=False).values_list('source_request_item', flat=True))
 
     context = {

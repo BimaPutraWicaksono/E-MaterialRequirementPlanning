@@ -2,9 +2,9 @@
 {% block content %}
 
 <div class="container mt-4">
-    <h2>Purchase Request Connected to AirWayBill</h2>
+    <h2 class="justify-content-center d-flex" >ADD STOCK BY PURCHASE</h2>
 
-    <table class="table table-bordered mt-3">
+    <table class="table table-bordered mt-3" id="table_stock">
         <thead class="table-light text-center">
             <tr>
                 <th>Registered No</th>
@@ -32,9 +32,6 @@
                 <td>
                     <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
                 </td>
-
-
-
             </tr>
             {% endfor %}
         </tbody>

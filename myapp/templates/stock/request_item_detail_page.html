@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container mt-4">
-    <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
+    <h4>ADD STOCK BY PURCHASE ORDER: {{ purchase_request.registered_no }}</h4>
 
     <form method="post">
         {% csrf_token %}
@@ -44,15 +44,13 @@
                                 <input type="hidden" name="part_id_{{ item.id }}" value="{{ part_id }}">
                                 <input type="hidden" name="qty_{{ item.id }}" value="{{ item.result_average_round|floatformat:'0' }}">
 
-                                {% if item.id in existing_item_ids %}
-                                    <span class="badge badge-success">Sudah di Stock</span>
-                                {% else %}
-                                    <input type="checkbox" name="selected_items" value="{{ item.id }}">
-                                {% endif %}
+                                <input type="checkbox" name="selected_items" value="{{ item.id }}" 
+                                    {% if item.id in existing_item_ids %} checked {% endif %}>
+
 
                             {% endwith %}
                         {% else %}
-                            <span class="text-danger">Tidak Ada Part</span>
+                            <span class="text-danger">No data available.</span>
                         {% endif %}
                         </td>
                     </tr>
@@ -64,11 +62,48 @@
                 </tbody>
             </table>
         </div>
-
-        <button type="submit" class="btn btn-success">Simpan ke Stock</button>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success">Add Stock</button>
+        </div>
     </form>
-
-    <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3">Back to List</a>
+    {% comment %} <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3">Back to List</a> {% endcomment %}
 </div>
+
+<!-- Modal Sukses -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Sukses</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Stock Updated
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === '1') {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Stock Updated',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+</script>
+
 
 {% endblock %}
