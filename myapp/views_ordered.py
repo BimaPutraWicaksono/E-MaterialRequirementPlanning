@@ -272,11 +272,19 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.conf import settings
+from datetime import datetime
+import imaplib
+import email
+from email.header import decode_header
+import os
+import re
+from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
 
-
-@login_required                                          
+@login_required
 def list_exported_purchase_orders(request):
-
     if request.method == "POST" and request.POST.get("action") == "search_email":
         today = datetime.now().date()
 
@@ -285,7 +293,9 @@ def list_exported_purchase_orders(request):
             mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
             mail.select("inbox")
 
+            # Ambil semua email hari ini
             result, data = mail.search(None, f'(SINCE "{today.strftime("%d-%b-%Y")}")')
+
             if result == "OK":
                 for num in data[0].split():
                     res, msg_data = mail.fetch(num, "(RFC822)")
@@ -293,31 +303,20 @@ def list_exported_purchase_orders(request):
                         continue
 
                     msg = email.message_from_bytes(msg_data[0][1])
+
+                    # Decode subject
                     subject, enc = decode_header(msg["Subject"])[0]
                     if isinstance(subject, bytes):
                         subject = subject.decode(enc or "utf-8")
 
-                    if "purchase order" not in subject.lower():
-                        continue
-
-                    match = re.search(r"(?i)Purchase_Order_([\w\-]+)", subject)
-                    if not match:
-                        continue
-                    registered_no = match.group(1)
-
-                    try:
-                        pr = PurchaseRequest.objects.get(registered_no=registered_no)
-                    except PurchaseRequest.DoesNotExist:
-                        continue
-
-                    if ScheduleConf.objects.filter(registered_no=pr).exists():
-                        continue       # sudah tercatat
-
-                    # --- ambil isi email
+                    # Ambil isi body
                     body = ""
                     if msg.is_multipart():
                         for part in msg.walk():
-                            if part.get_content_type() == "text/plain":
+                            content_type = part.get_content_type()
+                            content_disposition = str(part.get("Content-Disposition"))
+
+                            if content_type == "text/plain" and "attachment" not in content_disposition:
                                 body = part.get_payload(decode=True).decode(errors="ignore")
                                 break
                     else:
@@ -335,6 +334,25 @@ def list_exported_purchase_orders(request):
                     elif "reject" in body_lower:
                         acc_rej = False
 
+                    if acc_rej is None:
+                        continue  # Skip kalau tidak ada info accept/reject
+
+                    # Ambil registered_no dari subject
+                    match = re.search(r"Purchase[_\s\-]?Order[_\-]?([\w\-]+)", subject, re.I)
+                    if not match:
+                        continue
+
+                    registered_no = match.group(1)
+
+                    try:
+                        pr = PurchaseRequest.objects.get(registered_no=registered_no)
+                    except PurchaseRequest.DoesNotExist:
+                        continue
+
+                    if ScheduleConf.objects.filter(registered_no=pr).exists():
+                        continue  # Sudah tercatat
+
+                    # Simpan ke database
                     ScheduleConf.objects.create(
                         registered_no=pr,
                         acc_rej=acc_rej,
@@ -352,10 +370,10 @@ def list_exported_purchase_orders(request):
             except Exception:
                 pass
 
-        # agar URL tetap bersih (hindari form‑resubmit)
         return redirect("list_exported_purchase_orders")
 
-
+    # -------------------------------
+    # BAGIAN TAMPILAN FILE PDF PO
     folder_path = os.path.join(settings.MEDIA_ROOT, "purchase_orders")
     file_list = [
         f for f in os.listdir(folder_path) if f.endswith(".pdf")
@@ -393,6 +411,7 @@ def list_exported_purchase_orders(request):
         })
 
     return render(request, "order/list_exported_files.html", {"files": file_urls})
+
 
 
 import os

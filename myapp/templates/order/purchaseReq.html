@@ -22,8 +22,11 @@
         <th>REQUEST BY</th>
         <th>APPROVAL</th>
         <th>DETAIL</th>
-        <th>EDIT</th>
-        <th>DELETE</th>
+        {% if request.user|has_group:"Karyawan"%}
+          <th>EDIT</th>
+          <th>DELETE</th>
+        {% endif %}
+
       </tr>
     </thead>
       <tbody>
@@ -56,27 +59,29 @@
             </td>
 
             <!-- Edit -->
-            <td class="text-center align-middle">
-              {% if request.user|has_group:"Karyawan" or not pr.approve_spv or pr.approve_spv is False %}
+            {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
+              <td class="text-center align-middle">
                 <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-              {% endif %}
-            </td>
+              </td>
+            {% endif %}
 
             <!-- Delete -->
-            <td class="text-center align-middle">
-              {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+            {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+              <td class="text-center align-middle">
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
-              {% endif %}
-              {% if request.user|has_group:"Admin" %}
+              </td>
+            {% endif %}
+            {% if request.user|has_group:"Admin" %}
+              <td class="text-center align-middle">
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
-              {% endif %}
-            </td>
+              </td>
+            {% endif %}
           </tr>
         {% empty %}
           <tr><td colspan="7" class="text-center">No data available.</td></tr>
