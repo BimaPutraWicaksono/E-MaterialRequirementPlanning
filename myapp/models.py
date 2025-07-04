@@ -423,8 +423,10 @@ class Stock(models.Model):
     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    source_request_item = models.ForeignKey('RequestItem', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         db_table = 'stock'
+
 
 

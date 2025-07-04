@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from myapp.models import PurchaseRequest
+from myapp.models import PurchaseRequest, Stock
 
 @login_required()
 def home(request):
     requests = PurchaseRequest.objects.all()
+    stocks = Stock.objects.select_related('part').all().order_by('-created_at')
 
     count_not_processed = requests.filter(approve_spv__isnull=True).count()
     count_spv = requests.filter(approve_spv=True, approve_sspv__isnull=True).count()
@@ -28,13 +29,7 @@ def home(request):
                 count_manager,
                 count_factory_manager,
             ]
-        }
+        },
+        'stocks': stocks,
     }
     return render(request, 'home.html', context)
-
-from django.shortcuts import render
-from .models import Stock
-
-def stock_list(request):
-    stocks = Stock.objects.select_related('part').all().order_by('-created_at')
-    return render(request, 'home.html', {'stocks': stocks})

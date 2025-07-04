@@ -1,49 +1,72 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load humanize %}
-
+{% block content %}
 
 <div class="container mt-4">
     <h4>Detail Purchase Request: {{ purchase_request.registered_no }}</h4>
 
-    <div class="table-responsive mt-3">
-        <table class="table table-bordered">
-            <thead class="table-secondary">
-                <tr>
-                    <th>NO</th>
-                    <th>BUDGET REF. NO.</th>
-                    <th>DETAIL OF GOODS/SERVICES</th>
-                    <th>QTY</th>
-                    <th>ESTIMATED PRICE</th>
-                    <th>AMOUNT</th>
-                    <th>DEADLINE</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in request_items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.budget_ref_no }}</td>
-                    <td>
-                        {% if item.loading_part_result %}
-                            {{ item.loading_part_result.terminal }} - {{ item.loading_part_result.part_name }}
+    <form method="post">
+        {% csrf_token %}
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>NO</th>
+                        <th>BUDGET REF. NO.</th>
+                        <th>DETAIL OF GOODS/SERVICES</th>
+                        <th>QTY</th>
+                        <th>ESTIMATED PRICE</th>
+                        <th>AMOUNT</th>
+                        <th>DEADLINE</th>
+                        <th>Pilih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in request_items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.budget_ref_no }}</td>
+                        <td>
+                            {% if item.loading_part_result %}
+                                {{ item.loading_part_result.terminal }} - {{ item.loading_part_result.part_name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ item.result_average_round|floatformat:-1 }}</td>
+                        <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+                        <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
+                        <td>{{ item.deadline }}</td>
+                        <td>
+                        {% if item.loading_part_result.partdesk and item.loading_part_result.partdesk.partName %}
+                            {% with item.loading_part_result.partdesk.partName.id as part_id %}
+                            
+                                <input type="hidden" name="part_id_{{ item.id }}" value="{{ part_id }}">
+                                <input type="hidden" name="qty_{{ item.id }}" value="{{ item.result_average_round|floatformat:'0' }}">
+
+                                {% if item.id in existing_item_ids %}
+                                    <span class="badge badge-success">Sudah di Stock</span>
+                                {% else %}
+                                    <input type="checkbox" name="selected_items" value="{{ item.id }}">
+                                {% endif %}
+
+                            {% endwith %}
                         {% else %}
-                            -
+                            <span class="text-danger">Tidak Ada Part</span>
                         {% endif %}
-                    </td>
-                    <td>{{ item.result_average_round|floatformat:-1 }}</td>
-                    <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
-                    <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
-                    <td>{{ item.deadline }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center">No data available.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-success">Simpan ke Stock</button>
+    </form>
 
     <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3">Back to List</a>
 </div>

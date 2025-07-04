@@ -21,8 +21,7 @@ urlpatterns = [
     
     #home
     path('home/', views_view.home, name='home'),
-    path('stock/', views_view.stock_list, name='stock_list'),
-    
+        
     # sparepart 
     path('applicator/', views_sparepart.applicator, name='applicator'),
     path('reset_applicator/', views_sparepart.reset_applicator, name='reset_applicator'),
