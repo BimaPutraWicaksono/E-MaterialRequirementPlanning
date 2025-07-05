@@ -79,7 +79,7 @@
                   </p>
                 </a>
                 <ul class="nav nav-treeview">
-                  <li class="nav-item {% if request.resolver_match.url_name == 'carline' %}active{% endif %}">
+                  <li class="nav-item {% if request.resolver_match.url_name in 'carline sixProductionPlan machineLoading machineLoadingCalculate requirementPartAllCarline' %}active{% endif %}">
                     <a href="{% url 'carline' %}" class="nav-link">
                       <i class="nav-icon fas fa-truck-loading"></i>
                       <p>Carline</p>
@@ -158,7 +158,7 @@
                 <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
                   <a href="{% url 'list_exported_files' %}" class="nav-link">
                     <i class="nav-icon fas fa-file-pdf"></i>
-                    <p>Send Purchase Order</p>
+                    <p>Purchase Order Status</p>
                   </a>
                 </li>
               {% endif %}
@@ -196,7 +196,7 @@
         </li>
         {% endif %}
         <!-- About Us -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about departement' %}menu-open{% endif %}">
+        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about master_departement_section supplier_list shipped_list ' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-info-circle"></i>
             <p>

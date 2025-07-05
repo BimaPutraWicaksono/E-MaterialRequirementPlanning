@@ -8,16 +8,18 @@
     <table id="table_user" class="table table-bordered" style="width: 100%;">
       <thead class="table-primary">
         <tr>
-          <th>Username</th>
-          <th>Departemen</th> <!-- Kolom baru -->
-          <th>Status</th>
-          <th>Last Seen</th>
-          <th>Actions</th>
+          <th>NO</th>
+          <th>USERNAME</th>
+          <th>DEPARTEMENT</th>
+          <th>ROLE</th>
+          <th>LAST SEEN</th>
+          <th>ACTION</th>
         </tr>
       </thead>
       <tbody>
         {% for user in users %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td class="text-center">{{ user.username }}</td>
           <td class="text-center">
             {% if user.departement %}
@@ -59,7 +61,7 @@
     
     <!-- Tombol Tambah Akun -->
     {% if request.user|has_group:"Admin" %}
-      <div class="d-flex justify-content-end">
+      <div class="d-flex justify-content-end mt-2">
         <button class="btn upload-btn" onclick="openModal('modal-tambah')">
           Create Account
         </button>

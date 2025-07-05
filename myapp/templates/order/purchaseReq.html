@@ -17,21 +17,25 @@
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
       <tr>
+        <th>NO</th>
         <th>DATE</th>
         <th>REGISTERED NO</th>
         <th>REQUEST BY</th>
         <th>APPROVAL</th>
         <th>DETAIL</th>
-        {% if request.user|has_group:"Karyawan"%}
-          <th>EDIT</th>
-          <th>DELETE</th>
-        {% endif %}
+        {% comment %} {% if request.user|has_group:"Karyawan" %}
+          {% if not pr.approve_spv or pr.approve_spv is False %} {% endcomment %}
+            <th>EDIT</th>
+            <th>DELETE</th>
+          {% comment %} {% endif %}
+        {% endif %} {% endcomment %}
 
       </tr>
     </thead>
       <tbody>
         {% for pr in requests %}
           <tr>
+            <td>{{ forloop.counter }}</td>
             <td class="text-start align-middle">{{ pr.date }}</td>
             <td class="text-start align-middle">{{ pr.registered_no }}</td>
             <td class="text-start align-middle">{{ pr.created_by }}</td>
@@ -59,21 +63,21 @@
             </td>
 
             <!-- Edit -->
-            {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
-              <td class="text-center align-middle">
+            <td class="text-center align-middle">
+                {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
                 <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                {% endif %}
               </td>
-            {% endif %}
 
             <!-- Delete -->
-            {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
-              <td class="text-center align-middle">
+            <td class="text-center align-middle">
+                {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
+                {% endif %}
               </td>
-            {% endif %}
             {% if request.user|has_group:"Admin" %}
               <td class="text-center align-middle">
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">

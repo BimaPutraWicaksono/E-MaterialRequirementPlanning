@@ -5,6 +5,7 @@
   <table class="table table-bordered mt-3" id="table_applicator">
     <thead class="table-light text-center">
       <tr>
+        <th class="text-start">No.</th>
         <th class="text-start">Applicator Number</th>
         <th class="text-center">Part Name</th>
         <th class="text-center">Part Number</th>
@@ -14,6 +15,7 @@
     <tbody>
       {% for part_desk in part_desks %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td class="text-start align-middle">{{ part_desk.applicatorNumber.applicatorNumber }}</td>
           <td class="text-center align-middle">{{ part_desk.partName.partName }}</td>
           <td class="text-center align-middle">{{ part_desk.partNumber }} {{ part_desk.partCode }}</td>

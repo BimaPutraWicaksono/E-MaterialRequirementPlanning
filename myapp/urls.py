@@ -30,7 +30,7 @@ urlpatterns = [
     path('carline/', views.carline_view, name='carline'), # carline
     path('carline/delete/<int:pk>/', views.delete_carline, name='delete_carline'),
     
-    path('carlineSixProductionPlan/<str:name>/', views.sixProductionPlan, name='sixProductionPlan'),# import six production plan
+    path('carlineSixProductionPlan/<str:name>/', views.sixProductionPlan, name='sixProductionPlan'),
     path('reset_sixProductionPlan/<str:name>/', views.reset_sixProductionPlan, name='reset_sixProductionPlan'),
     
     path('carlineMcl/<str:name>/', views.machineLoading, name='machineLoading'),# import machine loading

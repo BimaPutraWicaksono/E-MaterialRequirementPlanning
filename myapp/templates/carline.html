@@ -3,34 +3,20 @@
 
 <div class="container mt-5">
   <h2 class="justify-content-center d-flex">CARLINE</h2>
-
-  <!-- Form tambah dan search -->
-  <div class="align-items-center mb-3">
-    {% if request.user|has_group:"Karyawan" %}
-      <form method="post" class="d-flex">
-        {% csrf_token %}
-        <div class="form-group mr-2">
-          {{ form.name|add_class:"form-control" }}
-        </div>
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-plus mr-1"></i> Add Carline
-        </button>
-      </form>
-    {% endif %}
-  </div>
-
   <!-- Tabel daftar carline -->
   <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover" id="table_carline">
-      <thead class="table-primary text-center">
+      <thead class="table-primary">
         <tr>
-          <th>Carline</th>
-          <th>Action</th>
+          <th>NO.</th>
+          <th>NAME</th>
+          <th>ACTION</th>
         </tr>
       </thead>
       <tbody>
         {% for carline in carlines %}
         <tr id="carline-{{ carline.id }}">
+          <td>{{ forloop.counter }}</td>
           <td class="align-middle text-center"><strong>{{ carline.name }}</strong></td>
           <td class="align-middle text-center">
             {% if request.user|has_group:"Guest" %}
@@ -60,32 +46,43 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
-
-  <!-- Tombol bawah -->
-  <div class="d-flex justify-content-end mt-3">
-    {% comment %} {% if request.user|has_group:"Karyawan" %}
-      <form method="post" id="resetForm" action="{% url 'reset_carline'%}" class="mr-2">
-        {% csrf_token %}
-        <button type="button" class="btn btn-danger" id="resetCarlineButton">
-          <i class="fas fa-trash-alt mr-1"></i>Delete All
+      <!-- Form tambah dan search -->
+    <div class="align-items-center mt-3 d-flex justify-content-end">
+      {% if request.user|has_group:"Karyawan" %}
+        <button class="btn btn-primary mr-3" onclick="openModal('addCarlineModal')">
+          Add Carline
         </button>
-      </form>
-    {% endif %} {% endcomment %}
-    <button type="button" class="btn btn-info" id="requirementPartButton">
-      <i class="fas fa-cogs mr-1"></i>All Carline
-    </button>
-  </div>
-</div>
-
-
-<!-- Loading Spinner -->
-<div id="loadingSpinner" class="d-none">
-  <div class="spinner-overlay">
-    <div class="spinner">
-      <i class="fas fa-spinner fa-spin"></i>
+      {% endif %}
+      <button type="button" class="btn btn-info" id="requirementPartButton">
+        <i class="fas fa-cogs mr-1"></i>All Carline
+      </button>
     </div>
   </div>
+  {% if request.user|has_group:"Karyawan" %}
+    <!-- Modal Tambah Carline -->
+    <div class="modal fade" id="addCarlineModal" tabindex="-1" role="dialog" aria-labelledby="addCarlineModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <form method="post">
+            {% csrf_token %}
+            <div class="modal-header">
+              <h5 class="modal-title" id="addCarlineModalLabel">Add Carline</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal('addCarlineModal')">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              {{ form.name|add_class:"form-control" }}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('addCarlineModal')">Cancel</button>
+              <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 <!-- SweetAlert for Delete Confirmation -->
@@ -170,6 +167,15 @@
       });
     });
   });
+
+  function openModal(id) {
+    $('#' + id).modal('show');
+  }
+
+  function closeModal(id) {
+    $('#' + id).modal('hide');
+  }
+
 </script>
 
 {% endblock %}

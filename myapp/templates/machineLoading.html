@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block content %} {% load dict_filters %} {% load user_tags %}
 
 <div class="container">
-  <h1 class="mt-4 mb-3">MACHINE LOADING</h1>
+  <h2 class="justify-content-center d-flex">MACHINE LOADING</h2>
   <div class="switch d-flex justify-content-between">
     <h5>CARLINE: <b>{{ carline.name }}</b></h5>
 
@@ -28,17 +28,18 @@
     <table class="table table-bordered" id="tabel_mcl">
       <thead>
         <tr>
-          <th>Machine</th>
-          <th>No Control</th>
-          <th>Kind</th>
-          <th>Size</th>
-          <th>Twist</th>
-          <th>TermB</th>
-          <th>Man B</th>
+          <th>NO</th>
+          <th>MACHINE</th>
+          <th>NO CONTROL</th>
+          <th>KIND</th>
+          <th>SIZE</th>
+          <th>TWITS</th>
+          <th>TERM B</th>
+          <th>MAN B</th>
           <th>Acc B1</th>
-          <th>TermA</th>
-          <th>Man A</th>
-          <th>Acc A1</th>
+          <th>TERM A</th>
+          <th>MAN A</th>
+          <th>ACC A1</th>
           <!-- Dynamic table headers for each noAssy -->
           {% for noAssy in noAssy_headers %}
           <th>{{ noAssy }}</th>
@@ -48,6 +49,7 @@
       <tbody>
         {% for loading in machine_loadings %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td>{{ loading.machine }}</td>
           <td>{{ loading.noControl }}</td>
           <td>{{ loading.kind }}</td>

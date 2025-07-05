@@ -1,21 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Shipped List</h2>
-    <a href="{% url 'shipped_create' %}" class="btn btn-success">Add Shipped</a>
-  </div>
+  <h2 class="d-flex justify-content-center">SHIPPED</h2>
   <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle" id="tabel_shipped">
+    <table class="table table-bordered align-middle" id="tabel_shipped">
       <thead class="table-light text-center">
         <tr>
-          <th>Name</th>
-          <th>Actions</th>
+          <th>NO</th>
+          <th>NAME</th>
+          <th>ACTION</th>
         </tr>
       </thead>
       <tbody>
         {% for shipped in shippeds %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td class="text-start">{{ shipped.name }}</td>
           <td class="text-center">
             <a href="{% url 'shipped_update' shipped.id %}" class="btn btn-sm btn-success mx-2">Edit</a>
@@ -29,6 +28,9 @@
         {% endfor %}
       </tbody>
     </table>
+    <div class="d-flex justify-content-end align-items-center mt-2">
+      <a href="{% url 'shipped_create' %}" class="btn upload-btn">Add Shipped</a>
+    </div>
   </div>
 </div>
 {% endblock %}

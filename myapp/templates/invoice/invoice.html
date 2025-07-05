@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% load user_tags %}
+
 <div class="container mt-5">
   <h2 class="justify-content-center d-flex">INVOICE</h2>
 
@@ -9,11 +11,11 @@
       <tr>
         <th>NO</th>
         <th>INVOICE NO</th>
-        <th>REGISTERED [PO]</th>
-        <th>SUPPLIER</th>
+        <th>REGISTERED [PO]</th>
         <th>DATE</th>
-        <th>SHIPPING COST</th>
-        <th>TOTAL AMOUNT</th>
+        <th>SUPPLIER</th>
+        <th>SHIPPING COST</th>
+        <th>LAST AMOUNT</th>
         <th>ACTION</th>
       </tr>
     </thead>
@@ -24,15 +26,12 @@
         <td>{{ forloop.counter }}</td>
         <td>{{ invoice.invoice_no }}</td>
         <td>{{ invoice.registered_no.registered_no }}</td>
-
+        <td>{{ invoice.date }}</td>
         <td>
           {% with invoice.registered_no.purchaseorder as po %}
             {% if po %}{{ po.supplier.name }}{% else %}-{% endif %}
           {% endwith %}
         </td>
-
-        <td>{{ invoice.date }}</td>
-
         <td>
           {% with invoice.registered_no.airwaybill as awb %}
             {% if awb %}${{ awb.shipping_cost }}{% else %}-{% endif %}
@@ -52,14 +51,16 @@
     </tbody>
   </table>
   <!-- penutup table -->
+  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+    <form method="POST" onsubmit="showLoading(this)" class="d-flex justify-content-end">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
+        <span id="btnText">Search Email</span>
+        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+      </button>
+    </form>
+  {% endif %}
 
-  <form method="POST" onsubmit="showLoading(this)" class="d-flex justify-content-end">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
-      <span id="btnText">Search Email</span>
-      <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-    </button>
-  </form>
 </div>
 <script>
   function showLoading(form) {

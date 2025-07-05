@@ -7,14 +7,14 @@
 
 
   <!-- Departement Table -->
-  <div class="table-responsive px-3 pb-3 mb-4">
-    <h5 class="mb-3">Departement List</h5>
+  <div class="table-responsive px-3">
+    <h2 class="d-flex justify-content-center">DEPARTEMENT</h2>
     <table class="table table-bordered table-hover align-middle" id="table_departemen">
       <thead class="table-success text-center">
         <tr>
-          <th style="width: 5%;">No</th>
-          <th style="width: 70%;">Departement</th>
-          <th style="width: 25%;">Action</th>
+          <th style="width: 5%;">NO.</th>
+          <th style="width: 70%;">DEPARTEMENT</th>
+          <th style="width: 25%;">ACTION</th>
         </tr>
       </thead>
       <tbody>
@@ -36,11 +36,11 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="d-flex justify-content-end mb-3 mt-2 flex-wrap gap-2">
+    <div class="d-flex justify-content-end mt-2 flex-wrap">
       {% if request.user|has_group:"Admin" %}
       <!-- Button triggers modal -->
         <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary btn-sm" onclick="openModal('addDepartementModal')">
+          <button class="btn upload-btn btn-sm" onclick="openModal('addDepartementModal')">
             Add Departement
           </button>
         </div>
@@ -49,21 +49,21 @@
   </div>
 
   <!-- Section Table -->
-  <div class="table-responsive px-3 pb-3">
-    <h5 class="mb-3">Section List</h5>
-    <table id="tabel_section" class="table table-bordered table-striped table-hover align-middle">
+  <div class="table-responsive px-3">
+    <h2 class="d-flex justify-content-center">SECTION</h2>
+    <table id="tabel_section" class="table table-bordered table-hover align-middle">
       <thead class="table-primary text-center">
         <tr>
-          <th style="width: 5%;">No</th>
-          <th style="width: 35%;">Section</th>
-          <th style="width: 40%;">Departement</th>
-          <th style="width: 20%;">Action</th>
+          <th style="width: 5%;">NO.</th>
+          <th style="width: 35%;">SECTION</th>
+          <th style="width: 40%;">DEPARTEMENT</th>
+          <th style="width: 20%;">ACTION</th>
         </tr>
       </thead>
       <tbody>
         {% for section in sections %}
         <tr class="section-row">
-          <td class="text-center">{{ forloop.counter }}</td>
+          <td>{{ forloop.counter }}</td>
           <td class="section-name">{{ section.name }}</td>
           <td class="text-center">{{ section.departement.name }}</td>
           <td class="text-center">
@@ -80,11 +80,11 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="d-flex justify-content-end mb-3 mt-2 flex-wrap gap-2">
+    <div class="d-flex justify-content-end mt-2 flex-wrap">
       {% if request.user|has_group:"Admin" %}
       <!-- Button triggers modal -->
-       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-primary btn-sm" onclick="openModal('addSectionModal')">
+       <div class="d-flex flex-wrap">
+        <button class="btn upload-btn btn-sm" onclick="openModal('addSectionModal')">
           Add Section
         </button>
       </div>

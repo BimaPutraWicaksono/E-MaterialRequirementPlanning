@@ -22,14 +22,15 @@
                 <table class="table table-bordered" id="table_loading_part">
                   <thead>
                     <tr>
-                      <th>Part Name</th>
-                      <th>Terminal</th>
-                      <th>Part Number</th>
-                      <th>Lvl/Mark</th>
+                      <th>NO</th>
+                      <th>PART NAME</th>
+                      <th>TERMINAL</th>
+                      <th>PART NUMBER</th>
+                      <th>LVL/MRK</th>
                       {% for month in months %}
                         <th>{{ month }}</th>
                       {% endfor %}
-                      <th>Average [↑]</th>
+                      <th>AVERAGE [↑]</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -37,6 +38,7 @@
                       {% for terminal, month_data in terminal_data.items %}
                         {% with result=loading_results|get_item:carline|get_item:year|get_item:partname|get_item:terminal %}
                           <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ partname }}</td>
                             <td>{{ terminal }}</td>
 

@@ -11,6 +11,7 @@
       <table class="table table-bordered mt-3" id="table_purchase_req">
         <thead class="table-light text-center">
           <tr>
+            <th>NO</th>
             <th>DATE</th>
             <th>REQUEST BY</th>
             <th>REGISTERED NO</th>
@@ -27,6 +28,7 @@
             {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
               {% if request.user|has_group:"Admin" %}
                 <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                  <td>{{ forloop.counter }}</td>
                   <td class="text-center align-middle">
                     {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
                   </td>
@@ -66,6 +68,7 @@
 
               {% elif request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
                 <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                  <td>{{ forloop.counter }}</td>
                   <td class="text-center align-middle">
                     {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
                   </td>
@@ -129,6 +132,7 @@
               {% elif request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
                 {% if pr.registered_no in po_registered_nos %}
                   <tr class="po-row has-po">
+                    <td>{{ forloop.counter }}</td>
                     <td class="text-center align-middle">
                       {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
                     </td>

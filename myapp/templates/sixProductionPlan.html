@@ -1,11 +1,11 @@
 {% extends "base.html" %} {% block content %} {% load user_tags %}
 
 <div class="container">
-  <h1 class="mt-4 mb-3">PRODUCTION PLAN [QTY]</h1>
+  <h2 class="justify-content-center d-flex">PRODUCTION PLAN [QTY]</h2>
   <div class="switch d-flex justify-content-between">
     <h5>CARLINE: <b>{{ carline.name }}</b></h5>
     <div
-      class="toggle-btn d-flex justify-content-between"
+      class="toggle-btn d-flex justify-content-between mb-2"
       onclick="window.location.href='{% url 'machineLoading' name=carline.name %}'"
     >
       <div class="toggle ml-1" style="color: #c4c4c4"></div>
@@ -29,7 +29,8 @@
     <table class="table table-bordered" id="tabel_spp">
       <thead>
         <tr>
-          <th>No Assy</th>
+          <th>NO</th>
+          <th>NO ASSY</th>
           <th>JAN</th>
           <th>FEB</th>
           <th>MAR</th>
@@ -42,12 +43,13 @@
           <th>OCT</th>
           <th>NOV</th>
           <th>DEC</th>
-          <th>Tahun</th>
+          <th>YEAR</th>
         </tr>
       </thead>
       <tbody>
         {% for bulan in bulan_list %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td>
             {% if bulan.quantities.exists %}
             {{bulan.quantities.first.noAssy.noAssy }} {% else %} N/A {% endif %}

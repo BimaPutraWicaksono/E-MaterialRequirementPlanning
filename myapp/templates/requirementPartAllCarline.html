@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block content %}
 <div class="container">
-  <h1 class="mt-3 mb-3">REQUIREMENT PRODUCT ALL CARLINE</h1>
+  <h2 class="justify-content-center d-flex">REQUIREMENT PRODUCT ALL CARLINE</h2>
 
   <!-- Table 1: Aggregated Results by Month -->
   <div class="my-4">
@@ -11,8 +11,9 @@
       <table class="table table-bordered" id="tabel_all_sum">
         <thead>
           <tr>
-            <th>Carline</th>
-            <th>Applicator</th>
+            <th>NO</th>
+            <th>CARLINE</th>
+            <th>AAPPLICATOR</th>
             <th>JAN</th>
             <th>FEB</th>
             <th>MAR</th>
@@ -25,12 +26,13 @@
             <th>OCT</th>
             <th>NOV</th>
             <th>DEC</th>
-            <th>Year</th>
+            <th>YEAR</th>
           </tr>
         </thead>
         <tbody>
           {% for pair, months_data in aggregated_results.items %}
           <tr>
+            <td>{{ forloop.counter }}</td>
             <td>{{ pair.0 }}</td> {# carline #}
             <td>{{ pair.1 }}</td> {# terminal #}                
             <td>{{ months_data.JAN|floatformat:"0"|default:"-" }}</td>
