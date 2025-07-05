@@ -36,7 +36,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
-    'https://dda4-36-85-71-242.ngrok-free.app',
+    'https://three-beginning-bar-comic.trycloudflare.com',
 ]
 
 
