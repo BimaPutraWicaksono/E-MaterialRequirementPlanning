@@ -427,6 +427,3 @@ class Stock(models.Model):
 
     class Meta:
         db_table = 'stock'
-
-
-

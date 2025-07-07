@@ -108,6 +108,9 @@ urlpatterns = [
     # airwaybil
     path('airwaybill/import/', views_airwaybill.import_airwaybill, name='import_airwaybill'),
     path('airwaybill-detail/<str:registered_no>/', views_airwaybill.airwaybill_detail, name='airwaybill_detail'),
+    path('airwaybill/manual/', views_airwaybill.manual_airwaybill, name='manual_airwaybill'),
+    path('airwaybill/edit/<int:airwaybill_id>/', views_airwaybill.edit_airwaybill, name='edit_airwaybill'),
+    path('airwaybill/delete/<int:airwaybill_id>/', views_airwaybill.delete_airwaybill, name='delete_airwaybill'),
     
     # invoice
     path('invoice/import/', views_invoice.import_invoice, name='import_invoice'),

@@ -122,3 +122,65 @@ def airwaybill_detail(request, registered_no):
         'created_po': po,
         'airwaybill': airwaybill,
     })
+ 
+@login_required
+def manual_airwaybill(request):
+    if request.method == 'POST':
+        airwaybill_no = request.POST.get('airwaybill_no').strip()
+        registered_no_str = request.POST.get('registered_no').strip()
+        date = request.POST.get('date')
+        weight = request.POST.get('weight').strip()
+        shipping_cost = request.POST.get('shipping_cost').replace('$', '').replace(',', '').strip()
+
+        try:
+            purchase_request = PurchaseRequest.objects.get(registered_no=registered_no_str)
+        except PurchaseRequest.DoesNotExist:
+            messages.error(request, f"PR No '{registered_no_str}' not found.")
+            return redirect('import_airwaybill')
+
+        if AirWayBill.objects.filter(airwaybill_no=airwaybill_no).exists():
+            messages.warning(request, f"AirWayBill '{airwaybill_no}' already exists.")
+        else:
+            AirWayBill.objects.create(
+                airwaybill_no=airwaybill_no,
+                registered_no=purchase_request,
+                date=date,
+                weight=weight,
+                shipping_cost=shipping_cost
+            )
+            messages.success(request, f"AirWayBill '{airwaybill_no}' saved successfully.")
+    
+    return redirect('import_airwaybill')
+
+@login_required
+def edit_airwaybill(request, airwaybill_id):
+    awb = get_object_or_404(AirWayBill, id=airwaybill_id)
+    
+    if request.method == 'POST':
+        airwaybill_no = request.POST.get('airwaybill_no').strip()
+        date = request.POST.get('date')
+        weight = request.POST.get('weight').strip()
+        shipping_cost = request.POST.get('shipping_cost').replace('$', '').replace(',', '').strip()
+
+        # Cek jika AirWayBill No berubah dan tidak duplikat
+        if awb.airwaybill_no != airwaybill_no and AirWayBill.objects.filter(airwaybill_no=airwaybill_no).exists():
+            messages.error(request, f"AirWayBill '{airwaybill_no}' already exists.")
+        else:
+            awb.airwaybill_no = airwaybill_no
+            awb.date = date
+            awb.weight = weight
+            awb.shipping_cost = shipping_cost
+            awb.save()
+            messages.success(request, "AirWayBill updated successfully.")
+    
+    return redirect('import_airwaybill')
+
+@login_required
+def delete_airwaybill(request, airwaybill_id):
+    awb = get_object_or_404(AirWayBill, id=airwaybill_id)
+
+    if request.method == 'POST':
+        awb.delete()
+        messages.success(request, "AirWayBill deleted successfully.")
+    
+    return redirect('import_airwaybill')
