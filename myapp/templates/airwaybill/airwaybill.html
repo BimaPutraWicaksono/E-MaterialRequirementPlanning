@@ -58,15 +58,15 @@
   </div>
   {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
     <!-- Tombol Buka Modal -->
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-success mt-2" data-toggle="modal" data-target="#manualInputModal">Add Airway Bill</button>
-      <form method="POST" onsubmit="showLoading(this)" class="d-inline">
+    <div class="d-flex justify-content-end mt-2">
+      <button class="btn btn-success" data-toggle="modal" data-target="#manualInputModal">Add Airway Bill</button>
+      {% comment %} <form method="POST" onsubmit="showLoading(this)" class="d-inline">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
           <span id="btnText">Update</span>
           <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
         </button>
-      </form>
+      </form> {% endcomment %}
     </div>
   {% endif %}
 
