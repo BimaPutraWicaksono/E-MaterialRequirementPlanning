@@ -5,39 +5,52 @@
     <h2 class="justify-content-center d-flex" >DELIVERY</h2>
 
     <table class="table table-bordered mt-3" id="table_stock">
-        <thead class="table-light text-center">
-            <tr>
-                <th>NO.</th>
-                <th>PURCHASE ORDER NO.</th>
-                <th>DEPARTEMENT</th>
-                <th>SECTION</th>
-                <th>PURCHASE BY</th>
-                {% comment %} <th>LAST AMOUNT</th> {% endcomment %}
-                {% comment %} <th>AIRWAY BILL</th> {% endcomment %}
-                {% comment %} <th>SHIPPING COST</th> {% endcomment %}
-                <th>DATE</th>
-                <th>ACTION</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for request in connected_requests %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ request.registered_no }}</td>
-                <td>{{ request.departement.name }}</td>
-                <td>{{ request.section.name }}</td>
-                <td>{{ request.purchase_by }}</td>
-                {% comment %} <td>{{ request.total_amount }}</td> {% endcomment %}
-                {% comment %} <td>{{ request.airwaybill.airwaybill_no }}</td> {% endcomment %}
-                {% comment %} <td>{{ request.airwaybill.shipping_cost }}</td> {% endcomment %}
-                <td>{{ request.airwaybill.date }}</td>
-                <td>
-                    <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead class="table-light text-center">
+          <tr>
+              <th>NO.</th>
+              <th>PURCHASE ORDER NO.</th>
+              <th>DEPARTEMENT</th>
+              <th>SECTION</th>
+              <th>PURCHASE BY</th>
+              <th>DATE</th>
+              <th>STOCK STATUS</th>  {# kolom baru #}
+              <th>ACTION</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for request in connected_requests %}
+          <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ request.registered_no }}</td>
+              <td>{{ request.departement.name }}</td>
+              <td>{{ request.section.name }}</td>
+              <td>{{ request.purchase_by }}</td>
+              <td>{{ request.airwaybill.date }}</td>
+              <td class="text-center">
+                  {% if request.stock_status == 'done_exact' %}
+                      <span class="badge bg-success">Done</span>
+                  {% elif request.stock_status == 'done_less' %}
+                      <span class="badge bg-warning text-dark">Partial</span>
+                  {% else %}
+                      <span class="badge bg-secondary">Pending</span>
+                  {% endif %}
+              </td>
+              <td>
+                  <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
+              </td>
+          </tr>
+          {% endfor %}
+      </tbody>
     </table>
+    <!-- Penjelasan Status -->
+  <div style="background-color: #ffffff; padding: 15px; border: 1px solid #ddd; border-radius: 5px;" class="mt-4">
+    <p><strong>Delivery Status:</strong></p>
+    <p class="mb-0">
+      <span class="badge bg-success badge-fixed">Done</span> : All items have been assigned stock and <strong>match the required quantity</strong>.<br>
+      <span class="badge bg-warning text-dark badge-fixed">Partial</span> : All items have stock, but <strong>some are below the required quantity</strong>.<br>
+      <span class="badge bg-secondary badge-fixed">Pending</span> : <strong>Some items have no stock assigned at all</strong>.
+    </p>
+  </div>
 </div>
 
 <!-- Modal Detail Bootstrap 4 -->
@@ -57,7 +70,13 @@
   </div>
 </div>
 
-
+<style>
+  .badge-fixed {
+    display: inline-block;
+    min-width: 70px; /* atau sesuaikan dengan kebutuhan */
+    text-align: center;
+  }
+</style>
 <script>
 function showDetail(url) {
     fetch(url)

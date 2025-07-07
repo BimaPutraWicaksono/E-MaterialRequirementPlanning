@@ -3,29 +3,49 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import PurchaseRequest, Stock
+from .models import PurchaseRequest, Stock, RequestItem
 
-
-# ------------------------------------------------------------------
-# 1. Daftar pengiriman (tidak berubah)
-# ------------------------------------------------------------------
 @login_required
 def stockList(request):
     connected_requests = (
         PurchaseRequest.objects
         .filter(airwaybill__isnull=False)
         .select_related('departement', 'section')
+        .prefetch_related('items')
     )
+
+    for pr in connected_requests:
+        item_ids = pr.items.values_list('id', flat=True)
+        stocks = Stock.objects.filter(source_request_item__in=item_ids)
+        stock_map = {s.source_request_item_id: s.quantity for s in stocks}
+
+        total_items = pr.items.count()
+        complete = True
+        exact_match = True
+        for item in pr.items.all():
+            expected = int(float(item.result_average_round))
+            actual = stock_map.get(item.id)
+
+            if actual is None:
+                complete = False
+                exact_match = False
+                break
+            elif actual < expected:
+                exact_match = False
+
+        if not complete:
+            pr.stock_status = 'pending'
+        elif exact_match:
+            pr.stock_status = 'done_exact'
+        else:
+            pr.stock_status = 'done_less'
+
     return render(
         request,
         'stock/stock.html',
         {'connected_requests': connected_requests}
     )
 
-
-# ------------------------------------------------------------------
-# 2. Form tambah/ubah stok per item Purchase Request
-# ------------------------------------------------------------------
 @login_required
 def requestItemDetail(request, pk):
     """
@@ -44,7 +64,6 @@ def requestItemDetail(request, pk):
         'loading_part_result__partdesk__partName'
     )
 
-    # -------------------- POST: simpan --------------------
     if request.method == "POST":
         errors = []
 
@@ -103,8 +122,6 @@ def requestItemDetail(request, pk):
 
         return redirect(request.path)   # Reload halaman
 
-    # -------------------- GET: tampilkan form --------------------
-    # Stok tersimpan → dict {request_item_id: qty}
     stocks = Stock.objects.filter(
         source_request_item__in=[i.id for i in items]
     )
