@@ -41,24 +41,115 @@
         <td>${{ invoice.registered_no.total_amount|floatformat:2 }}</td>
 
         <td>
-          <a href="{% url 'invoice_detail' invoice.registered_no.registered_no %}"
-             class="btn btn-sm btn-info">Detail</a>
+          <a href="{% url 'invoice_detail' invoice.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
+
+          <!-- Tombol Edit -->
+          <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#editModal{{ invoice.id }}">Edit</button>
+
+          <!-- Tombol Delete -->
+          <form method="POST" action="{% url 'delete_invoice' invoice.id %}" style="display: inline;" onsubmit="return confirm('Are you sure to delete this invoice?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          </form>
         </td>
+
       </tr>
       {% empty %}
       <tr><td colspan="8" class="text-center">No data available.</td></tr>
       {% endfor %}
     </tbody>
-  </table>
-  <!-- penutup table -->
+  </table> 
   {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-    <form method="POST" onsubmit="showLoading(this)" class="d-flex justify-content-end">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-primary mt-2" id="searchBtn">
-        <span id="btnText">Update</span>
-        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-      </button>
-    </form>
+    <div class="d-flex justify-content-end">
+      <!-- Tombol Buka Modal -->
+      <button class="btn btn-success" data-toggle="modal" data-target="#manualInvoiceModal">Add Invoice</button>
+
+      <form method="POST" onsubmit="showLoading(this)" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" id="searchBtn">
+          <span id="btnText">Update</span>
+          <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Modal Manual Input Invoice -->
+    <div class="modal fade" id="manualInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="manualInvoiceModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <form method="POST" action="{% url 'manual_invoice' %}">
+          {% csrf_token %}
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Manual Input Invoice</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Invoice No</label>
+                <input type="text" name="invoice_no" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Registered No (PR)</label>
+                <input type="text" name="registered_no" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Last Amount</label>
+                <input type="text" name="last_amount" class="form-control" required>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% for invoice in invoices %}
+      <div class="modal fade" id="editModal{{ invoice.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ invoice.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <form method="POST" action="{% url 'edit_invoice' invoice.id %}">
+            {% csrf_token %}
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Edit Invoice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <div class="modal-body">
+                <div class="form-group">
+                  <label>Invoice No</label>
+                  <input type="text" name="invoice_no" class="form-control" value="{{ invoice.invoice_no }}" required>
+                </div>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" name="date" class="form-control" value="{{ invoice.date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="form-group">
+                  <label>Last Amount</label>
+                  <input type="text" name="last_amount" class="form-control" value="{{ invoice.last_amount }}" required>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success">Update</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
   {% endif %}
 
 </div>

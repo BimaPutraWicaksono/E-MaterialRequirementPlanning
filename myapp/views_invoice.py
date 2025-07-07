@@ -138,3 +138,71 @@ def invoice_detail(request, registered_no):
         "invoice":Invoice.objects.filter(registered_no=pr).last(),
         "awb":awb,
     })
+
+@login_required
+def manual_invoice(request):
+    if request.method == 'POST':
+        invoice_no = request.POST.get('invoice_no').strip()
+        registered_no = request.POST.get('registered_no').strip()
+        date = request.POST.get('date')
+        last_amount_raw = request.POST.get('last_amount').replace('$', '').replace(',', '').strip()
+
+        try:
+            last_amount = float(last_amount_raw)
+        except (ValueError, TypeError):
+            last_amount = 0
+
+        try:
+            purchase_request = PurchaseRequest.objects.get(registered_no=registered_no)
+        except PurchaseRequest.DoesNotExist:
+            messages.error(request, f"PurchaseRequest dengan ID {registered_no} tidak ditemukan.")
+            return redirect('import_invoice')
+
+        if Invoice.objects.filter(invoice_no=invoice_no).exists():
+            messages.warning(request, f"Invoice '{invoice_no}' sudah ada.")
+        else:
+            Invoice.objects.create(
+                invoice_no=invoice_no,
+                registered_no=purchase_request,
+                date=date,
+                last_amount=last_amount
+            )
+            messages.success(request, f"Invoice '{invoice_no}' berhasil disimpan.")
+
+    return redirect('import_invoice')
+
+@login_required
+def edit_invoice(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+
+    if request.method == 'POST':
+        invoice_no = request.POST.get('invoice_no').strip()
+        date = request.POST.get('date')
+        last_amount_raw = request.POST.get('last_amount').replace('$', '').replace(',', '').strip()
+
+        try:
+            last_amount = float(last_amount_raw)
+        except (ValueError, TypeError):
+            last_amount = 0
+
+        # Cek jika invoice_no berubah dan tidak duplikat
+        if invoice.invoice_no != invoice_no and Invoice.objects.filter(invoice_no=invoice_no).exists():
+            messages.error(request, f"Invoice '{invoice_no}' sudah ada.")
+        else:
+            invoice.invoice_no = invoice_no
+            invoice.date = date
+            invoice.last_amount = last_amount
+            invoice.save()
+            messages.success(request, "Invoice berhasil diperbarui.")
+
+    return redirect('import_invoice')
+
+@login_required
+def delete_invoice(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+
+    if request.method == 'POST':
+        invoice.delete()
+        messages.success(request, "Invoice berhasil dihapus.")
+    
+    return redirect('import_invoice')

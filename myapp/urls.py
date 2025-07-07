@@ -115,6 +115,9 @@ urlpatterns = [
     # invoice
     path('invoice/import/', views_invoice.import_invoice, name='import_invoice'),
     path('invoice/detail/<str:registered_no>/', views_invoice.invoice_detail, name='invoice_detail'),
+    path('invoice/manual/', views_invoice.manual_invoice, name='manual_invoice'),
+    path('invoice/edit/<int:invoice_id>/', views_invoice.edit_invoice, name='edit_invoice'),
+    path('invoice/delete/<int:invoice_id>/', views_invoice.delete_invoice, name='delete_invoice'),
 
     # stock
     path('add-stock/', views_stock.stockList, name='add_stock'),
