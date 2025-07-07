@@ -1,72 +1,137 @@
-from django.shortcuts import render
-from .models import PurchaseRequest, AirWayBill
+# myapp/views_stock.py
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
+
+from .models import PurchaseRequest, Stock
 
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-
+# ------------------------------------------------------------------
+# 1. Daftar pengiriman (tidak berubah)
+# ------------------------------------------------------------------
 @login_required
 def stockList(request):
-    connected_requests = PurchaseRequest.objects.filter(airwaybill__isnull=False).select_related('departement', 'section')
-    context = {
-        'connected_requests': connected_requests
-    }
-    return render(request, 'stock/stock.html', context)
+    connected_requests = (
+        PurchaseRequest.objects
+        .filter(airwaybill__isnull=False)
+        .select_related('departement', 'section')
+    )
+    return render(
+        request,
+        'stock/stock.html',
+        {'connected_requests': connected_requests}
+    )
 
 
-from .models import Stock, PartName
-
+# ------------------------------------------------------------------
+# 2. Form tambah/ubah stok per item Purchase Request
+# ------------------------------------------------------------------
 @login_required
 def requestItemDetail(request, pk):
-    purchase_request = PurchaseRequest.objects.get(pk=pk)
+    """
+    Fitur:
+    • Kolom input qty fleksibel (min 0, max qty asli).
+    • Input '0' atau kosong ⇒ dianggap belum di‑input (stok dihapus jika ada).
+    • Setelah Save, angka terakhir yang disimpan menjadi default.
+    • Warna ANGKA: hijau (qty sama), merah (qty lebih kecil).
+    """
+    purchase_request = get_object_or_404(PurchaseRequest, pk=pk)
+
+    # Semua item di PR
     items = purchase_request.items.select_related(
         'loading_part_result',
         'loading_part_result__partdesk',
         'loading_part_result__partdesk__partName'
-    ).all()
+    )
 
-    if request.method == 'POST':
-        selected = set(request.POST.getlist('selected_items'))
+    # -------------------- POST: simpan --------------------
+    if request.method == "POST":
+        errors = []
 
         for item in items:
-            partdesk = item.loading_part_result.partdesk if item.loading_part_result else None
-            part = partdesk.partName if partdesk else None
-            item_id = item.id
-            qty = item.result_average_round
+            field_key = f"input_qty_{item.id}"
+            raw_val = request.POST.get(field_key, "").strip()
 
+            # Kosong / 0 ⇒ dianggap tidak diinput
+            if raw_val in ("", "0"):
+                qty_input = 0
+            else:
+                try:
+                    qty_input = int(raw_val)
+                except ValueError:
+                    qty_input = 0
+
+            original_qty = int(float(item.result_average_round))
+            if qty_input > original_qty:
+                errors.append(
+                    f"Qty untuk item {item.budget_ref_no} tidak boleh "
+                    f"melebihi {original_qty}."
+                )
+                continue
+
+            # Ambil Part terkait
+            partdesk = getattr(item.loading_part_result, "partdesk", None)
+            part = getattr(partdesk, "partName", None)
             if not part:
-                continue  # Skip jika tidak ada part
+                continue  # Skip jika belum ada part definitif
 
-            # Cek existing stock
-            stock_obj = Stock.objects.filter(part=part, source_request_item=item_id).first()
+            stock_obj = Stock.objects.filter(
+                part=part,
+                source_request_item=item.id
+            ).first()
 
-            if str(item_id) in selected:
-                # Centang: Tambah atau Update stock
+            if qty_input > 0:
+                # Buat / update stok
                 if stock_obj:
-                    stock_obj.quantity = int(float(qty))
+                    stock_obj.quantity = qty_input
                     stock_obj.save()
                 else:
                     Stock.objects.create(
                         part=part,
-                        quantity=int(float(qty)),
-                        source_request_item_id=item_id
+                        quantity=qty_input,
+                        source_request_item_id=item.id  # ← ini juga benar
                     )
             else:
-                # Tidak dicentang: Hapus stock jika ada
+                # qty 0 ⇒ hapus stok jika ada
                 if stock_obj:
                     stock_obj.delete()
 
-        return redirect(f"{request.path}?success=1")
+        if errors:
+            messages.error(request, " ".join(errors))
+        else:
+            messages.success(request, "Stock Updated")
 
+        return redirect(request.path)   # Reload halaman
 
-    existing_item_ids = set(Stock.objects.filter(source_request_item__isnull=False).values_list('source_request_item', flat=True))
+    # -------------------- GET: tampilkan form --------------------
+    # Stok tersimpan → dict {request_item_id: qty}
+    stocks = Stock.objects.filter(
+        source_request_item__in=[i.id for i in items]
+    )
+    saved_qty = {s.source_request_item_id: s.quantity for s in stocks}
 
-    context = {
-        'purchase_request': purchase_request,
-        'request_items': items,
-        'existing_item_ids': existing_item_ids,
-    }
-    return render(request, 'stock/request_item_detail_page.html', context)
+    # Siapkan atribut bantu untuk template
+    for item in items:
+        item.saved_qty = saved_qty.get(item.id)          # None jika belum ada
+        original_qty = int(float(item.result_average_round))
+
+        if item.saved_qty is None:
+            item.input_value = ""                        # input kosong
+            item.qty_color   = ""                        # tanpa warna
+        else:
+            item.input_value = item.saved_qty            # default = qty tersimpan
+            if item.saved_qty == original_qty:
+                item.qty_color = "text-success fw-bold"  # hijau tebal
+            elif item.saved_qty < original_qty:
+                item.qty_color = "text-danger fw-bold"   # merah tebal
+            else:
+                item.qty_color = ""                      # (tidak terjadi; validasi)
+
+    return render(
+        request,
+        'stock/request_item_detail_page.html',
+        {
+            'purchase_request': purchase_request,
+            'request_items':    items,
+        }
+    )

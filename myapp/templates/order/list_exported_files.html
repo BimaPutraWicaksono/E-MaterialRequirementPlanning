@@ -4,7 +4,7 @@
  
 {% block content %}
 <div class="container mt-4">
-  <h4 class="justify-content-center d-flex">SEND PURCHASE ORDER</h4>
+  <h4 class="justify-content-center d-flex">PURCHASE ORDER</h4>
 
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3" id="table_delivery">
@@ -13,8 +13,7 @@
           <th>NO</th>
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
-          <th>SENT STATUS</th>
-          <th>REQUEST STATUS</th>
+          <th>STATUS</th>
           <th>VIEW</th> 
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th> 
@@ -30,21 +29,17 @@
               <td class="align-middle">{{ file.registered_no }}</td>
               {% comment %} <td class="align-middle">{{ file.name }}</td> {% endcomment %}
               <td class="align-middle">{{ file.supplier_name }}</td>
-              <td class="align-middle">
-                {% if file.email_sent %}
-                  <span class="badge bg-success">Sent</span>
+              <td class="align-middle text-center">
+                {% if file.acc_rej == True %}
+                  <span class="badge bg-success">Accepted</span> -
+                  {{ file.schedule_date|date:"d M Y" }}
+                {% elif file.acc_rej == False %}
+                  <span class="badge bg-danger">Rejected</span>
+                {% elif file.email_sent %}
+                  <span class="badge bg-success">Sent</span><br>
                   {{ file.email_sent_at|date:"d M Y H:i" }}
                 {% else %}
                   <span class="badge bg-secondary">Not Sent</span>
-                {% endif %}
-              </td>
-              <td class="align-middle text-center">
-                {% if file.acc_rej == True %}
-                  <span class="badge bg-success">Accepted</span> {{ file.schedule_date|date:"d M Y" }}
-                {% elif file.acc_rej == False %}
-                  <span class="badge bg-danger">Rejected</span><br>
-                {% else %}
-                  <span class="badge bg-secondary">Pending</span><br>
                 {% endif %}
               </td>
 
@@ -87,22 +82,39 @@
           </tr>
         {% endif %}
       </tbody>
-
     </table>
   </div>
+
   <!-- Tombol search email -->
   {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
     <form method="post" onsubmit="showLoading(this)" class="mb-3 d-flex justify-content-end">
       {% csrf_token %}
       <input type="hidden" name="action" value="search_email">
       <button type="submit" class="btn btn-primary" id="searchBtn">
-        <span id="btnText">Request Status</span>
+        <span id="btnText">Update Status</span>
         <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"
               role="status" aria-hidden="true"></span>
       </button>
     </form>
   {% endif %}
+  <div style="background-color: #ffffff; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+    <p><strong>Status:</strong></p>
+    <p>
+      <span class="badge bg-secondary badge-fixed">Not Sent</span> : The document has <strong>not been sent</strong> via email.<br>
+      <span class="badge bg-success badge-fixed">Sent</span> : The document has <strong>been sent</strong>, but <strong>no response</strong> has been received yet.<br>
+      <span class="badge bg-success badge-fixed">Accepted</span> : The document has been <strong>approved</strong> and a schedule date has been assigned.<br>
+      <span class="badge bg-danger badge-fixed">Rejected</span> : The document has been <strong>rejected</strong> by the recipient.
+    </p>
+  </div>
 </div>
+
+<style>
+  .badge-fixed {
+    display: inline-block;
+    min-width: 70px; /* atau sesuaikan dengan kebutuhan */
+    text-align: center;
+  }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
