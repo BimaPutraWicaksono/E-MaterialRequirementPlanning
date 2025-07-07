@@ -412,6 +412,56 @@ def list_exported_purchase_orders(request):
 
     return render(request, "order/list_exported_files.html", {"files": file_urls})
 
+@login_required
+def manual_schedule_conf(request):
+    if request.method == "POST":
+        reg_no = request.POST.get("registered_no").strip()
+        acc_rej = request.POST.get("acc_rej")
+        schedule_date = request.POST.get("schedule_date")
+
+        if acc_rej not in ["accept", "reject"]:
+            messages.error(request, "Status tidak valid.")
+            return redirect("list_exported_purchase_orders")
+
+        try:
+            pr = PurchaseRequest.objects.get(registered_no=reg_no)
+        except PurchaseRequest.DoesNotExist:
+            messages.error(request, f"Registered No '{reg_no}' tidak ditemukan.")
+            return redirect("list_exported_purchase_orders")
+
+        if ScheduleConf.objects.filter(registered_no=pr).exists():
+            messages.error(request, "Data Schedule sudah ada, gunakan fitur Edit.")
+            return redirect("list_exported_purchase_orders")
+
+        ScheduleConf.objects.create(
+            registered_no=pr,
+            acc_rej=True if acc_rej == "accept" else False,
+            date=schedule_date if acc_rej == "accept" and schedule_date else None
+        )
+        messages.success(request, "Schedule Confirmation berhasil ditambahkan.")
+    
+    return redirect("list_exported_purchase_orders")
+
+@login_required
+def edit_schedule_conf(request, registered_no):
+    if request.method == "POST":
+        acc_rej = request.POST.get("acc_rej")
+        schedule_date = request.POST.get("schedule_date")
+
+        try:
+            pr = PurchaseRequest.objects.get(registered_no=registered_no)
+            sc = ScheduleConf.objects.get(registered_no=pr)
+        except (PurchaseRequest.DoesNotExist, ScheduleConf.DoesNotExist):
+            messages.error(request, "Data tidak ditemukan.")
+            return redirect("list_exported_purchase_orders")
+
+        sc.acc_rej = True if acc_rej == "accept" else False
+        sc.date = schedule_date if acc_rej == "accept" and schedule_date else None
+        sc.save()
+
+        messages.success(request, "Schedule Confirmation berhasil diperbarui.")
+
+    return redirect("list_exported_purchase_orders")
 
 
 import os

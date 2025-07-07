@@ -104,6 +104,8 @@ urlpatterns = [
     # send email
     path('send-exported-file-email/', views_ordered.send_exported_file_email, name='send_exported_file_email'),
     path('e-mrp/exported-files/', views_ordered.list_exported_purchase_orders, name='list_exported_purchase_orders'),
+    path('schedule/manual/', views_ordered.manual_schedule_conf, name='manual_schedule_conf'),
+    path('schedule/edit/<str:registered_no>/', views_ordered.edit_schedule_conf, name='edit_schedule_conf'),
     
     # airwaybil
     path('airwaybill/import/', views_airwaybill.import_airwaybill, name='import_airwaybill'),

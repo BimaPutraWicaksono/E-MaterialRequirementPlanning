@@ -17,6 +17,7 @@
           <th>VIEW</th> 
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th> 
+            <th>EDIT</th> 
             {% comment %} <th>DELETE</th>    {% endcomment %}
           {% endif %}
         </tr>
@@ -63,7 +64,6 @@
                   </form>
                 </td>
               {% endif %}
-
               <!-- TD 3: Delete -->
               {% comment %} {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
@@ -73,7 +73,13 @@
                   </button>
                 </td>
               {% endif %} {% endcomment %}
-
+              <td>
+                {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                  <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#manualModal{{ file.registered_no }}">
+                    {% if file.acc_rej is not None %} Edit {% else %} Add Confirmation{% endif %}
+                  </button>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         {% else %}
@@ -106,6 +112,90 @@
       <span class="badge bg-danger badge-fixed">Rejected</span> : The document has been <strong>rejected</strong> by the recipient.
     </p>
   </div>
+
+  {% comment %} modal add {% endcomment %}
+  {% for file in files %}
+  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+  <div class="modal fade" id="manualModal{{ file.registered_no }}" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <form method="POST" action="{% url 'manual_schedule_conf' %}">
+        {% csrf_token %}
+        <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
+        
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{% if file.acc_rej is not None %}Edit{% else %}Add{% endif %} Schedule Confirmation</h5>
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Status</label>
+              <select name="acc_rej" class="form-control" required>
+                <option value="">--Pilih--</option>
+                <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accept</option>
+                <option value="reject" {% if file.acc_rej == False %}selected{% endif %}>Reject</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Schedule Date (jika Accept)</label>
+              <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% comment %} modal edit {% endcomment %}
+  {% for file in files %}
+  {% if file.acc_rej is not None %}
+  <div class="modal fade" id="editModal{{ file.registered_no }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ file.registered_no }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form method="POST" action="{% url 'edit_schedule_conf' file.registered_no %}">
+        {% csrf_token %}
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Schedule Confirmation</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span>&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Status</label>
+              <select name="acc_rej" class="form-control" required>
+                <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accept</option>
+                <option value="reject" {% if not file.acc_rej %}selected{% endif %}>Reject</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Schedule Date (jika Accept)</label>
+              <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
 </div>
 
 <style>
