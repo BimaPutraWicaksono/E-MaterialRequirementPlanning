@@ -116,7 +116,7 @@ def requestItemDetail(request, pk):
         original_qty = int(float(item.result_average_round))
 
         if item.saved_qty is None:
-            item.input_value = ""                        # input kosong
+            item.input_value = original_qty              # input kosong
             item.qty_color   = ""                        # tanpa warna
         else:
             item.input_value = item.saved_qty            # default = qty tersimpan
