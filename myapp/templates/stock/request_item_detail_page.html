@@ -12,13 +12,13 @@
                 <thead class="table-secondary">
                     <tr>
                         <th>NO</th>
-                        <th>BUDGET REF. NO.</th>
-                        <th>DETAIL OF GOODS/SERVICES</th>
+                        <th>PR. NO.</th>
+                        <th>DETAIL OF GOODS</th>
                         <th>QTY</th>
-                        <th>ESTIMATED PRICE</th>
+                        <th>UNIT PRICE</th>
                         <th>AMOUNT</th>
-                        <th>DEADLINE</th>
-                        <th>Pilih</th>
+                        {% comment %} <th>DEADLINE</th> {% endcomment %}
+                        <th>CHECK</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,7 +36,7 @@
                         <td>{{ item.result_average_round|floatformat:-1 }}</td>
                         <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
                         <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
-                        <td>{{ item.deadline }}</td>
+                        {% comment %} <td>{{ item.deadline }}</td> {% endcomment %}
                         <td>
                         {% if item.loading_part_result.partdesk and item.loading_part_result.partdesk.partName %}
                             {% with item.loading_part_result.partdesk.partName.id as part_id %}

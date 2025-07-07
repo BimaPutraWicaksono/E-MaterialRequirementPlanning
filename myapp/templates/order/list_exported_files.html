@@ -18,7 +18,7 @@
           <th>VIEW</th> 
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th> 
-            <th>DELETE</th>   
+            {% comment %} <th>DELETE</th>    {% endcomment %}
           {% endif %}
         </tr>
       </thead>
@@ -70,14 +70,14 @@
               {% endif %}
 
               <!-- TD 3: Delete -->
-              {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+              {% comment %} {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
                   <button class="btn btn-sm btn-danger delete-file-btn"
                     data-filename="{{ file.name }}">
                     <i class="fas fa-trash"></i> Delete
                   </button>
                 </td>
-              {% endif %}
+              {% endif %} {% endcomment %}
 
             </tr>
           {% endfor %}

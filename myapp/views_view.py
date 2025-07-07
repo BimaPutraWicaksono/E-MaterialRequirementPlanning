@@ -45,7 +45,7 @@ def home(request):
         },
         # Grafik tahap dokumen (baru)
         'stage_data': {
-            'labels': ['Purchase Order', 'Schedule Conf', 'Air Waybill', 'Invoice'],
+            'labels': ['Purchase Order', 'Sent', 'Air Waybill', 'Invoice'],
             'counts': [count_po, count_sc, count_awb, count_invoice],
         },
         'stock_summary': stock_summary,

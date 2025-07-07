@@ -7,27 +7,29 @@
     <table class="table table-bordered mt-3" id="table_stock">
         <thead class="table-light text-center">
             <tr>
-                <th>Registered No</th>
-                <th>Departement</th>
-                <th>Section</th>
-                <th>Purchase By</th>
-                <th>Total Amount</th>
-                <th>AirWayBill No</th>
-                <th>Shipping Cost</th>
-                <th>Date</th>
-                <th>Detail</th>
+                <th>NO.</th>
+                <th>PURCHASE ORDER NO.</th>
+                <th>DEPARTEMENT</th>
+                <th>SECTION</th>
+                <th>PURCHASE BY</th>
+                {% comment %} <th>LAST AMOUNT</th> {% endcomment %}
+                {% comment %} <th>AIRWAY BILL</th> {% endcomment %}
+                {% comment %} <th>SHIPPING COST</th> {% endcomment %}
+                <th>DATE</th>
+                <th>ACTION</th>
             </tr>
         </thead>
         <tbody>
             {% for request in connected_requests %}
             <tr>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ request.registered_no }}</td>
                 <td>{{ request.departement.name }}</td>
                 <td>{{ request.section.name }}</td>
                 <td>{{ request.purchase_by }}</td>
-                <td>{{ request.total_amount }}</td>
-                <td>{{ request.airwaybill.airwaybill_no }}</td>
-                <td>{{ request.airwaybill.shipping_cost }}</td>
+                {% comment %} <td>{{ request.total_amount }}</td> {% endcomment %}
+                {% comment %} <td>{{ request.airwaybill.airwaybill_no }}</td> {% endcomment %}
+                {% comment %} <td>{{ request.airwaybill.shipping_cost }}</td> {% endcomment %}
                 <td>{{ request.airwaybill.date }}</td>
                 <td>
                     <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
