@@ -54,6 +54,7 @@ def requestItemDetail(request, pk):
     • Input '0' atau kosong ⇒ dianggap belum di‑input (stok dihapus jika ada).
     • Setelah Save, angka terakhir yang disimpan menjadi default.
     • Warna ANGKA: hijau (qty sama), merah (qty lebih kecil).
+    • Tombol "Save" berubah jadi "Complete" jika semua qty sudah sesuai.
     """
     purchase_request = get_object_or_404(PurchaseRequest, pk=pk)
 
@@ -108,7 +109,7 @@ def requestItemDetail(request, pk):
                     Stock.objects.create(
                         part=part,
                         quantity=qty_input,
-                        source_request_item_id=item.id  # ← ini juga benar
+                        source_request_item_id=item.id
                     )
             else:
                 # qty 0 ⇒ hapus stok jika ada
@@ -120,8 +121,9 @@ def requestItemDetail(request, pk):
         else:
             messages.success(request, "Stock Updated")
 
-        return redirect(request.path)   # Reload halaman
+        return redirect(request.path)
 
+    # Ambil semua stok yang tersimpan untuk PR ini
     stocks = Stock.objects.filter(
         source_request_item__in=[i.id for i in items]
     )
@@ -129,20 +131,27 @@ def requestItemDetail(request, pk):
 
     # Siapkan atribut bantu untuk template
     for item in items:
-        item.saved_qty = saved_qty.get(item.id)          # None jika belum ada
+        item.saved_qty = saved_qty.get(item.id)
         original_qty = int(float(item.result_average_round))
 
         if item.saved_qty is None:
-            item.input_value = original_qty              # input kosong
-            item.qty_color   = ""                        # tanpa warna
+            item.input_value = original_qty
+            item.qty_color   = ""
         else:
-            item.input_value = item.saved_qty            # default = qty tersimpan
+            item.input_value = item.saved_qty
             if item.saved_qty == original_qty:
-                item.qty_color = "text-success fw-bold"  # hijau tebal
+                item.qty_color = "text-success fw-bold"
             elif item.saved_qty < original_qty:
-                item.qty_color = "text-danger fw-bold"   # merah tebal
+                item.qty_color = "text-danger fw-bold"
             else:
-                item.qty_color = ""                      # (tidak terjadi; validasi)
+                item.qty_color = ""
+
+    # Cek apakah semua qty sudah sesuai (untuk tombol "Complete")
+    all_qty_complete = all(
+        item.saved_qty == int(float(item.result_average_round))
+        for item in items
+        if item.saved_qty is not None
+    )
 
     return render(
         request,
@@ -150,5 +159,6 @@ def requestItemDetail(request, pk):
         {
             'purchase_request': purchase_request,
             'request_items':    items,
+            'all_qty_complete': all_qty_complete,  
         }
     )

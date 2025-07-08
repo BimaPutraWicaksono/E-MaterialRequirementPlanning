@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container mt-4">
-    <h4>ADD STOCK BY PURCHASE ORDER: {{ purchase_request.registered_no }}</h4>
+    <h4>PURCHASE ORDER DELIVERY: {{ purchase_request.registered_no }}</h4>
 
     <form method="post">
         {% csrf_token %}
@@ -59,8 +59,13 @@
             </table>
         </div>
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-success">Save Stock</button>
+            <button type="submit"
+                    class="btn {% if all_qty_complete %}btn-secondary{% else %}btn-success{% endif %}"
+                    {% if all_qty_complete %}disabled{% endif %}>
+                {% if all_qty_complete %}Complete{% else %}Save{% endif %}
+            </button>
         </div>
+
     </form>
     {% comment %} <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3">Back to List</a> {% endcomment %}
 </div>
