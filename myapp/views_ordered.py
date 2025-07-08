@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice
+from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice, AirWayBill
 from .form import PurchaseRequestForm
 @login_required
 def purchaseOrd(request):
@@ -282,6 +282,7 @@ from email.header import decode_header
 import os
 import re
 from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
+from .models import AirWayBill, Invoice, PurchaseRequest, PurchaseOrder, ScheduleConf
 
 @login_required
 def list_exported_purchase_orders(request):
@@ -293,7 +294,6 @@ def list_exported_purchase_orders(request):
             mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
             mail.select("inbox")
 
-            # Ambil semua email hari ini
             result, data = mail.search(None, f'(SINCE "{today.strftime("%d-%b-%Y")}")')
 
             if result == "OK":
@@ -303,13 +303,10 @@ def list_exported_purchase_orders(request):
                         continue
 
                     msg = email.message_from_bytes(msg_data[0][1])
-
-                    # Decode subject
                     subject, enc = decode_header(msg["Subject"])[0]
                     if isinstance(subject, bytes):
                         subject = subject.decode(enc or "utf-8")
 
-                    # Ambil isi body
                     body = ""
                     if msg.is_multipart():
                         for part in msg.walk():
@@ -335,9 +332,8 @@ def list_exported_purchase_orders(request):
                         acc_rej = False
 
                     if acc_rej is None:
-                        continue  # Skip kalau tidak ada info accept/reject
+                        continue
 
-                    # Ambil registered_no dari subject
                     match = re.search(r"Purchase[_\s\-]?Order[_\-]?([\w\-]+)", subject, re.I)
                     if not match:
                         continue
@@ -350,9 +346,8 @@ def list_exported_purchase_orders(request):
                         continue
 
                     if ScheduleConf.objects.filter(registered_no=pr).exists():
-                        continue  # Sudah tercatat
+                        continue
 
-                    # Simpan ke database
                     ScheduleConf.objects.create(
                         registered_no=pr,
                         acc_rej=acc_rej,
@@ -372,8 +367,7 @@ def list_exported_purchase_orders(request):
 
         return redirect("list_exported_purchase_orders")
 
-    # -------------------------------
-    # BAGIAN TAMPILAN FILE PDF PO
+
     folder_path = os.path.join(settings.MEDIA_ROOT, "purchase_orders")
     file_list = [
         f for f in os.listdir(folder_path) if f.endswith(".pdf")
@@ -382,11 +376,11 @@ def list_exported_purchase_orders(request):
     file_urls = []
     for f in file_list:
         registered_no = f.replace("Purchase_Order_", "").replace(".pdf", "")
-
         supplier_name = "Unknown"
         acc_rej = None
         schedule_date = None
         po = None
+
         try:
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
             po = PurchaseOrder.objects.get(registered_no=pr)
@@ -410,15 +404,57 @@ def list_exported_purchase_orders(request):
             "schedule_date": schedule_date,
         })
 
-        invoice_qs = Invoice.objects.all().select_related('registered_no')
-        existing_invoices = {
-            inv.registered_no.registered_no: inv.invoice_no
-            for inv in invoice_qs
-        }
+    # 🔁 Mapping invoice & airwaybill untuk tampil di template
+    invoice_qs = Invoice.objects.all().select_related('registered_no')
+    existing_invoices = {
+        inv.registered_no.registered_no: inv.invoice_no
+        for inv in invoice_qs
+    }
+
+    awb_qs = AirWayBill.objects.all().select_related('registered_no')
+    existing_awb = {
+        awb.registered_no.registered_no: awb.airwaybill_no
+        for awb in awb_qs
+    }
+
     return render(request, "order/list_exported_files.html", {
         "files": file_urls,
         "existing_invoices": existing_invoices,
+        "existing_awb": existing_awb,
     })
+
+from .models import AirWayBill
+
+@login_required
+def manual_airwaybill(request):
+    if request.method == "POST":
+        reg_no = request.POST.get("registered_no").strip()
+        airwaybill_no = request.POST.get("airwaybill_no")
+        date = request.POST.get("date")
+        weight = request.POST.get("weight")
+        shipping_cost = request.POST.get("shipping_cost")
+
+        try:
+            pr = PurchaseRequest.objects.get(registered_no=reg_no)
+        except PurchaseRequest.DoesNotExist:
+            messages.error(request, f"Registered No '{reg_no}' tidak ditemukan.")
+            return redirect("list_exported_purchase_orders")
+
+        if AirWayBill.objects.filter(registered_no=pr).exists():
+            messages.warning(request, "AirWay Bill sudah pernah dibuat.")
+            return redirect("list_exported_purchase_orders")
+
+        AirWayBill.objects.create(
+            airwaybill_no=airwaybill_no,
+            registered_no=pr,
+            date=date,
+            weight=weight,
+            shipping_cost=shipping_cost
+        )
+        messages.success(request, "AirWay Bill berhasil disimpan.")
+
+    return redirect('list_exported_purchase_orders')
+
 
 @login_required
 def manual_schedule_conf(request):

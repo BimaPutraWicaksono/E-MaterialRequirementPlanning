@@ -107,7 +107,8 @@ urlpatterns = [
     path('schedule/manual/', views_ordered.manual_schedule_conf, name='manual_schedule_conf'),
     path('schedule/edit/<str:registered_no>/', views_ordered.edit_schedule_conf, name='edit_schedule_conf'),
     
-    path('invoice/manual/add/', views_ordered.manual_invoice_from_ordered, name='manual_invoice'),
+    path('manual-invoice/', views_ordered.manual_invoice_from_ordered, name='manual_invoice_from_ordered'),
+    path("e-mrp/manual-airwaybill/", views_ordered.manual_airwaybill, name="manual_airwaybill_from_ordered"),
     
     # airwaybil
     path('airwaybill/import/', views_airwaybill.import_airwaybill, name='import_airwaybill'),

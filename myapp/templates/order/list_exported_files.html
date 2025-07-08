@@ -2,10 +2,10 @@
 {% load humanize %}
 {% load user_tags %}
 {% load custom_filters %}
- 
+
 {% block content %}
 <div class="container mt-4">
-  <h4 class="justify-content-center d-flex">PURCHASE ORDER</h4>
+  <h2 class="d-flex justify-content-center">PURCHASE ORDER</h2>
 
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3" id="table_delivery">
@@ -15,11 +15,12 @@
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
           <th>STATUS</th>
-          <th>VIEW</th> 
+          <th>VIEW</th>
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-            <th>SEND</th> 
-            <th>EDIT</th> 
+            <th>SEND</th>
+            <th>EDIT</th>
             <th>INVOICE</th>
+            <th>AIRWAY BILL</th>
           {% endif %}
         </tr>
       </thead>
@@ -32,8 +33,7 @@
               <td class="align-middle">{{ file.supplier_name }}</td>
               <td class="align-middle text-center">
                 {% if file.acc_rej == True %}
-                  <span class="badge bg-success">Accepted</span> -
-                  {{ file.schedule_date|date:"d M Y" }}
+                  <span class="badge bg-success">Accepted</span> - {{ file.schedule_date|date:"d M Y" }}
                 {% elif file.acc_rej == False %}
                   <span class="badge bg-danger">Rejected</span>
                 {% elif file.email_sent %}
@@ -48,13 +48,14 @@
                   <i class="fas fa-eye"></i> View
                 </a>
               </td>
-              {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+
+              {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
                   <form class="d-inline send-email-form">
                     <input type="hidden" name="filename" value="{{ file.name }}">
                     <button type="submit"
-                      class="btn btn-sm {% if file.email_sent %}btn-warning{% else %}btn-success{% endif %}"
-                      {% if file.email_sent %}disabled{% endif %}>
+                            class="btn btn-sm {% if file.email_sent %}btn-warning{% else %}btn-success{% endif %}"
+                            {% if file.email_sent %}disabled{% endif %}>
                       <i class="fas fa-paper-plane"></i> Send
                     </button>
                   </form>
@@ -68,8 +69,17 @@
                   {% if file.registered_no in existing_invoices %}
                     {{ existing_invoices|get_item:file.registered_no }}
                   {% else %}
-                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#invoiceModal{{ file.registered_no }}">
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoiceModal{{ file.registered_no }}">
                       Add Invoice
+                    </button>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if file.registered_no in existing_awb %}
+                    {{ existing_awb|get_item:file.registered_no }}
+                  {% else %}
+                    <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#awbModal{{ file.registered_no }}">
+                      Input AWB
                     </button>
                   {% endif %}
                 </td>
@@ -78,159 +88,141 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="8" class="text-center">No data available.</td>
+            <td colspan="9" class="text-center">No data available.</td>
           </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
 
-  {% comment %} {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-    <form method="post" onsubmit="showLoading(this)" class="mb-3 d-flex justify-content-end">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="search_email">
-      <button type="submit" class="btn btn-primary" id="searchBtn">
-        <span id="btnText">Update Status</span>
-        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"
-              role="status" aria-hidden="true"></span>
-      </button>
-    </form>
-  {% endif %} {% endcomment %}
-
-  <div style="background-color: #ffffff; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+  <div class="bg-white p-3 border rounded">
     <p><strong>Status:</strong></p>
     <p>
-      <span class="badge bg-secondary badge-fixed">Not Sent</span> : The document has <strong>not been sent</strong> via email.<br>
-      <span class="badge bg-success badge-fixed">Sent</span> : The document has <strong>been sent</strong>, but <strong>no response</strong> has been received yet.<br>
-      <span class="badge bg-success badge-fixed">Accepted</span> : The document has been <strong>approved</strong> and a schedule date has been assigned.<br>
-      <span class="badge bg-danger badge-fixed">Rejected</span> : The document has been <strong>rejected</strong> by the recipient.
+      <span class="badge badge-fixed bg-secondary">Not Sent</span> : Belum dikirim.<br>
+      <span class="badge badge-fixed bg-success">Sent</span> : Sudah dikirim, belum ada respon.<br>
+      <span class="badge badge-fixed bg-success">Accepted</span> : Diterima dan dijadwalkan.<br>
+      <span class="badge badge-fixed bg-danger">Rejected</span> : Ditolak oleh penerima.
     </p>
   </div>
-</div>
-  {% comment %} modal add {% endcomment %}
+
+  {# ---------------- MODAL CONFIRMATION ---------------- #}
   {% for file in files %}
-  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-  <div class="modal fade" id="manualModal{{ file.registered_no }}" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <form method="POST" action="{% url 'manual_schedule_conf' %}">
-        {% csrf_token %}
-        <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
-        
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{% if file.acc_rej is not None %}Edit{% else %}Add{% endif %} Schedule Confirmation</h5>
-            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-          </div>
-
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Status</label>
-              <select name="acc_rej" class="form-control" required>
-                <option value="">--Pilih--</option>
-                <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accept</option>
-                <option value="reject" {% if file.acc_rej == False %}selected{% endif %}>Reject</option>
-              </select>
+    {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+      <div class="modal fade" id="manualModal{{ file.registered_no }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <form method="POST" action="{% url 'manual_schedule_conf' %}">
+            {% csrf_token %}
+            <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">{% if file.acc_rej %}Edit{% else %}Add{% endif %} - {{ file.registered_no }}</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label>Status</label>
+                  <select name="acc_rej" class="form-control" required>
+                    <option value="">--Pilih--</option>
+                    <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accept</option>
+                    <option value="reject" {% if file.acc_rej == False %}selected{% endif %}>Reject</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Schedule Date (jika Accept)</label>
+                  <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+              </div>
             </div>
-
-            <div class="form-group">
-              <label>Schedule Date (jika Accept)</label>
-              <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-          </div>
+          </form>
         </div>
-      </form>
-    </div>
-  </div>
-  {% endif %}
-  {% endfor %}
-
-  {% comment %} modal edit {% endcomment %}
-  {% for file in files %}
-  {% if file.acc_rej is not None %}
-  <div class="modal fade" id="editModal{{ file.registered_no }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ file.registered_no }}" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <form method="POST" action="{% url 'edit_schedule_conf' file.registered_no %}">
-        {% csrf_token %}
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Edit Schedule Confirmation</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span>&times;</span>
-            </button>
-          </div>
-
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Status</label>
-              <select name="acc_rej" class="form-control" required>
-                <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accept</option>
-                <option value="reject" {% if not file.acc_rej %}selected{% endif %}>Reject</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Schedule Date (jika Accept)</label>
-              <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Update</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-    {% comment %} modal add invoice {% endcomment %}
-    <div class="modal fade" id="invoiceModal{{ file.registered_no }}" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel{{ file.registered_no }}" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <form method="POST" action="{% url 'manual_invoice' %}">
-          {% csrf_token %}
-          <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
-
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Add Manual Invoice - {{ file.registered_no }}</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-
-            <div class="modal-body">
-              <div class="form-group">
-                <label>Invoice No</label>
-                <input type="text" name="invoice_no" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label>Date</label>
-                <input type="date" name="date" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label>Last Amount</label>
-                <input type="text" name="last_amount" class="form-control" required>
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-success">Save Invoice</button>
-            </div>
-          </div>
-        </form>
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
   {% endfor %}
 
+  {# ---------------- MODAL INVOICE ---------------- #}
+  {% for file in files %}
+    {% if not file.registered_no in existing_invoices %}
+      <div class="modal fade" id="invoiceModal{{ file.registered_no }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <form method="POST" action="{% url 'manual_invoice_from_ordered' %}">
+            {% csrf_token %}
+            <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Invoice - {{ file.registered_no }}</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label>Invoice No</label>
+                  <input type="text" name="invoice_no" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" name="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Last Amount</label>
+                  <input type="text" name="last_amount" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
 
+  {# ---------------- MODAL AWB ---------------- #}
+  {% for file in files %}
+    {% if not file.airwaybill_no %}
+      <div class="modal fade" id="awbModal{{ file.registered_no }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <form method="POST" action="{% url 'manual_airwaybill_from_ordered' %}">
+            {% csrf_token %}
+            <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">AirWay Bill - {{ file.registered_no }}</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label>AirWayBill No</label>
+                  <input type="text" name="airwaybill_no" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" name="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Weight</label>
+                  <input type="text" name="weight" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Shipping Cost</label>
+                  <input type="text" name="shipping_cost" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
 <style>
   .badge-fixed {
     display: inline-block;

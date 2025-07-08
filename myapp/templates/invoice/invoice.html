@@ -60,18 +60,18 @@
     </tbody>
   </table> 
   {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-    <div class="d-flex justify-content-end mt-2">
+    {% comment %} <div class="d-flex justify-content-end mt-2">
       <!-- Tombol Buka Modal -->
       <button class="btn btn-success" data-toggle="modal" data-target="#manualInvoiceModal">Add Invoice</button>
 
-      {% comment %} <form method="POST" onsubmit="showLoading(this)" class="d-inline">
+      <form method="POST" onsubmit="showLoading(this)" class="d-inline">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary" id="searchBtn">
           <span id="btnText">Update</span>
           <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
         </button>
-      </form> {% endcomment %}
-    </div>
+      </form> 
+    </div> {% endcomment %}
 
     <!-- Modal Manual Input Invoice -->
     <div class="modal fade" id="manualInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="manualInvoiceModalLabel" aria-hidden="true">
