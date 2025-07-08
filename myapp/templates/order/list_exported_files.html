@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load user_tags %}
+{% load custom_filters %}
  
 {% block content %}
 <div class="container mt-4">
@@ -18,7 +19,7 @@
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th> 
             <th>EDIT</th> 
-            {% comment %} <th>DELETE</th>    {% endcomment %}
+            <th>INVOICE</th>
           {% endif %}
         </tr>
       </thead>
@@ -28,7 +29,6 @@
             <tr>
               <td class="text-center align-middle">{{ forloop.counter }}</td>
               <td class="align-middle">{{ file.registered_no }}</td>
-              {% comment %} <td class="align-middle">{{ file.name }}</td> {% endcomment %}
               <td class="align-middle">{{ file.supplier_name }}</td>
               <td class="align-middle text-center">
                 {% if file.acc_rej == True %}
@@ -43,15 +43,11 @@
                   <span class="badge bg-secondary">Not Sent</span>
                 {% endif %}
               </td>
-
-              <!-- TD 1: View -->
               <td class="text-center align-middle">
                 <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
                   <i class="fas fa-eye"></i> View
                 </a>
               </td>
-
-              <!-- TD 2: Send -->
               {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
                   <form class="d-inline send-email-form">
@@ -63,36 +59,33 @@
                     </button>
                   </form>
                 </td>
-              {% endif %}
-              <!-- TD 3: Delete -->
-              {% comment %} {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-                <td class="text-center align-middle">
-                  <button class="btn btn-sm btn-danger delete-file-btn"
-                    data-filename="{{ file.name }}">
-                    <i class="fas fa-trash"></i> Delete
-                  </button>
-                </td>
-              {% endif %} {% endcomment %}
-              <td>
-                {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+                <td>
                   <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#manualModal{{ file.registered_no }}">
                     {% if file.acc_rej is not None %} Edit {% else %} Add Confirmation{% endif %}
                   </button>
-                {% endif %}
-              </td>
+                </td>
+                <td>
+                  {% if file.registered_no in existing_invoices %}
+                    {{ existing_invoices|get_item:file.registered_no }}
+                  {% else %}
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#invoiceModal{{ file.registered_no }}">
+                      Add Invoice
+                    </button>
+                  {% endif %}
+                </td>
+              {% endif %}
             </tr>
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="6" class="text-center">No data available.</td>
+            <td colspan="8" class="text-center">No data available.</td>
           </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
 
-  <!-- Tombol search email -->
-  {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
+  {% comment %} {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
     <form method="post" onsubmit="showLoading(this)" class="mb-3 d-flex justify-content-end">
       {% csrf_token %}
       <input type="hidden" name="action" value="search_email">
@@ -102,7 +95,8 @@
               role="status" aria-hidden="true"></span>
       </button>
     </form>
-  {% endif %}
+  {% endif %} {% endcomment %}
+
   <div style="background-color: #ffffff; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
     <p><strong>Status:</strong></p>
     <p>
@@ -112,7 +106,7 @@
       <span class="badge bg-danger badge-fixed">Rejected</span> : The document has been <strong>rejected</strong> by the recipient.
     </p>
   </div>
-
+</div>
   {% comment %} modal add {% endcomment %}
   {% for file in files %}
   {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
@@ -193,10 +187,49 @@
       </form>
     </div>
   </div>
+    {% comment %} modal add invoice {% endcomment %}
+    <div class="modal fade" id="invoiceModal{{ file.registered_no }}" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel{{ file.registered_no }}" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <form method="POST" action="{% url 'manual_invoice' %}">
+          {% csrf_token %}
+          <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
+
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Add Manual Invoice - {{ file.registered_no }}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Invoice No</label>
+                <input type="text" name="invoice_no" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label>Last Amount</label>
+                <input type="text" name="last_amount" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success">Save Invoice</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   {% endif %}
   {% endfor %}
 
-</div>
 
 <style>
   .badge-fixed {
@@ -279,6 +312,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+function showLoading(form){
+  const btn=form.querySelector("#searchBtn");
+  btn.querySelector("#btnText").textContent="Loading…";
+  btn.querySelector("#btnSpinner").classList.remove("d-none");
+  btn.disabled=true;
+}
 
 function showLoading(form){
   const btn=form.querySelector("#searchBtn");

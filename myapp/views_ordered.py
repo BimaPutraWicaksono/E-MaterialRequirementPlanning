@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section
+from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice
 from .form import PurchaseRequestForm
 @login_required
 def purchaseOrd(request):
@@ -410,7 +410,15 @@ def list_exported_purchase_orders(request):
             "schedule_date": schedule_date,
         })
 
-    return render(request, "order/list_exported_files.html", {"files": file_urls})
+        invoice_qs = Invoice.objects.all().select_related('registered_no')
+        existing_invoices = {
+            inv.registered_no.registered_no: inv.invoice_no
+            for inv in invoice_qs
+        }
+    return render(request, "order/list_exported_files.html", {
+        "files": file_urls,
+        "existing_invoices": existing_invoices,
+    })
 
 @login_required
 def manual_schedule_conf(request):
@@ -441,6 +449,43 @@ def manual_schedule_conf(request):
         messages.success(request, "Schedule Confirmation berhasil ditambahkan.")
     
     return redirect("list_exported_purchase_orders")
+
+from .models import Invoice, PurchaseRequest
+from django.contrib import messages
+from django.shortcuts import redirect
+
+@login_required
+def manual_invoice_from_ordered(request):
+    if request.method == 'POST':
+        invoice_no = request.POST.get('invoice_no', '').strip()
+        registered_no = request.POST.get('registered_no', '').strip()
+        date = request.POST.get('date')
+        last_amount_raw = request.POST.get('last_amount', '').replace('$', '').replace(',', '').strip()
+
+        try:
+            last_amount = float(last_amount_raw)
+        except (ValueError, TypeError):
+            last_amount = 0
+
+        try:
+            pr = PurchaseRequest.objects.get(registered_no=registered_no)
+        except PurchaseRequest.DoesNotExist:
+            messages.error(request, f"Registered No '{registered_no}' tidak ditemukan.")
+            return redirect("list_exported_purchase_orders")
+
+        if Invoice.objects.filter(invoice_no=invoice_no).exists():
+            messages.warning(request, f"Invoice '{invoice_no}' sudah ada.")
+        else:
+            Invoice.objects.create(
+                invoice_no=invoice_no,
+                registered_no=pr,
+                date=date,
+                last_amount=last_amount
+            )
+            messages.success(request, f"Invoice '{invoice_no}' berhasil disimpan.")
+
+    return redirect("list_exported_purchase_orders")
+
 
 @login_required
 def edit_schedule_conf(request, registered_no):
