@@ -23,6 +23,8 @@
         <th>REQUEST BY</th>
         <th>APPROVAL</th>
         <th>DETAIL</th>
+        <th>PO</th>
+        
         {% comment %} {% if request.user|has_group:"Karyawan" %}
           {% if not pr.approve_spv or pr.approve_spv is False %} {% endcomment %}
             <th>EDIT</th>
@@ -61,6 +63,12 @@
                 {% endif %}
               {% endif %}
             </td>
+            {% if request.user|has_group:"Supervisor" and pr.approve_spv and not pr.purchaseorder %}
+              <td>
+                <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add PO</button>
+              </td>
+            {% endif %}
+
 
             <!-- Edit -->
             <td class="text-center align-middle">
@@ -236,6 +244,38 @@
         .catch(error => console.error("Error fetching detail:", error));
     });
   });
+
+$(document).on("click", ".load-po-btn", function () {
+  const registeredNo = $(this).data("registered-no");
+  fetch(`/e-mrp/purchase-order/load-form/${registeredNo}/`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.html) {
+        $("#detail-container").html(data.html);
+      } else {
+        alert("Gagal memuat form PO.");
+      }
+    })
+    .catch(error => console.error("Error fetching PO form:", error));
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Cocokkan nama cookie
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
 </script>
+
 
 {% endblock %}

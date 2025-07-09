@@ -398,7 +398,7 @@ class ScheduleConf(models.Model):
     class Meta:
         db_table = 'schedule_conf' 
         
-
+ 
 class AirWayBill(models.Model):
     airwaybill_no = models.CharField(max_length=100, unique=True)
     registered_no = models.OneToOneField(PurchaseRequest, on_delete=models.CASCADE, unique=True)

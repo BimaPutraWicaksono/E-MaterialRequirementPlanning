@@ -227,6 +227,7 @@
       {% endif %}
     </form>
   {% if not created_po %}
+
     <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
       Submit Purchase Order
     </button>
@@ -272,4 +273,37 @@
   document.addEventListener("DOMContentLoaded", () => {
     toggleReason('spv');
   });
+
+$(document).on("submit", "#purchase-order-form", function (e) {
+  e.preventDefault(); // Hindari reload
+
+  const registeredNo = "{{ purchase_request.registered_no }}";  // dipastikan sudah ada dalam konteks
+  const form = document.getElementById("purchase-order-form");
+  const formData = new FormData(form);
+
+  fetch(`/e-mrp/purchase-order/create/${registeredNo}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Gagal menyimpan PO.");
+    return response.text();
+  })
+  .then(data => {
+    alert("PO berhasil disimpan!");
+    // Refresh ulang detail-nya (agar muncul data PO)
+    return fetch(`/e-mrp/purchase-order/load-form/${registeredNo}/`)
+  })
+  .then(response => response.json())
+  .then(data => {
+    $("#detail-container").html(data.html); // Replace with updated view
+  })
+  .catch(error => {
+    alert("Terjadi kesalahan: " + error.message);
+  });
+});
+
 </script>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4>Create Purchase Order for {{ purchase_request.registered_no }}</h4>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      {{ form.as_p }}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit PO</button>
+    <a href="{% url 'purchaseReq' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

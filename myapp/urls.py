@@ -77,6 +77,11 @@ urlpatterns = [
     path('purchase-request/edit/<str:registered_no>/', views_order.purchase_request_edit, name='purchase_request_edit'),
     path('ajax/get-loading-parts-edit/', views_order.ajax_get_loading_parts_edit, name='ajax_get_loading_parts_edit'),
     
+    # buat po di pr
+    path('purchase-order/create/<str:registered_no>/', views_order.create_purchase_order, name='create_purchase_order'),
+    path('purchase-order/load-form/<str:registered_no>/', views_order.ajax_load_po_form, name='ajax_load_po_form'),
+
+    
     # purchase order
     path('purchase-order/', views_ordered.purchaseOrd, name='purchaseOrd'),
     path('purchase-order/detail/<str:registered_no>/', views_ordered.purchase_order_detail, name='purchase_order_detail'),

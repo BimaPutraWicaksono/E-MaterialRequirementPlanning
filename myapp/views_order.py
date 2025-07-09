@@ -350,3 +350,78 @@ def ajax_get_loading_parts_edit(request):
             'existing_details': existing_details
         })
         return JsonResponse({'table': table_html})
+    
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import PurchaseRequest, RequestItem, PurchaseOrder
+from .form import PurchaseOrderForm
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def create_purchase_order(request, registered_no):
+    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+
+    if not purchase_request.approve_spv:
+        messages.error(request, "Purchase Request belum disetujui oleh SPV.")
+        return redirect('purchaseReq')
+
+    if PurchaseOrder.objects.filter(registered_no=purchase_request).exists():
+        messages.warning(request, "Purchase Order sudah dibuat untuk registered_no ini.")
+        return redirect('purchaseReq')
+
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request)
+    earliest_deadline = request_items.exclude(deadline=None).order_by('deadline').first()
+    initial_delivery = earliest_deadline.deadline if earliest_deadline else None
+
+    if request.method == 'POST':
+        form = PurchaseOrderForm(request.POST)
+        if form.is_valid():
+            po = form.save(commit=False)
+            po.registered_no = purchase_request
+            po.created_by = request.user
+            if not po.delivery:
+                po.delivery = initial_delivery
+            po.save()
+            messages.success(request, f"Purchase Order untuk {registered_no} berhasil dibuat.")
+            return redirect('purchaseReq')
+        else:
+            messages.error(request, "Terdapat kesalahan pada form.")
+    else:
+        form = PurchaseOrderForm(initial={'delivery': initial_delivery})
+
+    return render(request, 'order/create_po_form.html', {
+        'form': form,
+        'purchase_request': purchase_request,
+    })
+
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+
+@login_required
+def ajax_load_po_form(request, registered_no):
+    purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+
+    if not purchase_request.approve_spv:
+        return JsonResponse({'error': 'Purchase Request belum disetujui oleh SPV.'}, status=400)
+
+    created_po = PurchaseOrder.objects.filter(registered_no=purchase_request).first()
+    request_items = RequestItem.objects.filter(purchase_request=purchase_request)
+
+    earliest_deadline = request_items.exclude(deadline=None).order_by('deadline').first()
+    initial_delivery = earliest_deadline.deadline if earliest_deadline else None
+
+    if created_po:
+        po_form = None
+    else:
+        po_form = PurchaseOrderForm(initial={'delivery': initial_delivery})
+
+    html = render_to_string('order/partials/purchase_order_detail.html', {
+        'purchase_request': purchase_request,
+        'request_items': request_items,
+        'created_po': created_po,
+        'po_form': po_form,
+        'request': request,
+    })
+    return JsonResponse({'html': html})
