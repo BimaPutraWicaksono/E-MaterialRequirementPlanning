@@ -11,7 +11,7 @@
               <th>PURCHASE ORDER NO.</th>
               <th>DEPARTEMENT</th>
               <th>SECTION</th>
-              <th>PURCHASE BY</th>
+              {% comment %} <th>PURCHASE BY</th> {% endcomment %}
               <th>DATE</th>
               <th>STATUS</th>  {# kolom baru #}
               <th>ACTION</th>
@@ -24,7 +24,7 @@
               <td>{{ request.registered_no }}</td>
               <td>{{ request.departement.name }}</td>
               <td>{{ request.section.name }}</td>
-              <td>{{ request.purchase_by }}</td>
+              {% comment %} <td>{{ request.purchase_by }}</td> {% endcomment %}
               <td>{{ request.airwaybill.date }}</td>
               <td class="text-center">
                   {% if request.stock_status == 'done_exact' %}
@@ -36,7 +36,7 @@
                   {% endif %}
               </td>
               <td>
-                  <a href="{% url 'request_item_detail' request.id %}" class="btn btn-primary btn-sm">Detail</a>
+                  <a href="{% url 'request_item_detail' request.id %}" class="btn btn-info btn-sm">Detail</a>
               </td>
           </tr>
           {% endfor %}

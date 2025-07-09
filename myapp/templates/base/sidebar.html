@@ -98,7 +98,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice add_stock' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice add_stock  request_item_detail' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -180,7 +180,7 @@
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'import_invoice' %}active{% endif %}">
               <a href="{% url 'import_invoice' %}" class="nav-link">
-                <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                <i class="nav-icon fas fa-file-invoice-dollar"></i> 
                 <p>Invoice</p>
               </a>
             </li>
@@ -196,22 +196,22 @@
         </li>
         {% endif %}
         <!-- About Us -->
-        <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about master_departement_section supplier_list shipped_list ' %}menu-open{% endif %}">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-info-circle"></i>
-            <p>
-              Data Management
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">  
-            <li class="nav-item {% if request.resolver_match.url_name == 'daftar_akun' %}active{% endif %}">
-              <a href="{% url 'daftar_akun' %}" class="nav-link">
-                <i class="nav-icon fas fa-user-cog"></i>
-                <p>Account</p>
-              </a>
-            </li>
-            {% if request.user|has_group:"Admin" %}
+        {% if request.user|has_group:"Admin" %}
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'daftar_akun about master_departement_section supplier_list shipped_list ' %}menu-open{% endif %}">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-info-circle"></i>
+              <p>
+                Data Management
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">  
+              <li class="nav-item {% if request.resolver_match.url_name == 'daftar_akun' %}active{% endif %}">
+                <a href="{% url 'daftar_akun' %}" class="nav-link">
+                  <i class="nav-icon fas fa-user-cog"></i>
+                  <p>Account</p>
+                </a>
+              </li>
               <li class="nav-item {% if request.resolver_match.url_name == 'master_departement_section' %}active{% endif %}">
                 <a href="{% url 'master_departement_section' %}" class="nav-link">
                   <i class="nav-icon fas fa-sitemap"></i>
@@ -236,9 +236,9 @@
                   <p>Purchase Request</p>
                 </a>
               </li>
-            {% endif %}
-          </ul>
-        </li>
+            </ul>
+          </li>
+        {% endif %}
         <li class="sidebar-logout">
           <a href="javascript:void(0);" class="nav-link text-danger" id="logoutButton">
             <i class="fas fa-sign-out-alt ml-2 mr-2"></i> Logout

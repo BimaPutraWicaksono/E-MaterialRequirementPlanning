@@ -6,7 +6,6 @@
 {% block content %}
 <div class="container mt-4">
   <h2 class="d-flex justify-content-center">PURCHASE ORDER</h2>
-
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3" id="table_delivery">
       <thead class="table-light text-center">
@@ -15,13 +14,13 @@
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
           <th>STATUS</th>
+          <th>INVOICE</th>
+          <th>AIRWAY BILL</th>
           <th>VIEW</th>
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th>
             <th>EDIT</th>
           {% endif %}
-            <th>INVOICE</th>
-            <th>AIRWAY BILL</th>
         </tr>
       </thead>
       <tbody>
@@ -43,12 +42,39 @@
                   <span class="badge bg-secondary">Not Sent</span>
                 {% endif %}
               </td>
+              <td>
+                {% if file.registered_no in existing_invoices %}
+                  {{ existing_invoices|get_item:file.registered_no }}
+                    <a href="{% url 'invoice_detail' file.registered_no %}" class="ml-2" title="Detail">
+                      <i class="fas fa-external-link-alt text-primary"></i>
+                    </a>
+                  {% else %}
+                  {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoiceModal{{ file.registered_no }}">
+                      Input
+                    </button>
+                  {% endif %}
+                {% endif %}
+              </td>
+              <td>
+                {% if file.registered_no in existing_awb %}
+                  {{ existing_awb|get_item:file.registered_no }}
+                    <a href="{% url 'airwaybill_detail' file.registered_no %}" class="ml-2" title="Detail">
+                      <i class="fas fa-external-link-alt text-primary"></i>
+                    </a>
+                {% else %}
+                  {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#awbModal{{ file.registered_no }}">
+                      Input
+                    </button>
+                  {% endif %}
+                {% endif %}
+              </td>
               <td class="text-center align-middle">
-                <a href="{{ file.url }}" class="btn btn-sm btn-primary" target="_blank">
-                  <i class="fas fa-eye"></i> View
+                <a href="{{ file.url }}" class="btn btn-sm btn-info" target="_blank">
+                  Detail
                 </a>
               </td>
-
               {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
                   <form class="d-inline send-email-form">
@@ -65,29 +91,7 @@
                     {% if file.acc_rej is not None %} Edit {% else %} Add Confirmation{% endif %}
                   </button>
                 </td>
-                {% endif %}
-                <td>
-                  {% if file.registered_no in existing_invoices %}
-                    {{ existing_invoices|get_item:file.registered_no }}
-                  {% else %}
-                    {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
-                      <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#invoiceModal{{ file.registered_no }}">
-                        Add Invoice
-                      </button>
-                    {% endif %}
-                  {% endif %}
-                </td>
-                <td>
-                  {% if file.registered_no in existing_awb %}
-                    {{ existing_awb|get_item:file.registered_no }}
-                  {% else %}
-                    {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
-                      <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#awbModal{{ file.registered_no }}">
-                        Input AWB
-                      </button>
-                    {% endif %}
-                  {% endif %}
-                </td>
+              {% endif %}
             </tr>
           {% endfor %}
         {% else %}

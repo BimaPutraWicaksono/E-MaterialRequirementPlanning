@@ -1,90 +1,100 @@
-{% extends 'base.html' %}
-{% load humanize %}
-{% block content %}
+{% extends 'base.html' %} {% load humanize %} {% block content %}
 
 <div class="container mt-4">
-    <h4>PURCHASE ORDER DELIVERY: {{ purchase_request.registered_no }}</h4>
+  <h4>PURCHASE ORDER DELIVERY: {{ purchase_request.registered_no }}</h4>
 
-    <form method="post">
-        {% csrf_token %}
-        <div class="table-responsive mt-3">
-            <table class="table table-bordered">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>NO</th>
-                        <th>PR. NO.</th>
-                        <th>DETAIL OF GOODS</th>
-                        <th>QTY</th>
-                        <th>UNIT PRICE</th>
-                        <th>AMOUNT</th>
-                        {% comment %} <th>DEADLINE</th> {% endcomment %}
-                        <th>REAL QTY</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in request_items %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.budget_ref_no }}</td>
-                        <td>
-                            {% if item.loading_part_result %}
-                                {{ item.loading_part_result.terminal }} - {{ item.loading_part_result.part_name }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>{{ item.result_average_round|floatformat:-1 }}</td>
-                        <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
-                        <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
-                        {% comment %} <td>{{ item.deadline }}</td> {% endcomment %}
-                        <td>
-                            <div class="d-flex flex-column" style="max-width: 110px;">
-                                <input type="number"
-                                    name="input_qty_{{ item.id }}"
-                                    class="form-control {{ item.qty_color }}"
-                                    min="0"
-                                    max="{{ item.result_average_round|floatformat:'0' }}"
-                                    value="{{ item.input_value }}">
-                            </div>
-                        </td>
-
-
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center">No data available.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="d-flex justify-content-end">
-            <button type="submit"
-                    class="btn {% if all_qty_complete %}btn-secondary{% else %}btn-success{% endif %}"
-                    {% if all_qty_complete %}disabled{% endif %}>
-                {% if all_qty_complete %}Complete{% else %}Save{% endif %}
-            </button>
-        </div>
-
-    </form>
-    {% comment %} <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3">Back to List</a> {% endcomment %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="table-responsive mt-3">
+      <table class="table table-bordered">
+        <thead class="table-secondary">
+          <tr>
+            <th>NO</th>
+            <th>PR. NO.</th>
+            <th>DETAIL OF GOODS</th>
+            <th>QTY</th>
+            <th>UNIT PRICE</th>
+            <th>AMOUNT</th>
+            {% comment %}
+            <th>DEADLINE</th>
+            {% endcomment %}
+            <th>REAL QTY</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in request_items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.budget_ref_no }}</td>
+            <td>
+              {% if item.loading_part_result %} {{item.loading_part_result.terminal }} - {{item.loading_part_result.part_name }} {% else %} - {% endif %}
+            </td>
+            <td>{{ item.result_average_round|floatformat:-1 }}</td>
+            <td>${{ item.estimated_price|floatformat:"2"|intcomma }}</td>
+            <td>${{ item.amount|floatformat:"2"|intcomma }}</td>
+            {% comment %}
+            <td>{{ item.deadline }}</td>
+            {% endcomment %}
+            <td>
+              <div class="d-flex flex-column" style="max-width: 110px">
+                <input
+                  type="number"
+                  name="input_qty_{{ item.id }}"
+                  class="form-control {{ item.qty_color }}"
+                  min="0"
+                  max="{{ item.result_average_round|floatformat:'0' }}"
+                  value="{{ item.input_value }}"
+                />
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">No data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn {% if all_qty_complete %}btn-secondary{% else %}btn-success{% endif %}" {% if all_qty_complete %}disabled{% endif %}>
+        {% if all_qty_complete %}Complete{% else %}Save{% endif %}
+      </button>
+    </div>
+  </form>
+  {% comment %}
+  <a href="{% url 'add_stock' %}" class="btn btn-secondary mt-3"
+    >Back to List</a
+  >
+  {% endcomment %}
 </div>
 
 <!-- Modal Sukses -->
-<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div
+  class="modal fade"
+  id="successModal"
+  tabindex="-1"
+  role="dialog"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
         <h5 class="modal-title">Sukses</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+        <button
+          type="button"
+          class="close text-white"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        Stock Updated
-      </div>
+      <div class="modal-body">Stock Updated</div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-success" data-dismiss="modal">OK</button>
+        <button type="button" class="btn btn-success" data-dismiss="modal">
+          OK
+        </button>
       </div>
     </div>
   </div>
@@ -93,22 +103,19 @@
 {% if messages %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    {% for message in messages %}
-        {% if message.tags == 'success' %}
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ message }}',
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
-            });
-        {% endif %}
-    {% endfor %}
-});
+  document.addEventListener('DOMContentLoaded', () => {
+      {% for message in messages %}
+          {% if message.tags == 'success' %}
+              Swal.fire({
+                  icon: 'success',
+                  title: 'Success!',
+                  text: '{{ message }}',
+                  confirmButtonColor: '#3085d6',
+                  confirmButtonText: 'OK'
+              });
+          {% endif %}
+      {% endfor %}
+  });
 </script>
-{% endif %}
-
-
-
+{% endif %} 
 {% endblock %}
