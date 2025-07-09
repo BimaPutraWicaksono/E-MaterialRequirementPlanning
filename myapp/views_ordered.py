@@ -1,10 +1,27 @@
-from django.contrib.auth.decorators import login_required
+import os
+import re
+import imaplib
+import email
+from email.header import decode_header
+from datetime import datetime
+
+from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from .models import PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice, AirWayBill
-from .form import PurchaseRequestForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.mail import EmailMessage
+from django.http import (HttpResponse, JsonResponse, HttpResponseNotAllowed,)
+from django.shortcuts import (render, redirect, get_object_or_404)
+from django.template.loader import render_to_string, get_template
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from xhtml2pdf import pisa
+# Forms
+from .form import ( ShippedForm, PurchaseRequestForm, SupplierForm, PurchaseOrderForm)
+# Models
+from .models import ( Shipped, PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice, AirWayBill, PurchaseOrder, ScheduleConf, Supplier)
+
+
 @login_required
 def purchaseOrd(request):
     user_departement = request.user.departement
@@ -87,17 +104,6 @@ def purchaseOrd(request):
         'po_registered_nos': po_registered_nos,
         'purchase_orders': purchase_orders,
     })
-
-
-from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
-from .models import PurchaseRequest, RequestItem, PurchaseOrder
-from .form import PurchaseOrderForm
-from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
-from .models import PurchaseRequest, RequestItem, PurchaseOrder
-from .form import PurchaseOrderForm
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def purchase_order_detail(request, registered_no):
@@ -216,16 +222,6 @@ def approve_purchase_order(request, registered_no):
             messages.success(request, "Factory Manager approval updated.")
 
         return redirect('purchaseOrd')
-    
-import os
-from django.conf import settings
-from xhtml2pdf import pisa
-from django.template.loader import get_template
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from .models import PurchaseRequest
-
-from django.shortcuts import redirect
 
 def export_purchase_order_pdf(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
@@ -258,31 +254,6 @@ def export_purchase_order_pdf(request, registered_no):
     # Redirect ke halaman list setelah sukses
     return redirect('list_exported_files')
 
-# views_ordered.py
-import os
-import imaplib                                           
-import email                                              
-from email.header import decode_header                    
-import re                                                 
-from datetime import datetime                             
-
-from django.conf import settings
-from django.contrib import messages                       
-from django.contrib.auth.decorators import login_required 
-from django.shortcuts import render, redirect
-
-from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.conf import settings
-from datetime import datetime
-import imaplib
-import email
-from email.header import decode_header
-import os
-import re
-from .models import PurchaseRequest, PurchaseOrder, ScheduleConf
-from .models import AirWayBill, Invoice, PurchaseRequest, PurchaseOrder, ScheduleConf
 
 @login_required
 def list_exported_purchase_orders(request):
@@ -423,7 +394,7 @@ def list_exported_purchase_orders(request):
         "existing_awb": existing_awb,
     })
 
-from .models import AirWayBill
+
 
 @login_required
 def manual_airwaybill(request):
@@ -486,10 +457,6 @@ def manual_schedule_conf(request):
     
     return redirect("list_exported_purchase_orders")
 
-from .models import Invoice, PurchaseRequest
-from django.contrib import messages
-from django.shortcuts import redirect
-
 @login_required
 def manual_invoice_from_ordered(request):
     if request.method == 'POST':
@@ -545,12 +512,6 @@ def edit_schedule_conf(request, registered_no):
     return redirect("list_exported_purchase_orders")
 
 
-import os
-from django.conf import settings
-from django.http import JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import PurchaseRequest, PurchaseOrder
 
 @login_required
 @require_POST
@@ -588,16 +549,6 @@ def delete_exported_file(request):
         return JsonResponse({'success': False, 'error': 'File not found'})
 
 # send email
-import os
-from django.conf import settings
-from django.core.mail import EmailMessage
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from .models import PurchaseRequest, PurchaseOrder  # pastikan import model
-from django.utils import timezone
-
 
 @login_required
 @require_POST
@@ -659,13 +610,6 @@ def send_exported_file_email(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from .models import Supplier
-from .form import SupplierForm
-
 def supplier_list(request):
     suppliers = Supplier.objects.all()
     return render(request, 'order/supplier/supplier.html', {'suppliers': suppliers})
@@ -699,8 +643,7 @@ def supplier_delete(request, pk):
     return render(request, 'order/supplier/supplier_confirm_delete.html', {'supplier': supplier})
 
 # shippedfrom django.shortcuts import render, redirect, get_object_or_404
-from .models import Shipped
-from .form import ShippedForm
+
 
 def shipped_list(request):
     shippeds = Shipped.objects.all()
