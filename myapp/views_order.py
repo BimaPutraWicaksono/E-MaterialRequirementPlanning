@@ -1,7 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from datetime import date, timedelta
+
 from django.contrib import messages
-from myapp.models import Departement, Section
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
+
+from .form import PurchaseRequestForm, PurchaseRequestEditForm
+from .models import (PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section)
+from myapp.models import Departement
+
 
 @login_required()
 def master_departement_section(request):
@@ -83,20 +92,6 @@ def delete_section(request, id):
     section.delete()
     messages.success(request, 'Section berhasil dihapus.')
     return redirect('master_departement_section')
-
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.db.models import Q
-from .models import PurchaseRequest, RequestItem, LoadingPartResult
-from .form import PurchaseRequestForm
-
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section
-from .form import PurchaseRequestForm
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 
 @login_required
 def purchaseReq(request):
@@ -195,10 +190,6 @@ def purchaseReq(request):
         'user_departement': user_departement,
     })
 
-
-from django.template.loader import render_to_string
-from datetime import date, timedelta
-
 @login_required
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
@@ -268,9 +259,6 @@ def approve_purchase_request(request, registered_no):
             messages.success(request, "Supervisor approval updated.")
         return redirect('purchaseReq')
 
-from django.shortcuts import get_object_or_404, redirect
-from .models import PurchaseRequest
-
 def delete_purchase_request(request, registered_no):
     if request.method == "POST":
         pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
@@ -278,10 +266,6 @@ def delete_purchase_request(request, registered_no):
         messages.success(request, f"Purchase Request {registered_no} berhasil dihapus.")
     return redirect('purchaseReq')  # ganti sesuai nama path untuk halaman PR utama
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
-from .models import RequestItem
-from .form import PurchaseRequestForm, PurchaseRequestEditForm
 
 def purchase_request_edit(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
