@@ -31,7 +31,7 @@
           <td class="text-center">{{ user.groups.all|join:", " }}</td>
           <td class="text-center">{{ user.last_login }}</td>
           <td class="text-center">
-            {% if request.user.username == user.username and request.user.groups.first == user.groups.first %}
+            {% comment %} {% if request.user.username == user.username and request.user.groups.first == user.groups.first %} {% endcomment %}
               <button
                 class="btn btn-sm btn-success mx-2"
                 onclick="editAkun('{{ user.id }}', '{{ user.username }}', '{{ user.groups.first.id }}', '{{ user.departement.id|default:"" }}')"
@@ -44,9 +44,9 @@
               >
                 Delete
               </button>
-            {% else %}
+            {% comment %} {% else %}
               <span class="text-muted">-</span>
-            {% endif %}
+            {% endif %} {% endcomment %}
           </td>
 
         </tr>

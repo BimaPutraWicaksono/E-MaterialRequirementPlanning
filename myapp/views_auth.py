@@ -125,3 +125,27 @@ def hapus_akun(request):
         return redirect('daftar_akun')
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import redirect
+from django.contrib import messages
+
+@login_required
+def update_user_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if username:
+            user.username = username
+
+        if password:
+            user.password = make_password(password)
+
+        user.save()
+        messages.success(request, "Akun berhasil diperbarui.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    return redirect('/')

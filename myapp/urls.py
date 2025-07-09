@@ -18,6 +18,7 @@ urlpatterns = [
     # login
     path('login/', views_auth.user_login, name='login'),
     path('logout/', views_auth.user_logout, name='logout'),
+    path('update-user-profile/', views_auth.update_user_profile, name='update_user_profile'),
     
     #home
     path('home/', views_view.home, name='home'),

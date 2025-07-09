@@ -98,7 +98,7 @@
         {% endif %}
         {% if not request.user|has_group:"Admin" %}
           <!-- Order -->
-          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill import_invoice add_stock  request_item_detail' %}menu-open{% endif %}">
+          <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'purchaseReq purchaseOrd list_exported_files scheduleConf import_airwaybill airwaybill_detail import_invoice invoice_detail add_stock  request_item_detail' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-store"></i>
             <p>
@@ -172,20 +172,20 @@
                 </a>
               </li>
             {% endif %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'import_airwaybill' %}active{% endif %}">
+            <li class="nav-item {% if request.resolver_match.url_name in 'import_airwaybill airwaybill_detail' %}active{% endif %}">
               <a href="{% url 'import_airwaybill' %}" class="nav-link">
                 <i class="nav-icon fas fa-dolly-flatbed"></i>
                 <p>Airway Bill</p>
               </a>
             </li>
-            <li class="nav-item {% if request.resolver_match.url_name == 'import_invoice' %}active{% endif %}">
+            <li class="nav-item {% if request.resolver_match.url_name in 'import_invoice invoice_detail' %}active{% endif %}">
               <a href="{% url 'import_invoice' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-invoice-dollar"></i> 
                 <p>Invoice</p>
               </a>
             </li>
             {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
-            <li class="nav-item {% if request.resolver_match.url_name == 'add_stock' %}active{% endif %}">
+            <li class="nav-item {% if request.resolver_match.url_name in 'add_stock  request_item_detail' %}active{% endif %}">
               <a href="{% url 'add_stock' %}" class="nav-link">
                 <i class="nav-icon fas fa-boxes"></i>
                 <p>Delivery</p>

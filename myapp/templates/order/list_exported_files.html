@@ -13,7 +13,8 @@
           <th>NO</th>
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
-          <th>STATUS</th>
+          <th>DELIVERY</th>
+          <th>DATE</th>
           <th>INVOICE</th>
           <th>AIRWAY BILL</th>
           <th>VIEW</th>
@@ -32,14 +33,22 @@
               <td class="align-middle">{{ file.supplier_name }}</td>
               <td class="align-middle text-center">
                 {% if file.acc_rej == True %}
-                  <span class="badge bg-success">Accepted</span> - {{ file.schedule_date|date:"d M Y" }}
+                  <span class="badge bg-success">Accepted</span>
                 {% elif file.acc_rej == False %}
                   <span class="badge bg-danger">Rejected</span>
                 {% elif file.email_sent %}
-                  <span class="badge bg-success">Sent</span><br>
-                  {{ file.email_sent_at|date:"d M Y H:i" }}
+                  <span class="badge bg-success">Sent</span>
                 {% else %}
                   <span class="badge bg-secondary">Not Sent</span>
+                {% endif %}
+              </td>
+              <td class="align-middle text-center">
+                {% if file.acc_rej == True %}
+                  {{ file.schedule_date|date:"d M Y" }}
+                {% elif file.email_sent %}
+                  {{ file.email_sent_at|date:"d M Y H:i" }}
+                {% else %}
+                  -
                 {% endif %}
               </td>
               <td>
@@ -96,7 +105,7 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="9" class="text-center">No data available.</td>
+            <td colspan="10" class="text-center">No data available.</td>
           </tr>
         {% endif %}
       </tbody>
