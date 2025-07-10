@@ -20,7 +20,7 @@
           <th>VIEW</th>
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th>
-            <th>EDIT</th>
+            <th>CONFIRMATION</th>
           {% endif %}
         </tr>
       </thead>
@@ -29,20 +29,20 @@
           {% for file in files %}
             <tr>
               <td class="text-center align-middle">{{ forloop.counter }}</td>
-              <td class="align-middle">{{ file.registered_no }}</td>
-              <td class="align-middle">{{ file.supplier_name }}</td>
-              <td class="align-middle text-center">
+              <td class="text-center align-middle">{{ file.registered_no }}</td>
+              <td class="text-center align-middle">{{ file.supplier_name }}</td>
+              <td class="text-center align-middle">
                 {% if file.acc_rej == True %}
-                  <span class="badge bg-success">Accepted</span>
+                  <span class="badge badge-fixed bg-success">Accepted</span>
                 {% elif file.acc_rej == False %}
-                  <span class="badge bg-danger">Rejected</span>
+                  <span class="badge badge-fixed bg-danger">Rejected</span>
                 {% elif file.email_sent %}
-                  <span class="badge bg-success">Sent</span>
+                  <span class="badge badge-fixed bg-success">Sent</span>
                 {% else %}
-                  <span class="badge bg-secondary">Not Sent</span>
+                  <span class="badge badge-fixed bg-secondary">Not Sent</span>
                 {% endif %}
               </td>
-              <td class="align-middle text-center">
+              <td class="text-center align-middle">
                 {% if file.acc_rej == True %}
                   {{ file.schedule_date|date:"d M Y" }}
                 {% elif file.email_sent %}
@@ -51,7 +51,7 @@
                   -
                 {% endif %}
               </td>
-              <td>
+              <td class="text-center align-middle">
                 {% if file.registered_no in existing_invoices %}
                   {{ existing_invoices|get_item:file.registered_no }}
                     <a href="{% url 'invoice_detail' file.registered_no %}" class="ml-2" title="Detail">
@@ -65,7 +65,7 @@
                   {% endif %}
                 {% endif %}
               </td>
-              <td>
+              <td class="text-center align-middle">
                 {% if file.registered_no in existing_awb %}
                   {{ existing_awb|get_item:file.registered_no }}
                     <a href="{% url 'airwaybill_detail' file.registered_no %}" class="ml-2" title="Detail">
@@ -78,7 +78,7 @@
                     </button>
                   {% endif %}
                 {% endif %}
-              </td>
+              </td class="text-center align-middle">
               <td class="text-center align-middle">
                 <a href="{{ file.url }}" class="btn btn-sm btn-info" target="_blank">
                   Detail
@@ -86,18 +86,21 @@
               </td>
               {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
                 <td class="text-center align-middle">
-                  <form class="d-inline send-email-form">
+                  <form method="POST" action="{% url 'send_exported_file_email' %}" class="send-email-form d-inline">
+                    {% csrf_token %}
                     <input type="hidden" name="filename" value="{{ file.name }}">
-                    <button type="submit"
-                            class="btn btn-sm {% if file.email_sent %}btn-warning{% else %}btn-success{% endif %}"
+                    <button type="button"
+                            class="btn btn-sm btn-send-confirm {% if file.email_sent %}btn-secondary disabled{% else %}btn-success{% endif %}"
                             {% if file.email_sent %}disabled{% endif %}>
-                      <i class="fas fa-paper-plane"></i> Send
+                      <i class="fas fa-paper-plane"></i>
+                      <span class="btn-text">{% if file.email_sent %}Sent{% else %}Send{% endif %}</span>
+                      <span class="spinner-border spinner-border-sm d-none btn-spinner" role="status" aria-hidden="true"></span>
                     </button>
                   </form>
                 </td>
-                <td>
-                  <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#manualModal{{ file.registered_no }}">
-                    {% if file.acc_rej is not None %} Edit {% else %} Add Confirmation{% endif %}
+                <td class="text-center align-middle">
+                  <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#manualModal{{ file.registered_no }}">
+                    {% if file.acc_rej is not None %} Edit {% else %} Input {% endif %}
                   </button>
                 </td>
               {% endif %}
@@ -132,26 +135,30 @@
             <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">{% if file.acc_rej %}Edit{% else %}Add{% endif %} - {{ file.registered_no }}</h5>
+                <h5 class="modal-title">
+                  {% if file.acc_rej %}Edit{% else %}Add{% endif %} - {{ file.registered_no }}
+                </h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
               </div>
               <div class="modal-body">
                 <div class="form-group">
                   <label>Status</label>
-                  <select name="acc_rej" class="form-control" required>
-                    <option value="">--Pilih--</option>
-                    <option value="accept" {% if file.acc_rej %}selected{% endif %}>Accepted</option>
-                    <option value="reject" {% if file.acc_rej == False %}selected{% endif %}>Rejected</option>
+                  <select name="acc_rej" id="accRejSelect" class="form-control" required>
+                    <option value="">-</option>
+                    <option value="accept" {% if file.acc_rej == "accept" %}selected{% endif %}>Accepted</option>
+                    <option value="reject" {% if file.acc_rej == "reject" %}selected{% endif %}>Rejected</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label>Schedule Date (jika Accept)</label>
-                  <input type="date" name="schedule_date" class="form-control" value="{{ file.schedule_date|date:'Y-m-d' }}">
+
+                <!-- Container untuk input date yang akan dimunculkan secara dinamis -->
+                <div class="form-group" id="scheduleDateContainer" style="display: none;">
+                  <label>Delivery Date (If Accept)</label>
+                  <input type="date" name="schedule_date" id="scheduleDateInput" class="form-control"
+                        value="{{ file.schedule_date|date:'Y-m-d' }}">
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-primary">Save</button>
               </div>
             </div>
           </form>
@@ -188,7 +195,6 @@
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-success">Save</button>
               </div>
             </div>
@@ -230,7 +236,6 @@
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-success">Save</button>
               </div>
             </div>
@@ -247,10 +252,10 @@
     text-align: center;
   }
 </style>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // Delete button
+  // Tombol Delete
   document.querySelectorAll('.delete-file-btn').forEach(button => {
     button.addEventListener('click', function () {
       const filename = this.getAttribute('data-filename');
@@ -279,62 +284,89 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Send Email button
-  document.querySelectorAll('.send-email-form').forEach(form => {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
+  // Tombol Send Email dengan konfirmasi + loading + disable
+  document.querySelectorAll('.btn-send-confirm').forEach(button => {
+    button.addEventListener('click', function () {
+      const form = button.closest('form');
+      const spinner = button.querySelector('.btn-spinner');
+      const btnText = button.querySelector('.btn-text');
+      const filename = form.querySelector('input[name="filename"]').value;
 
-      const filename = this.querySelector('input[name="filename"]').value;
-      const sendBtn = this.querySelector('button[type="submit"]');
-      const originalText = sendBtn.innerHTML;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This Purchase Order will be sent via email!",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, send it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Ganti tampilan tombol saat loading
+          btnText.textContent = "Sending...";
+          spinner.classList.remove("d-none");
+          button.disabled = true;
 
-      // Ubah tombol menjadi loading state
-      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-      sendBtn.disabled = true;
-
-      fetch("{% url 'send_exported_file_email' %}", {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
-          "Accept": "application/json",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ filename })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert("Email berhasil dikirim!");
-          location.reload();  // reload halaman untuk update status dan tanggal
-        } else {
-          alert("Gagal mengirim email: " + (data.error || "Unknown error"));
-          // Pulihkan tombol jika gagal
-          sendBtn.innerHTML = originalText;
-          sendBtn.disabled = false;
+          fetch("{% url 'send_exported_file_email' %}", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+              "Accept": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ filename })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Sent!', 'Email berhasil dikirim.', 'success');
+              btnText.textContent = "Sent";
+              spinner.classList.add("d-none");
+              button.classList.remove("btn-success");
+              button.classList.add("btn-secondary");
+            } else {
+              throw new Error(data.error || "Unknown error");
+            }
+          })
+          .catch(error => {
+            Swal.fire('Error', error.message, 'error');
+            btnText.textContent = "Send";
+            spinner.classList.add("d-none");
+            button.disabled = false;
+          });
         }
-      })
-      .catch(error => {
-        alert("Terjadi kesalahan: " + error);
-        sendBtn.innerHTML = originalText;
-        sendBtn.disabled = false;
       });
     });
   });
 });
 
-function showLoading(form){
-  const btn=form.querySelector("#searchBtn");
-  btn.querySelector("#btnText").textContent="Loading…";
+// Tombol "Update" loading animasi
+function showLoading(form) {
+  const btn = form.querySelector("#searchBtn");
+  btn.querySelector("#btnText").textContent = "Loading…";
   btn.querySelector("#btnSpinner").classList.remove("d-none");
-  btn.disabled=true;
+  btn.disabled = true;
 }
 
-function showLoading(form){
-  const btn=form.querySelector("#searchBtn");
-  btn.querySelector("#btnText").textContent="Loading…";
-  btn.querySelector("#btnSpinner").classList.remove("d-none");
-  btn.disabled=true;
-}
+  function toggleScheduleDate() {
+    const accRej = document.getElementById('accRejSelect').value;
+    const scheduleContainer = document.getElementById('scheduleDateContainer');
+
+    if (accRej === 'accept') {
+      scheduleContainer.style.display = 'block';
+    } else {
+      scheduleContainer.style.display = 'none';
+      document.getElementById('scheduleDateInput').value = ""; // kosongkan jika bukan accept
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    toggleScheduleDate(); // Cek kondisi saat load awal
+    document.getElementById('accRejSelect').addEventListener('change', toggleScheduleDate); // Ubah saat dropdown dipilih
+  });
 </script>
+
+
 
 {% endblock %}
