@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="container mt-4">
   <h2 class="d-flex justify-content-center">SHIPPED</h2>
@@ -17,8 +18,8 @@
           <td>{{ forloop.counter }}</td>
           <td class="text-start">{{ shipped.name }}</td>
           <td class="text-center">
-            <a href="{% url 'shipped_update' shipped.id %}" class="btn btn-sm btn-success mx-2">Edit</a>
-            <a href="{% url 'shipped_delete' shipped.id %}" class="btn btn-sm btn-danger">Delete</a>
+            <button class="btn btn-sm btn-success btn-edit" data-id="{{ shipped.id }}" data-name="{{ shipped.name }}">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="confirmDeleteShipped({{ shipped.id }}, '{{ shipped.name }}')">Delete</button>
           </td>
         </tr>
         {% empty %}
@@ -28,9 +29,184 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="d-flex justify-content-end align-items-center mt-2">
-      <a href="{% url 'shipped_create' %}" class="btn upload-btn">Add Shipped</a>
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-primary" id="btn-add">Add Shipped</button>
     </div>
   </div>
 </div>
+
+<!-- Modal -->
+<div id="shippedModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 id="modalTitle"></h5>
+      <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="shippedForm">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="shippedId">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" id="shippedName" class="form-control" required>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const modal = document.getElementById("shippedModal");
+const form = document.getElementById("shippedForm");
+const idInput = document.getElementById("shippedId");
+const nameInput = document.getElementById("shippedName");
+const modalTitle = document.getElementById("modalTitle");
+const deleteConfirm = document.getElementById("deleteConfirm");
+const deleteName = document.getElementById("deleteName");
+let deleteId = null;
+
+function openModal() { modal.style.display = "block"; }
+function closeModal() {
+  modal.style.display = "none";
+  form.reset();
+  deleteConfirm.style.display = "none";
+  form.style.display = "block";
+  deleteId = null;
+}
+
+// Open Add Modal
+document.getElementById("btn-add").addEventListener("click", () => {
+  modalTitle.innerText = "Add Shipped";
+  idInput.value = "";
+  openModal();
+});
+
+// Open Edit Modal
+document.querySelectorAll(".btn-edit").forEach(btn => {
+  btn.addEventListener("click", () => {
+    modalTitle.innerText = "Edit Shipped";
+    idInput.value = btn.dataset.id;
+    nameInput.value = btn.dataset.name;
+    openModal();
+  });
+});
+
+// Open Delete Modal
+document.querySelectorAll(".btn-delete").forEach(btn => {
+  btn.addEventListener("click", () => {
+    modalTitle.innerText = "Delete Shipped";
+    deleteName.innerText = btn.dataset.name;
+    deleteId = btn.dataset.id;
+    form.style.display = "none";
+    deleteConfirm.style.display = "block";
+    openModal();
+  });
+});
+
+// Submit Form (Add/Edit)
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const url = idInput.value ? `/shipped/edit/${idInput.value}/` : `/shipped/create/`;
+
+  fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then(response => {
+    if (response.ok) location.reload();
+    else alert("Error saving shipped data");
+  });
+});
+
+// Confirm Delete
+document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
+  fetch(`/shipped/delete/${deleteId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+  }).then(response => {
+    if (response.ok) location.reload();
+    else alert("Error deleting");
+  });
+});
+
+// Close when clicking outside
+window.onclick = function(e) {
+  if (e.target == modal) closeModal();
+};
+
+  function confirmDeleteShipped(id, name) {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Shipped "${name}" will be deleted.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    }).then(result => {
+      if (result.isConfirmed) {
+        window.location.href = `/e-mrp/shipped/delete/${id}/`;
+      }
+    });
+  }
+</script>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+
+  .modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .close {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+  }
+
+  .close:hover {
+    color: red;
+  }
+</style>
 {% endblock %}

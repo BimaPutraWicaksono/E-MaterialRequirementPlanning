@@ -74,17 +74,17 @@
           </tbody>
         </table>
 
-        <!-- Tombol Edit -->
-        <div class="text-right">
+        <!-- Tombol Edit dan Logout -->
+        <div class="d-flex justify-content-between">
           <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#editUserModal">
             Edit
           </button>
+          <a href="javascript:void(0);" id="logoutButton" class="btn btn-sm btn-danger">
+            Logout
+          </a>
         </div>
       </div>
     </div>
-
-
-
   </div>
 </nav>
 
@@ -146,4 +146,27 @@
       $('#userDropdownMenu').hide();
     });
   });
+
+  document.getElementById("logoutButton").addEventListener("click", function () {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: 'custom-swal-popup',
+        confirmButton: 'custom-swal-confirm-button',
+        cancelButton: 'custom-swal-cancel-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    });
+  });
 </script>
+

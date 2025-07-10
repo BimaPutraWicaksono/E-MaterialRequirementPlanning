@@ -6,8 +6,8 @@
 
   <!-- Tabel Daftar Akun -->  
     <table id="table_user" class="table table-bordered" style="width: 100%;">
-      <thead class="table-primary">
-        <tr>
+      <thead class="table-light text-center">
+        <tr >
           <th>NO</th>
           <th>USERNAME</th>
           <th>DEPARTEMENT</th>
@@ -62,7 +62,7 @@
     <!-- Tombol Tambah Akun -->
     {% if request.user|has_group:"Admin" %}
       <div class="d-flex justify-content-end mt-2">
-        <button class="btn upload-btn" onclick="openModal('modal-tambah')">
+        <button class="btn btn-primary" onclick="openModal('modal-tambah')">
           Create Account
         </button>
       </div>
@@ -234,15 +234,6 @@
     openModal("modal-hapus");
     document.getElementById("hapus_user_id").value = userId;
   }
-
-  $(document).ready(function () {
-    $('#table_user').DataTable({
-      scrollX: true,
-      autoWidth: false,
-      pageLength: 10,
-    });
-  });
-
 
 </script>
 {% endblock %}

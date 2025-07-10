@@ -24,8 +24,19 @@
           <td>{{ dept.name }}</td>
           <td class="text-center">
             {% if request.user|has_group:"Admin" %}
-            <a href="{% url 'update_departement' dept.id %}" class="btn btn-sm btn-success">Edit</a>
-            <a href="{% url 'delete_departement' dept.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus departement ini?')">Delete</a>
+              <button
+                class="btn btn-sm btn-success btn-edit-dept"
+                data-id="{{ dept.id }}"
+                data-name="{{ dept.name }}"
+              >
+                Edit
+              </button>
+              <form method="post" action="{% url 'delete_departement' dept.id %}" class="d-inline delete-dept-form">
+                {% csrf_token %}
+                <button type="button" class="btn btn-sm btn-danger btn-delete-dept" data-name="{{ dept.name }}">
+                  Delete
+                </button>
+              </form>
             {% endif %}
           </td>
         </tr>
@@ -40,7 +51,7 @@
       {% if request.user|has_group:"Admin" %}
       <!-- Button triggers modal -->
         <div class="d-flex gap-2 flex-wrap">
-          <button class="btn upload-btn btn-sm" onclick="openModal('addDepartementModal')">
+          <button class="btn btn-primary" onclick="openModal('addDepartementModal')">
             Add Departement
           </button>
         </div>
@@ -63,13 +74,25 @@
       <tbody>
         {% for section in sections %}
         <tr class="section-row">
-          <td>{{ forloop.counter }}</td>
+          <td class="text-center">{{ forloop.counter }}</td>
           <td class="section-name">{{ section.name }}</td>
           <td class="text-center">{{ section.departement.name }}</td>
           <td class="text-center">
             {% if request.user|has_group:"Admin" %}
-            <a href="{% url 'update_section' section.id %}" class="btn btn-sm btn-success">Edit</a>
-            <a href="{% url 'delete_section' section.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus section ini?')">Delete</a>
+              <button
+                class="btn btn-sm btn-success btn-edit-section"
+                data-id="{{ section.id }}"
+                data-name="{{ section.name }}"
+                data-dept="{{ section.departement.id }}"
+              >
+                Edit
+              </button>
+              <form method="post" action="{% url 'delete_section' section.id %}" class="d-inline delete-section-form">
+                {% csrf_token %}
+                <button type="button" class="btn btn-sm btn-danger btn-delete-section" data-name="{{ section.name }}">
+                  Delete
+                </button>
+              </form>
             {% endif %}
           </td>
         </tr>
@@ -84,7 +107,7 @@
       {% if request.user|has_group:"Admin" %}
       <!-- Button triggers modal -->
        <div class="d-flex flex-wrap">
-        <button class="btn upload-btn btn-sm" onclick="openModal('addSectionModal')">
+        <button class="btn btn-primary" onclick="openModal('addSectionModal')">
           Add Section
         </button>
       </div>
@@ -108,7 +131,7 @@
           <input type="text" name="name" class="form-control" required />
         </div>
         <div class="d-flex justify-content-end">
-          <button type="submit" class="btn-primary">
+          <button type="submit" class="btn-primary btn btn-sm">
             Save
           </button>
         </div>
@@ -116,6 +139,29 @@
     </div>
   </div>
 </div>
+
+<div id="editDepartementModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5>Edit Departement</h5>
+      <span class="close" onclick="closeModal('editDepartementModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form method="post" id="editDeptForm">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="editDeptId">
+        <div class="mb-3">
+          <label class="form-label">Departement Name</label>
+          <input type="text" name="name" id="editDeptName" class="form-control" required>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-success btn-sm">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <!-- Add Section Modal -->
 <div id="addSectionModal" class="modal">
@@ -141,7 +187,7 @@
           </select>
         </div>
         <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary btn-sm">
             Save
           </button>
         </div>
@@ -149,6 +195,38 @@
     </div>
   </div>
 </div>
+
+<div id="editSectionModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5>Edit Section</h5>
+      <span class="close" onclick="closeModal('editSectionModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form method="post" id="editSectionForm">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="editSectionId">
+        <div class="mb-3">
+          <label class="form-label">Section Name</label>
+          <input type="text" name="name" id="editSectionName" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Departement</label>
+          <select name="departement" id="editSectionDepartement" class="form-control" required>
+            <option value="">-- Select Departement --</option>
+            {% for dept in departements %}
+            <option value="{{ dept.id }}">{{ dept.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-success btn-sm">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
 <!-- Modal Styling & Script -->
 <style>
@@ -220,6 +298,105 @@
       }
     });
   }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".btn-delete-dept").forEach(button => {
+      button.addEventListener("click", function () {
+        const form = this.closest("form");
+        const name = this.dataset.name;
+
+        Swal.fire({
+          title: "Are you sure?",
+          text: `Departement "${name}" will be permanently deleted!`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes",
+          cancelButtonText: "Cancel",
+          customClass: {
+            popup: "custom-swal-popup",
+            confirmButton: "custom-swal-confirm-button",
+            cancelButton: "custom-swal-cancel-button",
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll(".btn-delete-section").forEach(button => {
+      button.addEventListener("click", function () {
+        const form = this.closest("form");
+        const name = this.dataset.name;
+
+        Swal.fire({
+          title: "Are you sure?",
+          text: `Section "${name}" will be permanently deleted!`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes",
+          cancelButtonText: "Cancel",
+          customClass: {
+            popup: "custom-swal-popup",
+            confirmButton: "custom-swal-confirm-button",
+            cancelButton: "custom-swal-cancel-button",
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+  // Trigger tombol edit dept
+  document.querySelectorAll(".btn-edit-dept").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const id = this.dataset.id;
+      const name = this.dataset.name;
+
+      document.getElementById("editDeptId").value = id;
+      document.getElementById("editDeptName").value = name;
+
+      const form = document.getElementById("editDeptForm");
+      form.action = `/e-mrp/departement/edit/${id}/`;
+
+      openModal("editDepartementModal");
+    });
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  // SECTION - Trigger tombol Edit
+  document.querySelectorAll(".btn-edit-section").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const id = this.dataset.id;
+      const name = this.dataset.name;
+      const deptId = this.dataset.dept;
+
+      document.getElementById("editSectionId").value = id;
+      document.getElementById("editSectionName").value = name;
+
+      const select = document.getElementById("editSectionDepartement");
+      select.value = deptId;
+
+      const form = document.getElementById("editSectionForm");
+      form.action = `/e-mrp/section/edit/${id}/`;
+
+      openModal("editSectionModal");
+    });
+  });
+});
+
 </script>
+
+
 
 {% endblock %}

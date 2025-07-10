@@ -29,8 +29,8 @@
           <td class="text-center">{{ supplier.attn }}</td>
           <td class="text-center">{{ supplier.cc }}</td>
           <td class="text-center">
-            <a href="{% url 'supplier_update' supplier.id %}" class="btn btn-sm btn-success mx-2">Edit</a>
-            <a href="{% url 'supplier_delete' supplier.id %}" class="btn btn-sm btn-danger">Delete</a>
+            <button class="btn btn-sm btn-success" onclick="openEditModal({{ supplier.id }}, '{{ supplier.name }}', '{{ supplier.email }}', '{{ supplier.address }}', '{{ supplier.tel_no }}', '{{ supplier.fax_no }}', '{{ supplier.attn }}', '{{ supplier.cc }}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="confirmDelete('{{ supplier.id }}', '{{ supplier.name }}')">Delete</button>
           </td>
         </tr>
         {% empty %}
@@ -40,9 +40,131 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
     <div class="d-flex justify-content-end mt-3">
-      <a href="{% url 'supplier_create' %}" class="btn upload-btn">Add Supplier</a>
+      <button class="btn btn-primary" onclick="openEditModal()">Add Supplier</button>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="supplierModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 id="modalTitle">Add Supplier</h5>
+      <span class="close" onclick="closeModal('supplierModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form method="post" id="supplierForm">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="supplierId">
+        <div class="mb-2"><label>Name</label><input name="name" id="supplierName" class="form-control" required></div>
+        <div class="mb-2"><label>Email</label><input name="email" id="supplierEmail" class="form-control"></div>
+        <div class="mb-2"><label>Address</label><textarea name="address" id="supplierAddress" class="form-control"></textarea></div>
+        <div class="mb-2"><label>Tel No</label><input name="tel_no" id="supplierTel" class="form-control"></div>
+        <div class="mb-2"><label>Fax No</label><input name="fax_no" id="supplierFax" class="form-control"></div>
+        <div class="mb-2"><label>Attn</label><input name="attn" id="supplierAttn" class="form-control"></div>
+        <div class="mb-2"><label>CC</label><input name="cc" id="supplierCc" class="form-control"></div>
+        <div class="text-end"><button class="btn btn-primary btn-sm" type="submit">Save</button></div>
+      </form>
     </div>
   </div>
 </div>
+
+<script>
+  function openModal(id) {
+    document.getElementById(id).style.display = "block";
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
+  function openEditModal(id, name, email, address, tel, fax, attn, cc) {
+    document.getElementById("modalTitle").innerText = id ? "Edit Supplier" : "Add Supplier";
+    document.getElementById("supplierId").value = id || "";
+    document.getElementById("supplierName").value = name || "";
+    document.getElementById("supplierEmail").value = email || "";
+    document.getElementById("supplierAddress").value = address || "";
+    document.getElementById("supplierTel").value = tel || "";
+    document.getElementById("supplierFax").value = fax || "";
+    document.getElementById("supplierAttn").value = attn || "";
+    document.getElementById("supplierCc").value = cc || "";
+    openModal("supplierModal");
+  }
+
+  function confirmDelete(id, name) {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Supplier "${name}" will be deleted.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    }).then(result => {
+      if (result.isConfirmed) {
+        window.location.href = `/e-mrp/supplier/delete/${id}/`;
+      }
+    });
+  }
+
+  window.onclick = function (event) {
+    const modal = document.getElementById("supplierModal");
+    if (event.target === modal) {
+      closeModal("supplierModal");
+    }
+  }
+</script>
+<!-- Modal Styling & Script -->
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+
+  .modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .close {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+  }
+
+  .close:hover {
+    color: red;
+  }
+</style>
+
 {% endblock %}

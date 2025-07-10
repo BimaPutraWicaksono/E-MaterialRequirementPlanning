@@ -634,9 +634,20 @@ def send_exported_file_email(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+from django.http import JsonResponse
+
 def supplier_list(request):
     suppliers = Supplier.objects.all()
+
+    if request.method == 'POST':
+        supplier_id = request.POST.get('id')
+        form = SupplierForm(request.POST, instance=Supplier.objects.get(pk=supplier_id) if supplier_id else None)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_list')
+
     return render(request, 'order/supplier/supplier.html', {'suppliers': suppliers})
+
 
 def supplier_create(request):
     if request.method == 'POST':
