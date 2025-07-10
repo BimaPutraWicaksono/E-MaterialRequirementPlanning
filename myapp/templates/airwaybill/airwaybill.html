@@ -43,10 +43,12 @@
                 data-target="#editModal{{ awb.id }}">Edit</button>
 
               <!-- Tombol Delete -->
-              <form method="POST" action="{% url 'delete_airwaybill' awb.id %}" style="display: inline;" onsubmit="return confirm('Are you sure to delete?')">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-              </form>
+               {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+                <form method="POST" action="{% url 'delete_airwaybill' awb.id %}" class="delete-form d-inline">
+                  {% csrf_token %}
+                  <button type="button" class="btn btn-sm btn-danger btn-delete-airwaybill">Delete</button>
+                </form>
+              {% endif %}
           </td>
 
             </tr> 
@@ -157,6 +159,7 @@
   {% endfor %}
 
 </div> 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   function showLoading(form) {
     const button = form.querySelector("#searchBtn");
@@ -168,6 +171,31 @@
     btnSpinner.classList.remove("d-none");
     button.disabled = true;
   }
+
+  document.querySelectorAll('.btn-delete-airwaybill').forEach(button => {
+    button.addEventListener('click', function () {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "This AirWay Bill will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+          cancelButton: "custom-swal-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          button.closest('form').submit();
+        }
+      });
+    });
+  });
 </script>
+
 
 {% endblock %}

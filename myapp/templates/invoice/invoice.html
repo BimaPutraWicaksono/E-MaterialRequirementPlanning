@@ -47,9 +47,9 @@
           <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#editModal{{ invoice.id }}">Edit</button>
 
           <!-- Tombol Delete -->
-          <form method="POST" action="{% url 'delete_invoice' invoice.id %}" style="display: inline;" onsubmit="return confirm('Are you sure to delete this invoice?')">
+          <form method="POST" action="{% url 'delete_invoice' invoice.id %}" class="delete-form d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            <button type="button" class="btn btn-sm btn-danger btn-delete-invoice">Delete</button>
           </form>
         </td>
 
@@ -153,6 +153,7 @@
   {% endif %}
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   function showLoading(form) {
     const btn = form.querySelector("#searchBtn");
@@ -161,4 +162,34 @@
     btn.disabled = true;
   }
 </script>
+<!-- SweetAlert script -->
+
+<script>
+  // Event listener untuk semua tombol Delete
+  document.querySelectorAll('.btn-delete-invoice').forEach(button => {
+    button.addEventListener('click', function () {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "This invoice will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+          cancelButton: "custom-swal-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Kirim form terdekat
+          button.closest('form').submit();
+        }
+      });
+    });
+  });
+</script>
+
 {% endblock %}
