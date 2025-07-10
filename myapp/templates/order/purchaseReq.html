@@ -5,7 +5,7 @@
 
 <div class="container mt-4">
   <h4 class="justify-content-center d-flex" >PURCHASE REQUISITION LIST</h4>
-  <form method="get" class="form-inline mb-3 justify-content-end">
+  {% comment %} <form method="get" class="form-inline mb-3 justify-content-end">
     <i class="fas fa-filter text-muted mr-2"></i>
     <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
         <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
@@ -13,18 +13,19 @@
         <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
         <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
     </select>
-  </form>
+  </form> {% endcomment %}
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
-      <tr>
+      <tr class="text-center">
         <th>NO</th>
         <th>DATE</th>
         <th>REGISTERED NO</th>
         <th>REQUEST BY</th>
-        <th>APPROVAL</th>
+        <th>STATUS</th>
         <th>DETAIL</th>
-        <th>PO</th>
-        
+        {% if request.user|has_group:"Supervisor" %}
+          <th>PURCHASE ORDER</th>
+        {% endif %}
         {% comment %} {% if request.user|has_group:"Karyawan" %}
           {% if not pr.approve_spv or pr.approve_spv is False %} {% endcomment %}
             <th>EDIT</th>
@@ -63,29 +64,28 @@
                 {% endif %}
               {% endif %}
             </td>
-            {% if request.user|has_group:"Supervisor" and pr.approve_spv and not pr.purchaseorder %}
-              <td>
-                <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add PO</button>
-              </td>
-            {% endif %}
-
+            <td class="text-center align-middle">
+              {% if request.user|has_group:"Supervisor" and pr.approve_spv and not pr.purchaseorder %}
+                <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add</button>
+              {% endif %}
+            </td>
 
             <!-- Edit -->
             <td class="text-center align-middle">
-                {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
-                <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-                {% endif %}
-              </td>
+              {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
+              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+              {% endif %}
+            </td>
 
             <!-- Delete -->
-            <td class="text-center align-middle">
-                {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+            {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+              <td class="text-center align-middle">
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
-                {% endif %}
               </td>
+            {% endif %}
             {% if request.user|has_group:"Admin" %}
               <td class="text-center align-middle">
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
@@ -99,7 +99,6 @@
           <tr><td colspan="7" class="text-center">No data available.</td></tr>
         {% endfor %}
       </tbody>
-
   </table>
   <div class="d-flex">
       <div class="border border-warning rounded p-2 mt-1">

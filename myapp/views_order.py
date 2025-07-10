@@ -160,33 +160,33 @@ def purchaseReq(request):
         form.fields['section'].queryset = Section.objects.filter(departement=user_departement)
 
     # Filter data sesuai role user
-    filter_option = request.GET.get('filter')
-    if not filter_option:
-        if request.user.groups.filter(name='Karyawan').exists():
-            filter_option = 'all'
-        elif request.user.groups.filter(name='Supervisor').exists():
-            filter_option = 'pending'
-        else:
-            filter_option = 'all'
+    # filter_option = request.GET.get('filter')
+    # if not filter_option:
+    #     if request.user.groups.filter(name='Karyawan').exists():
+    #         filter_option = 'all'
+    #     elif request.user.groups.filter(name='Supervisor').exists():
+    #         filter_option = 'pending'
+    #     else:
+    #         filter_option = 'all'
 
     if request.user.groups.filter(name='Admin').exists():
         requests = PurchaseRequest.objects.all()
     else:
         requests = PurchaseRequest.objects.filter(departement=user_departement)
 
-    if filter_option == 'pending':
-        requests = requests.filter(approve_spv__isnull=True)
-    elif filter_option == 'approved_spv':
-        requests = requests.filter(approve_spv=True)
-    elif filter_option == 'rejected':
-        requests = requests.filter(Q(approve_spv=False))
+    # if filter_option == 'pending':
+    #     requests = requests.filter(approve_spv__isnull=True)
+    # elif filter_option == 'approved_spv':
+    #     requests = requests.filter(approve_spv=True)
+    # elif filter_option == 'rejected':
+    #     requests = requests.filter(Q(approve_spv=False))
 
     requests = requests.order_by('-date')
 
     return render(request, 'order/purchaseReq.html', {
         'form': form,
         'requests': requests,
-        'filter_option': filter_option,
+        # 'filter_option': filter_option,
         'user_departement': user_departement,
     })
 

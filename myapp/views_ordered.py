@@ -86,11 +86,15 @@ def purchaseOrd(request):
     else:
         form = PurchaseRequestForm()
 
-    # ❗ Filter berdasarkan departemen user login
-    requests = PurchaseRequest.objects.filter(departement=user_departement).order_by('-date')
+    # Ambil semua PurchaseRequest milik user
+    all_requests = PurchaseRequest.objects.filter(departement=user_departement).order_by('-date')
 
     # PO registered_no yang sudah dibuat
     po_registered_nos = set(PurchaseOrder.objects.values_list('registered_no__registered_no', flat=True))
+
+    # Hanya ambil PR yang sudah punya PO
+    requests_with_po = all_requests.filter(registered_no__in=po_registered_nos)
+
     
     purchase_orders = {
         po.registered_no.registered_no: po
@@ -100,10 +104,11 @@ def purchaseOrd(request):
 
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
-        'requests': requests,
+        'requests': requests_with_po,  # GUNAKAN YANG SUDAH DIFILTER
         'po_registered_nos': po_registered_nos,
         'purchase_orders': purchase_orders,
     })
+
 
 @login_required
 def purchase_order_detail(request, registered_no):
@@ -141,8 +146,6 @@ def purchase_order_detail(request, registered_no):
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
-
-
 
 from .models import PurchaseOrder, PurchaseRequest
 
