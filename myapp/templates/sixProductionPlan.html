@@ -79,10 +79,10 @@
 
   <!-- Form for exporting data and resetting data -->
   {% if request.user|has_group:"Karyawan" %}
-  <div class="d-flex gap-3">
+  <div class="d-flex">
     <!-- Import Form -->
-    <div class="upload-container mt-2 d-inline">
-      <b class="d-flex ml-3 mb-1">Select an Excel file:</b>
+    <div class="upload-container d-inline">
+      <b class="d-flex ml-3">Select an Excel file:</b>
       <div class="d-flex">
         <form
           id="uploadForm"
@@ -92,10 +92,10 @@
         >
           {% csrf_token %}
           <div class="file-upload-wrapper">
-            <input class="mt-3" type="file" name="file" multiple />
+            <input type="file" name="file" multiple />
           </div>
-          <button type="submit" name="import" class="upload-btn d-flex">
-            <i class="nav-icon fas fa-upload mr-2"></i> Upload
+          <button type="submit" name="import" class="btn btn-primary d-flex">
+            Upload
           </button>
         </form>
       </div>

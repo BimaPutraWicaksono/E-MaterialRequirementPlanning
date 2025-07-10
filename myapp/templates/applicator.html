@@ -5,11 +5,11 @@
   <table class="table table-bordered mt-3" id="table_applicator">
     <thead class="table-light text-center">
       <tr>
-        <th class="text-start">No.</th>
-        <th class="text-start">Applicator Number</th>
-        <th class="text-center">Part Name</th>
-        <th class="text-center">Part Number</th>
-        <th class="text-center">Marking</th>
+        <th class="text-start">NO.</th>
+        <th class="text-start">APPLICATOR NO.</th>
+        <th class="text-center">PART NAME</th>
+        <th class="text-center">PART NUMBER</th>
+        <th class="text-center">MARKING</th>
       </tr>
     </thead>
     <tbody>
@@ -32,7 +32,7 @@
 
   <!-- Upload Section -->
   {% if request.user|has_group:"Karyawan" %}
-  <div class="d-flex gap-3 mt-2">
+  <div class="d-flex">
     <div class="upload-container">
       <form
         class="d-flex"
@@ -42,8 +42,8 @@
       >
         {% csrf_token %}
         <div class="file-upload-wrapper">{{ form.as_p }}</div>
-        <button type="submit" class="upload-btn d-flex" id="uploadButton">
-          <i class="nav-icon fas fa-upload mr-2"></i> Upload
+        <button type="submit" class="btn btn-primary d-flex" id="uploadButton">
+          Upload
         </button>
       </form>
 
@@ -53,8 +53,8 @@
     </div>
 
     <div>
-      <button type="button" class="reset-btn" id="resetButton">
-        <i class="nav-icon fas fa-trash-alt mr-2"></i>Delete
+      <button type="button" class="btn-danger btn-sm" id="resetButton">
+        Delete
       </button>
     </div>
   </div>

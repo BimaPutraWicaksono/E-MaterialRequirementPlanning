@@ -4,10 +4,7 @@
 {% block content %}
 <div class="container mt-4">
   <div class="my-4 table-section" >
-    <div class="card-header">
       <h2 class="justify-content-center d-flex" >LOADING PART</h2>
-    </div>
-    <div class="card-header">
       {% if grouped_data %}
         {% for carline, year_data in grouped_data.items %}
           {% for year, part_data in year_data.items %}
@@ -92,7 +89,6 @@
       {% else %}
         <p>No data available.</p>
       {% endif %}
-    </div>
   </div>
 </div>
 

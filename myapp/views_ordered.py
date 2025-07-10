@@ -258,6 +258,15 @@ def export_purchase_order_pdf(request, registered_no):
     return redirect('list_exported_files')
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.conf import settings
+from .models import PurchaseRequest, PurchaseOrder, ScheduleConf, Invoice, AirWayBill
+import os, imaplib, email, re
+from email.header import decode_header
+from datetime import datetime
+
 @login_required
 def list_exported_purchase_orders(request):
     if request.method == "POST" and request.POST.get("action") == "search_email":
@@ -341,7 +350,6 @@ def list_exported_purchase_orders(request):
 
         return redirect("list_exported_purchase_orders")
 
-
     folder_path = os.path.join(settings.MEDIA_ROOT, "purchase_orders")
     file_list = [
         f for f in os.listdir(folder_path) if f.endswith(".pdf")
@@ -353,6 +361,7 @@ def list_exported_purchase_orders(request):
         supplier_name = "Unknown"
         acc_rej = None
         schedule_date = None
+        schedule_exists = False
         po = None
 
         try:
@@ -364,6 +373,7 @@ def list_exported_purchase_orders(request):
             if sc:
                 acc_rej = sc.acc_rej
                 schedule_date = sc.date
+                schedule_exists = True
         except (PurchaseRequest.DoesNotExist, PurchaseOrder.DoesNotExist):
             pass
 
@@ -376,9 +386,10 @@ def list_exported_purchase_orders(request):
             "email_sent_at": po.email_sent_at if po else None,
             "acc_rej": acc_rej,
             "schedule_date": schedule_date,
+            "schedule_exists": schedule_exists,  # ✅ Tambahkan ini agar form bisa tahu kapan edit
         })
 
-    # 🔁 Mapping invoice & airwaybill untuk tampil di template
+    # Mapping invoice & airwaybill
     invoice_qs = Invoice.objects.all().select_related('registered_no')
     existing_invoices = {
         inv.registered_no.registered_no: inv.invoice_no
@@ -492,12 +503,12 @@ def manual_invoice_from_ordered(request):
 
     return redirect("list_exported_purchase_orders")
 
-
+from datetime import datetime  # Pastikan sudah diimport
 @login_required
 def edit_schedule_conf(request, registered_no):
     if request.method == "POST":
         acc_rej = request.POST.get("acc_rej")
-        schedule_date = request.POST.get("schedule_date")
+        schedule_date_raw = request.POST.get("schedule_date")
 
         try:
             pr = PurchaseRequest.objects.get(registered_no=registered_no)
@@ -506,14 +517,24 @@ def edit_schedule_conf(request, registered_no):
             messages.error(request, "Data tidak ditemukan.")
             return redirect("list_exported_purchase_orders")
 
-        sc.acc_rej = True if acc_rej == "accept" else False
-        sc.date = schedule_date if acc_rej == "accept" and schedule_date else None
-        sc.save()
+        if acc_rej not in ["accept", "reject"]:
+            messages.error(request, "Status tidak valid.")
+            return redirect("list_exported_purchase_orders")
 
+        sc.acc_rej = True if acc_rej == "accept" else False
+
+        if acc_rej == "accept" and schedule_date_raw:
+            try:
+                sc.date = datetime.strptime(schedule_date_raw, "%Y-%m-%d").date()
+            except ValueError:
+                sc.date = None
+        else:
+            sc.date = None
+
+        sc.save()
         messages.success(request, "Schedule Confirmation berhasil diperbarui.")
 
     return redirect("list_exported_purchase_orders")
-
 
 
 @login_required

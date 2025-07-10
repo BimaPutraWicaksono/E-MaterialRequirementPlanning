@@ -126,46 +126,55 @@
   </div>
 
   {# ---------------- MODAL CONFIRMATION ---------------- #}
-  {% for file in files %}
-    {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
-      <div class="modal fade" id="manualModal{{ file.registered_no }}" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-          <form method="POST" action="{% url 'manual_schedule_conf' %}">
-            {% csrf_token %}
+{% for file in files %}
+  {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+    <div class="modal fade" id="manualModal{{ file.registered_no }}" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <form method="POST"
+              action="{% if file.schedule_exists %}{% url 'edit_schedule_conf' file.registered_no %}{% else %}{% url 'manual_schedule_conf' %}{% endif %}">
+          {% csrf_token %}
+          
+          {% if not file.schedule_exists %}
             <input type="hidden" name="registered_no" value="{{ file.registered_no }}">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">
-                  {% if file.acc_rej %}Edit{% else %}Add{% endif %} - {{ file.registered_no }}
-                </h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-              </div>
-              <div class="modal-body">
-                <div class="form-group">
-                  <label>Status</label>
-                  <select name="acc_rej" id="accRejSelect" class="form-control" required>
-                    <option value="">-</option>
-                    <option value="accept" {% if file.acc_rej == "accept" %}selected{% endif %}>Accepted</option>
-                    <option value="reject" {% if file.acc_rej == "reject" %}selected{% endif %}>Rejected</option>
-                  </select>
-                </div>
+          {% endif %}
 
-                <!-- Container untuk input date yang akan dimunculkan secara dinamis -->
-                <div class="form-group" id="scheduleDateContainer" style="display: none;">
-                  <label>Delivery Date (If Accept)</label>
-                  <input type="date" name="schedule_date" id="scheduleDateInput" class="form-control"
-                        value="{{ file.schedule_date|date:'Y-m-d' }}">
-                </div>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                {% if file.schedule_exists %}Edit{% else %}Add{% endif %} - {{ file.registered_no }}
+              </h5>
+              <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Status</label>
+                <select name="acc_rej" class="form-control status-select" data-target="#dateField{{ file.registered_no }}" required>
+                  <option value="">-</option>
+                  <option value="accept" {% if file.acc_rej == True %}selected{% endif %}>Accepted</option>
+                  <option value="reject" {% if file.acc_rej == False %}selected{% endif %}>Rejected</option>
+                </select>
               </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save</button>
+
+              <div class="form-group date-field" id="dateField{{ file.registered_no }}"
+                  {% if file.acc_rej != True %}style="display: none;"{% endif %}>
+                <label>Delivery Date (If Accept)</label>
+                <input type="date" name="schedule_date" class="form-control"
+                      value="{{ file.schedule_date|date:'Y-m-d' }}">
               </div>
             </div>
-          </form>
-        </div>
+
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </form>
       </div>
-    {% endif %}
-  {% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}
+
+
 
   {# ---------------- MODAL INVOICE ---------------- #}
   {% for file in files %}
@@ -349,23 +358,23 @@ function showLoading(form) {
   btn.disabled = true;
 }
 
-  function toggleScheduleDate() {
-    const accRej = document.getElementById('accRejSelect').value;
-    const scheduleContainer = document.getElementById('scheduleDateContainer');
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".status-select").forEach(function (selectElement) {
+      selectElement.addEventListener("change", function () {
+        const targetId = selectElement.getAttribute("data-target");
+        const target = document.querySelector(targetId);
 
-    if (accRej === 'accept') {
-      scheduleContainer.style.display = 'block';
-    } else {
-      scheduleContainer.style.display = 'none';
-      document.getElementById('scheduleDateInput').value = ""; // kosongkan jika bukan accept
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    toggleScheduleDate(); // Cek kondisi saat load awal
-    document.getElementById('accRejSelect').addEventListener('change', toggleScheduleDate); // Ubah saat dropdown dipilih
+        if (selectElement.value === "accept") {
+          target.style.display = "block";
+        } else {
+          target.style.display = "none";
+          target.querySelector("input").value = ""; // Clear date when rejected
+        }
+      });
+    });
   });
 </script>
+
 
 
 

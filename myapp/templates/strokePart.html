@@ -10,17 +10,19 @@
     <table class="table table-bordered" id="table_stroke">
       <thead class="table-light text-center">
         <tr>
-          <th>Part Name</th>
-          <th>Image</th>
-          <th>Stroke Part</th>
+          <th>NO.</th>
+          <th>PART NAME</th>
+          <th>IMAGE</th>
+          <th>STROKE PART</th>
           {% if request.user|has_group:"Karyawan" %}
-          <th>Actions</th>
+          <th>ACTION</th>
           {% endif %}
         </tr>
       </thead>
       <tbody>
         {% for applicator in applicators %}
         <tr>
+          <td>{{ forloop.counter }}</td>
           <td class="align-middle text-center">{{ applicator.name }}</td>
           <td class="align-middle text-center">
             {% if applicator.image %}
@@ -32,12 +34,16 @@
           <td class="align-middle text-center">{{ applicator.loading }}</td>
           {% if request.user|has_group:"Karyawan" %}
           <td class="align-middle text-center">
-            <button class="btn btn-sm btn-success mx-2" onclick="openModal('editModal{{ applicator.id }}')">
-              <i class="fas fa-edit"></i> Edit
+            <button class="btn btn-sm btn-success" onclick="openModal('editModal{{ applicator.id }}')">
+              Edit
             </button>
-            <button class="btn btn-sm btn-danger" onclick="openModal('deleteModal{{ applicator.id }}')">
-              <i class="fas fa-trash-alt"></i> Delete
-            </button>
+            <form method="post" class="d-inline delete-form">
+              {% csrf_token %}
+              <input type="hidden" name="applicator_id" value="{{ applicator.id }}" />
+              <button type="button" class="btn btn-sm btn-danger btn-delete-applicator" data-name="{{ applicator.name }}">
+                Delete
+              </button>
+            </form>
           </td>
           {% endif %}
         </tr>
@@ -69,28 +75,8 @@
                   {% endif %}
                 </div>
                 <div class="d-flex justify-content-end">
-                  <button type="submit" name="edit" class="btn btn-primary">Save Changes</button>
+                  <button type="submit" name="edit" class="btn btn-sm btn-primary">Save</button>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delete Modal -->
-        <div id="deleteModal{{ applicator.id }}" class="modal">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5>Delete Confirmation</h5>
-              <span class="close" onclick="closeModal('deleteModal{{ applicator.id }}')">&times;</span>
-            </div>
-            <div class="modal-body">
-              <p>Are you sure you want to delete "{{ applicator.name }}"?</p>
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="applicator_id" value="{{ applicator.id }}" />
-                <button type="submit" name="delete" class="btn btn-sm btn-danger">
-                  <i class="fas fa-trash-alt"></i> Delete
-                </button>
               </form>
             </div>
           </div>
@@ -104,8 +90,8 @@
   <!-- Tombol Tambah -->
   {% if request.user|has_group:"Karyawan" %}
   <div class="d-flex justify-content-end mt-3">
-    <button class="btn btn-success" onclick="openModal('addModal')">
-      <i class="fas fa-plus"></i> Add Stroke Part
+    <button class="btn btn-primary" onclick="openModal('addModal')">
+      Add Stroke Part
     </button>
   </div>
   {% endif %}
@@ -183,7 +169,35 @@
       });
     });
   });
+
+  document.querySelectorAll('.btn-delete-applicator').forEach(button => {
+    button.addEventListener('click', function () {
+      const form = this.closest('form');
+      const partName = this.dataset.name;
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: `Stroke Part "${partName}" will be permanently deleted!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+          cancelButton: "custom-swal-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
 </script>
+
 
 <!-- Style -->
 <style>

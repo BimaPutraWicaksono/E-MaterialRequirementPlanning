@@ -1,12 +1,12 @@
 {% extends "base.html" %} {% load widget_tweaks %} {% block content %} 
 {% load user_tags %}
 
-<div class="container mt-5">
+<div class="container">
   <h2 class="justify-content-center d-flex">CARLINE</h2>
   <!-- Tabel daftar carline -->
   <div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover" id="table_carline">
-      <thead class="table-primary">
+    <table class="table table-bordered" id="table_carline">
+      <thead class="align-middle text-center">
         <tr>
           <th>NO.</th>
           <th>NAME</th>
@@ -17,26 +17,17 @@
         {% for carline in carlines %}
         <tr id="carline-{{ carline.id }}">
           <td>{{ forloop.counter }}</td>
-          <td class="align-middle text-center"><strong>{{ carline.name }}</strong></td>
+          <td class="align-middle text-center">{{ carline.name }}</td>
           <td class="align-middle text-center">
-            {% if request.user|has_group:"Guest" %}
-              <a href="{% url 'sixProductionPlan' name=carline.name %}" class="btn btn-sm btn-info mr-1">
-                <i class="far fa-folder-open mr-1"></i>View
-              </a>
-            {% endif %}
-            {% if request.user|has_group:"Karyawan" %}
-              <a href="{% url 'sixProductionPlan' name=carline.name %}" class="btn btn-sm btn-success mr-1">
-                <i class="fas fa-upload mr-1"></i>Import
-              </a>
-            {% endif %}
+            <a href="{% url 'sixProductionPlan' name=carline.name %}" class="btn btn-sm btn-primary mr-1">
+              Import
+            </a>
             <button class="btn btn-sm btn-info mr-1" onclick="directSum('{{ carline.name }}')">
-              <i class="fas fa-square-root-alt mr-1"></i>Sum
+              <i class="fas fa-square-root-alt mr-1"></i>
             </button>
-            {% if request.user|has_group:"Karyawan" %}
               <button class="btn btn-sm btn-danger" onclick="confirmDelete('{{ carline.id }}')">
-                <i class="fas fa-trash-alt mr-1"></i>Delete
+                Delete
               </button>
-            {% endif %}
           </td>
         </tr>
         {% empty %}
@@ -54,7 +45,7 @@
         </button>
       {% endif %}
       <button type="button" class="btn btn-info" id="requirementPartButton">
-        <i class="fas fa-cogs mr-1"></i>All Carline
+        All Carline
       </button>
     </div>
   </div>
@@ -75,7 +66,6 @@
               {{ form.name|add_class:"form-control" }}
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" onclick="closeModal('addCarlineModal')">Cancel</button>
               <button type="submit" class="btn btn-primary">Add</button>
             </div>
           </form>
