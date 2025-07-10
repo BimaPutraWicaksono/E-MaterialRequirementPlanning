@@ -95,11 +95,17 @@ def delete_section(request, id):
 
 @login_required
 def purchaseReq(request):
-    user_departement = request.user.departement  # Ambil departemen user login
+    user_departement = request.user.departement
+    show_duplicate_modal = False  # default
 
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
-        if form.is_valid():
+        registered_no = request.POST.get('registered_no')
+        
+        # Cek apakah registered_no sudah ada di database
+        if PurchaseRequest.objects.filter(registered_no=registered_no).exists():
+            show_duplicate_modal = True  # Trigger modal
+        elif form.is_valid():
             selected_carlines = form.cleaned_data['part_order']
             budget_ref_no_list = request.POST.getlist('budget_ref_no')
             estimated_prices_list = request.POST.getlist('estimated_price')
@@ -112,12 +118,11 @@ def purchaseReq(request):
                 total_amount = 0
 
             pr = form.save(commit=False)
-            pr.departement = user_departement 
+            pr.departement = user_departement
             pr.total_amount = total_amount
-            pr.created_by = request.user  
+            pr.created_by = request.user
             pr.save()
             pr.part_order.set(selected_carlines)
-
             pr.items.all().delete()
 
             all_parts = []
@@ -159,36 +164,20 @@ def purchaseReq(request):
         form = PurchaseRequestForm()
         form.fields['section'].queryset = Section.objects.filter(departement=user_departement)
 
-    # Filter data sesuai role user
-    # filter_option = request.GET.get('filter')
-    # if not filter_option:
-    #     if request.user.groups.filter(name='Karyawan').exists():
-    #         filter_option = 'all'
-    #     elif request.user.groups.filter(name='Supervisor').exists():
-    #         filter_option = 'pending'
-    #     else:
-    #         filter_option = 'all'
-
     if request.user.groups.filter(name='Admin').exists():
         requests = PurchaseRequest.objects.all()
     else:
         requests = PurchaseRequest.objects.filter(departement=user_departement)
-
-    # if filter_option == 'pending':
-    #     requests = requests.filter(approve_spv__isnull=True)
-    # elif filter_option == 'approved_spv':
-    #     requests = requests.filter(approve_spv=True)
-    # elif filter_option == 'rejected':
-    #     requests = requests.filter(Q(approve_spv=False))
 
     requests = requests.order_by('-date')
 
     return render(request, 'order/purchaseReq.html', {
         'form': form,
         'requests': requests,
-        # 'filter_option': filter_option,
         'user_departement': user_departement,
+        'show_duplicate_modal': show_duplicate_modal,
     })
+
 
 @login_required
 def ajax_get_loading_parts(request):

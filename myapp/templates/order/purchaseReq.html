@@ -5,15 +5,7 @@
 
 <div class="container mt-4">
   <h4 class="justify-content-center d-flex" >PURCHASE REQUISITION LIST</h4>
-  {% comment %} <form method="get" class="form-inline mb-3 justify-content-end">
-    <i class="fas fa-filter text-muted mr-2"></i>
-    <select name="filter" id="filter" class="form-control" onchange="this.form.submit()">
-        <option value="all" {% if filter_option == 'all' %}selected{% endif %}>All</option>
-        <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Pending</option>
-        <option value="approved_spv" {% if filter_option == 'approved_spv' %}selected{% endif %}>SPV</option>
-        <option value="rejected" {% if filter_option == 'rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-  </form> {% endcomment %}
+
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
       <tr class="text-center">
@@ -22,17 +14,14 @@
         <th>REGISTERED NO</th>
         <th>REQUEST BY</th>
         <th>STATUS</th>
-        <th>DETAIL</th>
+        <th>APPROVE</th>
         {% if request.user|has_group:"Supervisor" %}
           <th>PURCHASE ORDER</th>
         {% endif %}
-        {% comment %} {% if request.user|has_group:"Karyawan" %}
-          {% if not pr.approve_spv or pr.approve_spv is False %} {% endcomment %}
-            <th>EDIT</th>
-            <th>DELETE</th>
-          {% comment %} {% endif %}
-        {% endif %} {% endcomment %}
-
+        {% if request.user|has_group:"Karyawan" %}
+          <th>EDIT</th>
+          <th>DELETE</th>
+        {% endif %}
       </tr>
     </thead>
       <tbody>
@@ -71,11 +60,13 @@
             </td>
 
             <!-- Edit -->
-            <td class="text-center align-middle">
-              {% if request.user|has_group:"Karyawan" and not pr.approve_spv or pr.approve_spv is False %}
-              <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-              {% endif %}
-            </td>
+            {% if request.user|has_group:"Karyawan" %}
+              <td class="text-center align-middle">
+                {% if not pr.approve_spv or pr.approve_spv is False %}
+                    <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                {% endif %}
+              </td>
+            {% endif %}
 
             <!-- Delete -->
             {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
@@ -105,7 +96,7 @@
         <strong>Note:</strong> The approval flow proceeds as follows: Requested <i class="fas fa-long-arrow-alt-right"></i> SPV 
       </div>
     {% if request.user|has_group:"Karyawan" %}
-      <button type="button" class="btn btn-success mt-2" data-toggle="modal" data-target="#purchaseModal">
+      <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#purchaseModal">
         Add Purchase Request
       </button>
     {% endif %}
@@ -168,10 +159,21 @@
   </div>
   <div id="detail-container" class="mt-5"></div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function () {
+    // 🔄 Auto reload section saat departemen diubah
+    $('#id_departement').change(function () {
+      var departementId = $(this).val();
+      $.ajax({
+        url: "{% url 'ajax_load_sections' %}",
+        data: { 'departement_id': departementId },
+        success: function (data) {
+          $("#id_section").html(data);
+        }
+      });
+    });
+
+    // 🔁 Perubahan checkbox carline trigger AJAX loading parts
     $("input[name='part_order']").change(function () {
       let carlineIds = [];
       $("input[name='part_order']:checked").each(function () {
@@ -200,17 +202,10 @@
       }
     });
 
-    $('#id_departement').change(function () {
-      var departementId = $(this).val();
-      $.ajax({
-        url: "{% url 'ajax_load_sections' %}",
-        data: { 'departement_id': departementId },
-        success: function (data) {
-          $("#id_section").html(data);
-        }
-      });
-    });
+    // 🔄 Hitung ulang total saat nilai estimasi berubah
+    $(document).on('input', '.est-price', updateAmounts);
 
+    // 🔢 Hitung ulang total
     function updateAmounts() {
       let total = 0;
       $('.part-row').each(function () {
@@ -230,9 +225,7 @@
       $('#total-amount-hidden').val(total.toFixed(2));
     }
 
-
-    $(document).on('input', '.est-price', updateAmounts);
-
+    // 🔍 Load detail PR
     $(document).on("click", ".load-detail-btn", function() {
       const registeredNo = $(this).data("registered-no");
       fetch(`/e-mrp/purchase-request/detail/${registeredNo}/`)
@@ -242,39 +235,55 @@
         })
         .catch(error => console.error("Error fetching detail:", error));
     });
+
+    // 📄 Load form PO
+    $(document).on("click", ".load-po-btn", function () {
+      const registeredNo = $(this).data("registered-no");
+      fetch(`/e-mrp/purchase-order/load-form/${registeredNo}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.html) {
+            $("#detail-container").html(data.html);
+          } else {
+            alert("Gagal memuat form PO.");
+          }
+        })
+        .catch(error => console.error("Error fetching PO form:", error));
+    });
+
   });
 
-$(document).on("click", ".load-po-btn", function () {
-  const registeredNo = $(this).data("registered-no");
-  fetch(`/e-mrp/purchase-order/load-form/${registeredNo}/`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.html) {
-        $("#detail-container").html(data.html);
-      } else {
-        alert("Gagal memuat form PO.");
-      }
-    })
-    .catch(error => console.error("Error fetching PO form:", error));
-});
-
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      // Cocokkan nama cookie
-      if (cookie.substring(0, name.length + 1) === name + "=") {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
       }
     }
+    return cookieValue;
   }
-  return cookieValue;
-}
-const csrftoken = getCookie("csrftoken");
-</script>
+  const csrftoken = getCookie("csrftoken");
 
+  {% if show_duplicate_modal %}
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        title: "Duplicate Registered No",
+        text: "This registration number is already in use.",
+        icon: "warning",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
+        customClass: {
+          popup: "custom-swal-popup",
+          confirmButton: "custom-swal-confirm-button",
+        }
+      });
+    });
+  {% endif %}
+</script>
 
 {% endblock %}
