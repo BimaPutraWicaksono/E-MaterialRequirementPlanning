@@ -95,10 +95,15 @@ def purchaseOrd(request):
     # Hanya ambil PR yang sudah punya PO
     requests_with_po = all_requests.filter(registered_no__in=po_registered_nos)
 
-    
     purchase_orders = {
         po.registered_no.registered_no: po
         for po in PurchaseOrder.objects.select_related('created_by').all()
+    }
+
+    # TAMBAHKAN INI: Ambil semua SC yang sudah dikirim
+    sc_sent = {
+        po.registered_no.registered_no: po
+        for po in PurchaseOrder.objects.filter(sc_sent=True)
     }
 
 
@@ -107,7 +112,9 @@ def purchaseOrd(request):
         'requests': requests_with_po,  # GUNAKAN YANG SUDAH DIFILTER
         'po_registered_nos': po_registered_nos,
         'purchase_orders': purchase_orders,
+        'sc_sent': sc_sent,  # <-- tambahkan ini ke context
     })
+
 
 
 @login_required
@@ -226,6 +233,9 @@ def approve_purchase_order(request, registered_no):
 
         return redirect('purchaseOrd')
 
+from django.utils import timezone
+from .models import ScheduleConf
+
 def export_purchase_order_pdf(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
 
@@ -254,9 +264,21 @@ def export_purchase_order_pdf(request, registered_no):
     if pisa_status.err:
         return HttpResponse('PDF generation failed', status=500)
 
-    # Redirect ke halaman list setelah sukses
-    return redirect('list_exported_files')
+    # ✅ Update status sc_sent dan sc_sent_at
+    schedule_conf = ScheduleConf.objects.filter(registered_no=pr).first()
+    if schedule_conf:
+        schedule_conf.sc_sent = True
+        schedule_conf.sc_sent_at = timezone.now()
+        schedule_conf.save()
+    
+    # 🔽 TAMBAHKAN INI: update juga sc_sent pada PurchaseOrder
+    po = getattr(pr, 'purchaseorder', None)
+    if po:
+        po.sc_sent = True
+        po.sc_sent_at = timezone.now()
+        po.save()
 
+    return redirect('list_exported_purchase_orders')
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect

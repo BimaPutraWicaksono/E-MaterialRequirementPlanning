@@ -37,13 +37,12 @@
               <a href="{% url 'airwaybill_detail' awb.registered_no.registered_no %}" class="btn btn-sm btn-info">Detail</a>
               
               <!-- Tombol Edit -->
-              <button 
-                class="btn btn-sm btn-success" 
-                data-toggle="modal" 
-                data-target="#editModal{{ awb.id }}">Edit</button>
+              {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
+                <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#editModal{{ awb.id }}">
+                  Edit
+                </button>
 
               <!-- Tombol Delete -->
-               {% if request.user|has_group:"Karyawan" and request.user.departement.name == "Stock Control" %}
                 <form method="POST" action="{% url 'delete_airwaybill' awb.id %}" class="delete-form d-inline">
                   {% csrf_token %}
                   <button type="button" class="btn btn-sm btn-danger btn-delete-airwaybill">Delete</button>
@@ -149,7 +148,6 @@
             </div>
             
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-success">Update</button>
             </div>
           </div>

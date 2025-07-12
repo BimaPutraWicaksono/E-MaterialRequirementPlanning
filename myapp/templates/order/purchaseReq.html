@@ -14,7 +14,10 @@
         <th>REGISTERED NO</th>
         <th>REQUEST BY</th>
         <th>STATUS</th>
+        {% if request.user|has_group:"Supervisor" %}
         <th>APPROVE</th>
+        {% endif %}
+        <th>DETAIL</th>
         {% if request.user|has_group:"Supervisor" %}
           <th>PURCHASE ORDER</th>
         {% endif %}
@@ -37,44 +40,51 @@
               {% elif pr.approve_spv is False %}
                 SPV <i class="fas fa-times text-danger"></i>
               {% elif pr.requested %}
-                Requested <i class="fas fa-check text-success"></i>
+                Pending <i class="fas fa-check text-success"></i>
               {% elif pr.approve_spv is False %}
                 <i class="fas fa-times text-danger"></i>
               {% endif %}
             </td>
-
-            <!-- Detail -->
+            {% if request.user|has_group:"Supervisor" %}
+              <td class="text-center align-middle">
+                {% if not pr.approve_spv %}
+                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                {% endif %}
+              </td>
+            {% endif %}
             <td class="text-center align-middle">
               {% if request.user|has_group:"Karyawan" or request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" or request.user|has_group:"Admin" %}
                 {% if pr.approve_spv or request.user|has_group:"Karyawan" %}
                   <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                {% elif request.user|has_group:"Supervisor" and not pr.approve_spv %}
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                 {% endif %}
               {% endif %}
             </td>
-            <td class="text-center align-middle">
-              {% if request.user|has_group:"Supervisor" and pr.approve_spv and not pr.purchaseorder %}
-                <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add</button>
-              {% endif %}
-            </td>
+            {% if request.user|has_group:"Supervisor" %}
+              <td class="text-center align-middle">
+                {%if pr.approve_spv and not pr.purchaseorder %}
+                  <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add</button>
+                {% endif %}
+              </td>
+            {% endif %}
 
             <!-- Edit -->
             {% if request.user|has_group:"Karyawan" %}
               <td class="text-center align-middle">
                 {% if not pr.approve_spv or pr.approve_spv is False %}
-                    <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                  <a href="{% url 'purchase_request_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
                 {% endif %}
               </td>
             {% endif %}
 
             <!-- Delete -->
-            {% if request.user|has_group:"Karyawan" and not pr.approve_spv %}
+            {% if request.user|has_group:"Karyawan" %}
               <td class="text-center align-middle">
+                {% if not pr.approve_spv or pr.approve_spv is False %}
                 <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
+                {% endif %}
               </td>
             {% endif %}
             {% if request.user|has_group:"Admin" %}

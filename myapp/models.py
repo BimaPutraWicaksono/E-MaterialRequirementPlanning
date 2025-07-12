@@ -321,7 +321,6 @@ class PurchaseRequest(models.Model):
     class Meta:
         db_table = 'purchase_request'
 
-
 from datetime import date
 
 class RequestItem(models.Model):
@@ -378,6 +377,9 @@ class PurchaseOrder(models.Model):
     
     email_sent = models.BooleanField(default=False)
     email_sent_at = models.DateTimeField(null=True, blank=True)
+    
+    sc_sent = models.BooleanField(default=False)
+    sc_sent_at = models.DateTimeField(null=True, blank=True)
     
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     

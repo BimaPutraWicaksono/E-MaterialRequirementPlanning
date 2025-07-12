@@ -137,13 +137,13 @@
             <li class="nav-item {% if request.resolver_match.url_name == 'purchaseOrd' %}active{% endif %}">
               <a href="{% url 'purchaseOrd' %}" class="nav-link">
                 <i class="nav-icon fas fa-cart-arrow-down"></i>
-                <p>Purchase Order</p>
+                <p style="font-size: 12px;">Purchase Order Approval</p>
               </a>
             </li>
             <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
               <a href="{% url 'list_exported_files' %}" class="nav-link">
                 <i class="nav-icon fas fa-file-pdf"></i>
-                <p>Purchase Order Status</p>
+                <p>Purchase Order</p>
               </a>
             </li>
           {% else %}
@@ -152,13 +152,13 @@
                 <li class="nav-item {% if request.resolver_match.url_name == 'purchaseOrd' %}active{% endif %}">
                   <a href="{% url 'purchaseOrd' %}" class="nav-link">
                     <i class="nav-icon fas fa-cart-arrow-down"></i>
-                    <p>Purchase Order</p>
+                    <p style="font-size: 12px;">Purchase Order Approval</p>
                   </a>
                 </li>
                 <li class="nav-item {% if request.resolver_match.url_name == 'list_exported_files' %}active{% endif %}">
                   <a href="{% url 'list_exported_files' %}" class="nav-link">
                     <i class="nav-icon fas fa-file-pdf"></i>
-                    <p>Purchase Order Status</p>
+                    <p>Purchase Order</p>
                   </a>
                 </li>
               {% endif %}

@@ -1,15 +1,24 @@
 {% extends "base.html" %} {% block content %}
 
 <div class="container scrollable-container">
+  <form method="get" class="mb-2 d-flex justify-content-end">
+    {% comment %} <h6 for="month">Month:</h6> {% endcomment %}
+    <select name="month" id="month" onchange="this.form.submit()" class="form-select w-auto d-inline-block ms-2">
+      <option value="">All Month</option>
+      {% for key, value in month_names.items %}
+        <option value="{{ key }}" {% if selected_month == key %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </form>
   <!-- Grafik baris 1 -->
-  <div class="d-flex mb-4 justify-content-center">
-    <div class="col-4 p-2 border rounded shadow-sm">
-      <h5 class="justify-content-center d-flex">APPROVE STATUS OF PURCHASE ORDER</h5>
+  <div class="d-flex mb-2 justify-content-center p-1">
+    <div class="col-6 p-3 border rounded shadow-sm mr-1">
+      <h5 class="justify-content-center d-flex">APPROVAL STATUS OF PURCHASE ORDER</h5>
       <canvas id="approvalChart"></canvas>
     </div>
-    <div class="col-1"></div>
-    <div class="col-4 p-2 border rounded shadow-sm">
-      <h5 class="justify-content-center d-flex">STATUS DOKUMEN PURCHASE</h5>
+    {% comment %} <div class="col-1"></div> {% endcomment %}
+    <div class="col-6 p-3 border rounded shadow-sm ml-1">
+      <h5 class="justify-content-center d-flex">PURCHASE ORDER STATUS</h5>
       <canvas id="stageChart"></canvas>
     </div>
   </div>
@@ -78,31 +87,35 @@
   /* Chart 2: Tahap Dokumen */
   const stageCtx = document.getElementById('stageChart').getContext('2d');
   new Chart(stageCtx, {
-      type: 'bar',
-      data: {
-          labels: {{ stage_data.labels|safe }},
-          datasets: [{
-              label: 'qty',
-              data: {{ stage_data.counts|safe }},
-              backgroundColor: [
-                  'rgba(153, 102, 255, 0.6)',
-                  'rgba(201, 203, 207, 0.6)',
-                  'rgba(255, 159, 64, 0.6)',
-                  'rgba(75, 192, 192, 0.6)'
-              ],
-              borderWidth: 1
-          }]
+    type: 'bar',
+    data: {
+      labels: {{ stage_data.labels|safe }},
+      datasets: [{
+        label: 'jumlah',
+        data: {{ stage_data.counts|safe }},
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(255, 205, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(153, 102, 255, 0.6)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } }
       },
-      options: {
-          responsive: true,
-          scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
-          },
-          plugins: {
-              legend: { display: false }
-          }
+      plugins: {
+        legend: { display: false }
       }
+    }
   });
+
 </script>
 
 {% endblock %}
+ 

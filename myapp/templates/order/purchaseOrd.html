@@ -4,7 +4,7 @@
 {% block content %}
 {% load humanize %}
 <div class="container mt-4">
-  <h4 class="justify-content-center d-flex">PURCHASE ORDER</h4>
+  <h4 class="justify-content-center d-flex">PURCHASE ORDER APPROVAL</h4>
 
   {% if requests %}
     <div class="table-responsive mb-4">
@@ -15,8 +15,9 @@
             <th>DATE</th>
             <th>REQUEST BY</th>
             <th>REGISTERED NO</th>
-            <th>APPROVAL</th>
+            <th>STATUS</th>
             <th>DETAIL</th>
+            <th>SENT SC</th>
             {% if request.user|has_group:"Karyawan" or request.user|has_group:"Supervisor" %}
               <th>EDIT</th>
               <th>DELETE</th>
@@ -46,13 +47,15 @@
                     {% elif pr.approve_spv %}
                       SPV <i class="fas fa-check text-success"></i>
                     {% elif pr.requested %}
-                      Requested <i class="fas fa-check text-success"></i>
+                      Pending <i class="fas fa-check text-success"></i>
                     {% else %}
                       <i class="fas fa-times text-danger"></i>
                     {% endif %}
                   </td>
                   <!-- TD 1: Kosong (tidak ada Add PO di sini) -->
-                  <td class="text-center align-middle"></td>
+                  <td class="text-center align-middle">
+
+                  </td>
 
                   <!-- TD 2: Delete -->
                   <td class="text-center align-middle">
@@ -91,11 +94,12 @@
                       {% elif pr.approve_sspv is False %}
                         SSPV <i class="fas fa-times text-danger"></i>
                       {% elif pr.approve_spv is True %}
-                        SPV <i class="fas fa-check text-success"></i>
+                        Created 
+                        {% comment %} <i class="fas fa-check text-success"></i> {% endcomment %}
                       {% elif pr.approve_spv is False %}
                         SPV <i class="fas fa-times text-danger"></i>
                       {% elif pr.requested %}
-                        Requested <i class="fas fa-check text-success"></i>
+                        Pending <i class="fas fa-check text-success"></i>
                       {% else %}
                         <i class="fas fa-times text-danger"></i>
                       {% endif %}
@@ -105,7 +109,15 @@
                     <td class="text-center align-middle">
                       <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                     </td>
-
+                    <td class="text-center align-middle">
+                      {% with po=purchase_orders|dict_get:pr.registered_no %}
+                        {% if po and po.sc_sent %}
+                          <i class="fas fa-check text-success"></i> <!-- Centang hijau -->
+                        {% else %}
+                          <i class="fas fa-times text-danger"></i> <!-- Silang merah -->
+                        {% endif %}
+                      {% endwith %}
+                    </td>
                     <!-- TD 2: Edit -->
                     <td class="text-center align-middle">
                       {% if request.user|has_group:"Supervisor" and not pr.approve_sspv %}
@@ -143,7 +155,7 @@
                       {% elif pr.approve_spv %}
                         SPV <i class="fas fa-check text-success"></i>
                       {% elif pr.requested %}
-                        Requested <i class="fas fa-check text-success"></i>
+                        Pending <i class="fas fa-check text-success"></i>
                       {% else %}
                         <i class="fas fa-times text-danger"></i>
                       {% endif %}

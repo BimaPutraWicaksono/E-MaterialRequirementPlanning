@@ -226,19 +226,26 @@
         {% endif %}
       {% endif %}
     </form>
-  {% if not created_po %}
-
-    <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
-      Submit Purchase Order
-    </button>
-  {% endif %}
+    {% if not created_po %}
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary mt-2" form="purchase-order-form">
+          Save
+        </button>
+      </div>
+    {% endif %}
   {% if request.user|has_group:"Karyawan" %}
     {% if purchase_request.approve_factory_manager %}
-      <form method="GET" action="{% url 'export_purchase_order_pdf' purchase_request.registered_no %}">
-        <button type="submit" class="btn btn-success mt-2">
-          <i class="fas fa-file-pdf"></i> Send to Stock Control
+      {% if purchase_request.purchaseorder.sc_sent %}
+        <button class="btn btn-secondary mt-2" disabled>
+          <i class="fas fa-file-pdf"></i> Already Sent to Stock Control
         </button>
-      </form>
+      {% else %}
+        <form method="GET" action="{% url 'export_purchase_order_pdf' purchase_request.registered_no %}">
+          <button type="submit" class="btn btn-success mt-2">
+            <i class="fas fa-file-pdf"></i> Send to Stock Control
+          </button>
+        </form>
+      {% endif %}
     {% endif %}
   {% endif %}
 </div>

@@ -13,11 +13,12 @@
           <th>NO</th>
           <th>PURCHASE ORDER</th>
           <th>SUPPLIER</th>
-          <th>DELIVERY</th>
-          <th>DATE</th>
+          <th>STATUS</th>
+          <th>SENT DATE</th>
+          <th>SCHED DELIVERY DATE</th>
           <th>INVOICE</th>
           <th>AIRWAY BILL</th>
-          <th>VIEW</th>
+          <th>DETAIL</th>
           {% if request.user|has_group:"Karyawan" and request.user.departement and request.user.departement.name == "Stock Control" %}
             <th>SEND</th>
             <th>CONFIRMATION</th>
@@ -37,16 +38,21 @@
                 {% elif file.acc_rej == False %}
                   <span class="badge badge-fixed bg-danger">Rejected</span>
                 {% elif file.email_sent %}
-                  <span class="badge badge-fixed bg-success">Sent</span>
+                  <span class="badge badge-fixed bg-info">Sent</span>
                 {% else %}
                   <span class="badge badge-fixed bg-secondary">Not Sent</span>
                 {% endif %}
               </td>
               <td class="text-center align-middle">
                 {% if file.acc_rej == True %}
-                  {{ file.schedule_date|date:"d M Y" }}
-                {% elif file.email_sent %}
                   {{ file.email_sent_at|date:"d M Y H:i" }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="text-center align-middle">
+                {% if file.acc_rej == True %}
+                  {{ file.schedule_date|date:"d M Y" }}
                 {% else %}
                   -
                 {% endif %}
@@ -116,10 +122,10 @@
   </div>
 
   <div class="bg-white p-3 border rounded">
-    <p><strong>Delivery:</strong></p>
+    <p><strong>Status:</strong></p>
     <p>
       <span class="badge badge-fixed bg-secondary">Not Sent</span> Not yet sent.<br>
-      <span class="badge badge-fixed bg-success">Sent</span> Sent, waiting for response.<br>
+      <span class="badge badge-fixed bg-info">Sent</span> Sent, waiting for response.<br>
       <span class="badge badge-fixed bg-success">Accepted</span> Accepted and scheduled.<br>
       <span class="badge badge-fixed bg-danger">Rejected</span> Rejected by recipient.
     </p>
