@@ -5,7 +5,18 @@
 
 <div class="container mt-4">
   <h4 class="justify-content-center d-flex" >PURCHASE REQUISITION LIST</h4>
-
+  <div class="d-flex justify-content-end">
+    <form method="GET" class="form-inline d-flex justify-content-end">
+      <p for="status" class="mr-2 mt-3">Status:</p>
+      <select name="status" id="status" class="form-control" style="width: 178px; height:34px;" onchange="this.form.submit()">
+        <option value="">All</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+      </select>
+      <noscript><button type="submit" class="btn btn-primary btn-sm">Apply</button></noscript>
+    </form>
+  </div>
   <table class="table table-bordered mt-3" id='table_purchase_req'>
     <thead>
       <tr class="text-center">

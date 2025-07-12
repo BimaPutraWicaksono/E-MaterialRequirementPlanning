@@ -25,6 +25,7 @@ from .models import ( Shipped, PurchaseRequest, RequestItem, LoadingPartResult, 
 @login_required
 def purchaseOrd(request):
     user_departement = request.user.departement
+    status_filter = request.GET.get('status')
 
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
@@ -86,35 +87,46 @@ def purchaseOrd(request):
     else:
         form = PurchaseRequestForm()
 
-    # Ambil semua PurchaseRequest milik user
     all_requests = PurchaseRequest.objects.filter(departement=user_departement).order_by('-date')
 
-    # PO registered_no yang sudah dibuat
     po_registered_nos = set(PurchaseOrder.objects.values_list('registered_no__registered_no', flat=True))
 
     # Hanya ambil PR yang sudah punya PO
     requests_with_po = all_requests.filter(registered_no__in=po_registered_nos)
+
+    # 🔽 Filter berdasarkan status
+    if status_filter == 'pending':
+        requests_with_po = requests_with_po.filter(
+            requested=True,
+            approve_spv__isnull=True
+        )
+    elif status_filter == 'approved':
+        requests_with_po = requests_with_po.filter(
+            approve_factory_manager=True
+        )
+    elif status_filter == 'rejected':
+        requests_with_po = requests_with_po.filter(
+            approve_spv=False
+        )
 
     purchase_orders = {
         po.registered_no.registered_no: po
         for po in PurchaseOrder.objects.select_related('created_by').all()
     }
 
-    # TAMBAHKAN INI: Ambil semua SC yang sudah dikirim
     sc_sent = {
         po.registered_no.registered_no: po
         for po in PurchaseOrder.objects.filter(sc_sent=True)
     }
 
-
     return render(request, 'order/purchaseOrd.html', {
         'form': form,
-        'requests': requests_with_po,  # GUNAKAN YANG SUDAH DIFILTER
+        'requests': requests_with_po,
         'po_registered_nos': po_registered_nos,
         'purchase_orders': purchase_orders,
-        'sc_sent': sc_sent,  # <-- tambahkan ini ke context
+        'sc_sent': sc_sent,
+        'status_filter': status_filter,  # ⬅️ kirim ke template
     })
-
 
 
 @login_required
@@ -291,6 +303,8 @@ from datetime import datetime
 
 @login_required
 def list_exported_purchase_orders(request):
+    status_filter = request.GET.get("status")
+    
     if request.method == "POST" and request.POST.get("action") == "search_email":
         today = datetime.now().date()
 
@@ -423,12 +437,32 @@ def list_exported_purchase_orders(request):
         awb.registered_no.registered_no: awb.airwaybill_no
         for awb in awb_qs
     }
+    
+    filtered_files = []
+
+    for file in file_urls:
+        status = None
+        if file["acc_rej"] is True:
+            status = "accepted"
+        elif file["acc_rej"] is False:
+            status = "rejected"
+        elif file["acc_rej"] is None and file["email_sent"]:
+            status = "sent"
+        elif file["acc_rej"] is None and not file["email_sent"]:
+            status = "not_sent"
+
+        if status_filter and status != status_filter:
+            continue
+
+        filtered_files.append(file)
 
     return render(request, "order/list_exported_files.html", {
-        "files": file_urls,
+        "files": filtered_files,
         "existing_invoices": existing_invoices,
         "existing_awb": existing_awb,
+        "status_filter": status_filter, 
     })
+
 
 
 

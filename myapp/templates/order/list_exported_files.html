@@ -6,6 +6,19 @@
 {% block content %}
 <div class="container mt-4">
   <h2 class="d-flex justify-content-center">PURCHASE ORDER</h2>
+  <div class="d-flex justify-content-end">
+    <form method="GET" class="form-inline d-flex justify-content-end">
+      <p for="status" class="mr-2 mt-3">Status:</p>
+      <select name="status" id="status" class="form-control" style="width: 178px; height:34px;" onchange="this.form.submit()">
+        <option value="">All</option>
+        <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Accepted</option>
+        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+        <option value="sent" {% if status_filter == 'sent' %}selected{% endif %}>Sent</option>
+        <option value="not_sent" {% if status_filter == 'not_sent' %}selected{% endif %}>Not Sent</option>
+      </select>
+      <noscript><button type="submit" class="btn btn-primary btn-sm">Apply</button></noscript>
+    </form>
+  </div>
   <div class="table-responsive mb-4">
     <table class="table table-bordered mt-3" id="table_delivery">
       <thead class="table-light text-center">

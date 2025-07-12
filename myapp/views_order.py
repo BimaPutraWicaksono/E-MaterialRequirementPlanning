@@ -85,7 +85,6 @@ def update_section(request, id):
         return redirect('master_departement_section')
     return render(request, 'departement/edit_section.html', {'section': section, 'departements': departements})
 
-
 @login_required()
 def delete_section(request, id):
     section = get_object_or_404(Section, id=id)
@@ -97,7 +96,8 @@ def delete_section(request, id):
 def purchaseReq(request):
     user_departement = request.user.departement
     show_duplicate_modal = False  # default
-
+    status_filter = request.GET.get('status')
+    
     if request.method == 'POST':
         form = PurchaseRequestForm(request.POST)
         registered_no = request.POST.get('registered_no')
@@ -169,6 +169,14 @@ def purchaseReq(request):
     else:
         requests = PurchaseRequest.objects.filter(departement=user_departement)
 
+    # 🟨 Tambahkan filter berdasarkan status
+    if status_filter == "approved":
+        requests = requests.filter(approve_spv=True)
+    elif status_filter == "rejected":
+        requests = requests.filter(approve_spv=False)
+    elif status_filter == "pending":
+        requests = requests.filter(requested=True, approve_spv__isnull=True)
+
     requests = requests.order_by('-date')
 
     return render(request, 'order/purchaseReq.html', {
@@ -176,9 +184,10 @@ def purchaseReq(request):
         'requests': requests,
         'user_departement': user_departement,
         'show_duplicate_modal': show_duplicate_modal,
+        'status_filter': status_filter,
     })
 
-
+ 
 @login_required
 def ajax_get_loading_parts(request):
     if request.method == 'POST':
