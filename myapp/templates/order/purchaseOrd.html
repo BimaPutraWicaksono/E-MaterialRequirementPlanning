@@ -27,9 +27,12 @@
             <th>REQUEST BY</th>
             <th>REGISTERED NO</th>
             <th>STATUS</th>
+            {% if not request.user|has_group:"Karyawan" and not request.user|has_group:"Supervisor" %}
+              <th>APPROVAL</th>
+            {% endif %}
             <th>DETAIL</th>
-            <th>SENT SC</th>
             {% if request.user|has_group:"Karyawan" or request.user|has_group:"Supervisor" %}
+              <th>SENT SC</th>
               <th>EDIT</th>
               <th>DELETE</th>
             {% endif %}
@@ -171,28 +174,32 @@
                         <i class="fas fa-times text-danger"></i>
                       {% endif %}
                     </td>
-                    <!-- TD 1: Approve -->
                     <td class="text-center align-middle">
                       {% if request.user|has_group:"SeniorSupervisor" %}
                         {% if not pr.approve_sspv %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% elif pr.approve_sspv %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
-                      
+
                       {% elif request.user|has_group:"Manager" %}
                         {% if not pr.approve_manager and pr.approve_sspv %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% elif pr.approve_manager %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
-                      
+
                       {% elif request.user|has_group:"FactoryManager" %}
                         {% if pr.approve_manager and not pr.approve_factory_manager %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
-                        {% elif pr.approve_factory_manager %}
-                          <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
+                      {% endif %}
+                    </td>
+                    <td class="text-center align-middle">
+                      {% if request.user|has_group:"SeniorSupervisor" and pr.approve_sspv %}
+                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+
+                      {% elif request.user|has_group:"Manager" and pr.approve_manager %}
+                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
+
+                      {% elif request.user|has_group:"FactoryManager" and pr.approve_factory_manager %}
+                        <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                       {% endif %}
                     </td>
                   </tr>
