@@ -8,62 +8,81 @@ User = get_user_model()
 class Command(BaseCommand):
     help = "Seed the User table with test data and assign departments"
 
-    users = [
-        {"username": "Andi", "password": "1234", "group": "Admin", "departement": "IT"},
-        {"username": "Nevara", "password": "1234", "group": "Karyawan", "departement": "IT"},
-        {"username": "Altisha", "password": "1234", "group": "Supervisor", "departement": "IT"},
-        {"username": "Rendi", "password": "1234", "group": "SeniorSupervisor", "departement": "IT"},
-        {"username": "Praz", "password": "1234", "group": "Manager", "departement": "IT"},
-        {"username": "Bima", "password": "1234", "group": "FactoryManager", "departement": "IT"},
-        
-        {"username": "Diouf", "password": "1234", "group": "Admin", "departement": "MTC"},
-        {"username": "Riza", "password": "1234", "group": "Karyawan", "departement": "MTC"},
-        {"username": "Nala", "password": "1234", "group": "Supervisor", "departement": "MTC"},
-        {"username": "Tasya", "password": "1234", "group": "SeniorSupervisor", "departement": "MTC"},
-        {"username": "Muti", "password": "1234", "group": "Manager", "departement": "MTC"},
-        {"username": "Ara", "password": "1234", "group": "FactoryManager", "departement": "MTC"},
-        
-        {"username": "Ninda", "password": "1234", "group": "Karyawan", "departement": "Stock Control"},
-    ]
-
     def handle(self, *args, **kwargs):
-        # Buat semua grup
-        group_names = list(set(user["group"] for user in self.users))
-        for group_name in group_names:
-            group, created = Group.objects.get_or_create(name=group_name)
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"Grup '{group_name}' berhasil dibuat."))
-            else:
-                self.stdout.write(self.style.WARNING(f"Grup '{group_name}' sudah ada."))
+        # Definisikan user tetap
+        fixed_users = [
+            {"username": "Rendi", "password": "1234", "group": "Admin", "departement": None},
+            {"username": "Ninda", "password": "1234", "group": "Karyawan", "departement": "Stock Control"},
+        ]
 
-        # Buat semua departemen
-        dept_names = list(set(user["departement"] for user in self.users))
-        for dept_name in dept_names:
-            Departement.objects.get_or_create(name=dept_name)
+        # Grup yang akan dibuat
+        roles = ['Admin', 'Karyawan', 'Supervisor', 'SeniorSupervisor', 'Manager', 'FactoryManager']
+        for role in roles:
+            Group.objects.get_or_create(name=role)
 
-        # Buat user dan hubungkan ke grup dan departemen
-        for item in self.users:
-            departement = Departement.objects.get(name=item["departement"])
-            user, created = User.objects.get_or_create(username=item["username"], defaults={
-                "departement": departement,
+        # Buat fixed user: Admin dan Ninda
+        for user_data in fixed_users:
+            dept = None
+            if user_data["departement"]:
+                dept = Departement.objects.get(name=user_data["departement"])
+            user, created = User.objects.get_or_create(username=user_data["username"], defaults={
+                "departement": dept,
             })
-
             if created:
-                user.set_password(item["password"])
+                user.set_password(user_data["password"])
                 user.save()
-                self.stdout.write(self.style.SUCCESS(f"User '{item['username']}' berhasil dibuat."))
-            else:
-                self.stdout.write(self.style.WARNING(f"User '{item['username']}' sudah ada. Password tidak diubah."))
+                self.stdout.write(self.style.SUCCESS(f"✅ User '{user.username}' dibuat."))
 
-            # Set departemen jika belum ada
-            if not user.departement:
-                user.departement = departement
+            if dept and not user.departement:
+                user.departement = dept
                 user.save()
-                self.stdout.write(self.style.SUCCESS(f"Departemen '{departement.name}' ditetapkan untuk user '{user.username}'."))
 
-            # Set grup
-            group = Group.objects.get(name=item["group"])
+            group = Group.objects.get(name=user_data["group"])
             user.groups.set([group])
-            self.stdout.write(self.style.SUCCESS(f"User '{item['username']}' ditambahkan ke grup '{item['group']}'."))
+            self.stdout.write(self.style.SUCCESS(f"🔗 Grup '{group.name}' ditetapkan ke '{user.username}'"))
 
-        self.stdout.write(self.style.SUCCESS("Proses seeding user selesai."))
+        # Daftar user tambahan berdasarkan departemen (tanpa Admin dan Stock Control)
+        user_templates = {
+            "Production": [
+                {"username": "Nevara", "group": "Karyawan"},
+                {"username": "Altisha", "group": "Supervisor"},
+                {"username": "Praz", "group": "SeniorSupervisor"},
+                {"username": "Amel", "group": "Manager"},
+                {"username": "Afifah", "group": "FactoryManager"},
+            ],
+            "Maintenance": [
+                {"username": "Diouf", "group": "Karyawan"},
+                {"username": "Riza", "group": "Supervisor"},
+                {"username": "Nala", "group": "SeniorSupervisor"},
+                {"username": "Tasya", "group": "Manager"},
+                {"username": "Muti", "group": "FactoryManager"},
+            ],
+            "Purchasing": [
+                {"username": "Wildan", "group": "Karyawan"},
+                {"username": "Vandy", "group": "Supervisor"},
+                {"username": "Iemaduddin", "group": "SeniorSupervisor"},
+                {"username": "Rizki", "group": "Manager"},
+                {"username": "Marina", "group": "FactoryManager"},
+            ],
+        }
+
+        for dept_name, users in user_templates.items():
+            departement = Departement.objects.get(name=dept_name)
+            for user_data in users:
+                user, created = User.objects.get_or_create(username=user_data["username"], defaults={
+                    "departement": departement,
+                })
+                if created:
+                    user.set_password("1234")
+                    user.save()
+                    self.stdout.write(self.style.SUCCESS(f"✅ User '{user.username}' dibuat untuk Departemen '{dept_name}'."))
+
+                if not user.departement:
+                    user.departement = departement
+                    user.save()
+
+                group = Group.objects.get(name=user_data["group"])
+                user.groups.set([group])
+                self.stdout.write(self.style.SUCCESS(f"🔗 Grup '{group.name}' ditetapkan ke '{user.username}'"))
+
+        self.stdout.write(self.style.SUCCESS("🎉 Semua user berhasil disiapkan."))
