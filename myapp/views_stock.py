@@ -5,11 +5,21 @@ from django.contrib import messages
 
 from .models import PurchaseRequest, Stock, RequestItem
 
+from django.db.models import Exists, OuterRef
+from .models import PurchaseRequest, Stock, RequestItem, Invoice  # pastikan Invoice diimpor
+
 @login_required
 def stockList(request):
+    # Subquery: cek apakah ada Invoice terkait untuk PurchaseRequest tertentu
+    has_invoice = Invoice.objects.filter(registered_no=OuterRef('pk'))
+
     connected_requests = (
         PurchaseRequest.objects
-        .filter(airwaybill__isnull=False)
+        .filter(
+            airwaybill__isnull=False,  # Sudah ada airwaybill
+        )
+        .annotate(has_invoice=Exists(has_invoice))  # Tambahkan flag
+        .filter(has_invoice=True)  # Filter yang punya invoice saja
         .select_related('departement', 'section')
         .prefetch_related('items')
     )
@@ -46,19 +56,11 @@ def stockList(request):
         {'connected_requests': connected_requests}
     )
 
+
 @login_required
 def requestItemDetail(request, pk):
-    """
-    Fitur:
-    • Kolom input qty fleksibel (min 0, max qty asli).
-    • Input '0' atau kosong ⇒ dianggap belum di‑input (stok dihapus jika ada).
-    • Setelah Save, angka terakhir yang disimpan menjadi default.
-    • Warna ANGKA: hijau (qty sama), merah (qty lebih kecil).
-    • Tombol "Save" berubah jadi "Complete" jika semua qty sudah sesuai.
-    """
     purchase_request = get_object_or_404(PurchaseRequest, pk=pk)
 
-    # Semua item di PR
     items = purchase_request.items.select_related(
         'loading_part_result',
         'loading_part_result__partdesk',
@@ -72,7 +74,6 @@ def requestItemDetail(request, pk):
             field_key = f"input_qty_{item.id}"
             raw_val = request.POST.get(field_key, "").strip()
 
-            # Kosong / 0 ⇒ dianggap tidak diinput
             if raw_val in ("", "0"):
                 qty_input = 0
             else:
@@ -89,11 +90,10 @@ def requestItemDetail(request, pk):
                 )
                 continue
 
-            # Ambil Part terkait
             partdesk = getattr(item.loading_part_result, "partdesk", None)
             part = getattr(partdesk, "partName", None)
             if not part:
-                continue  # Skip jika belum ada part definitif
+                continue
 
             stock_obj = Stock.objects.filter(
                 part=part,
@@ -101,7 +101,6 @@ def requestItemDetail(request, pk):
             ).first()
 
             if qty_input > 0:
-                # Buat / update stok
                 if stock_obj:
                     stock_obj.quantity = qty_input
                     stock_obj.save()
@@ -112,24 +111,23 @@ def requestItemDetail(request, pk):
                         source_request_item_id=item.id
                     )
             else:
-                # qty 0 ⇒ hapus stok jika ada
                 if stock_obj:
                     stock_obj.delete()
 
         if errors:
-            messages.error(request, " ".join(errors))
+            for err in errors:
+                messages.error(request, err)
         else:
             messages.success(request, "Stock Updated")
 
-        return redirect(request.path)
+        return redirect('request_item_detail', pk=pk)  # ← POST redirect handled
 
-    # Ambil semua stok yang tersimpan untuk PR ini
+    # ====== GET request handler starts here =======
     stocks = Stock.objects.filter(
         source_request_item__in=[i.id for i in items]
     )
     saved_qty = {s.source_request_item_id: s.quantity for s in stocks}
 
-    # Siapkan atribut bantu untuk template
     for item in items:
         item.saved_qty = saved_qty.get(item.id)
         original_qty = int(float(item.result_average_round))
@@ -146,19 +144,18 @@ def requestItemDetail(request, pk):
             else:
                 item.qty_color = ""
 
-    # Cek apakah semua qty sudah sesuai (untuk tombol "Complete")
     all_qty_complete = all(
-        item.saved_qty == int(float(item.result_average_round))
+        saved_qty.get(item.id) == int(float(item.result_average_round))
         for item in items
-        if item.saved_qty is not None
     )
+
 
     return render(
         request,
         'stock/request_item_detail_page.html',
         {
             'purchase_request': purchase_request,
-            'request_items':    items,
-            'all_qty_complete': all_qty_complete,  
+            'request_items': items,
+            'all_qty_complete': all_qty_complete,
         }
     )

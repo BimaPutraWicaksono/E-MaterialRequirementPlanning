@@ -59,7 +59,7 @@
             {% if request.user|has_group:"Supervisor" %}
               <td class="text-center align-middle">
                 {% if not pr.approve_spv %}
-                  <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                  <button class="btn btn-sm btn-primary load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                 {% endif %}
               </td>
             {% endif %}
@@ -72,11 +72,14 @@
             </td>
             {% if request.user|has_group:"Supervisor" %}
               <td class="text-center align-middle">
-                {%if pr.approve_spv and not pr.purchaseorder %}
-                  <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add</button>
+                {% if pr.approve_spv %}
+                  {% if not pr.purchaseorder %}
+                    <button class="btn btn-sm btn-primary load-po-btn" data-registered-no="{{ pr.registered_no }}">Add</button>
+                  {% endif %}
                 {% endif %}
               </td>
             {% endif %}
+
 
             <!-- Edit -->
             {% if request.user|has_group:"Karyawan" %}
@@ -114,7 +117,7 @@
   </table>
   <div class="d-flex">
       <div class="border border-warning rounded p-2 mt-1">
-        <strong>Note:</strong> The approval flow proceeds as follows: Requested <i class="fas fa-long-arrow-alt-right"></i> SPV 
+        <strong>Note:</strong> The approval flow proceeds as follows: Karyawan Creates a Purchase Request <i class="fas fa-long-arrow-alt-right"></i> SPV 
       </div>
     {% if request.user|has_group:"Karyawan" %}
       <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#purchaseModal">

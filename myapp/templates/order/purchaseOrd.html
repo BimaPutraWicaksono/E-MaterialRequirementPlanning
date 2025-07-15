@@ -17,7 +17,6 @@
       <noscript><button type="submit" class="btn btn-primary btn-sm">Apply</button></noscript>
     </form>
   </div>
-  {% if requests %}
     <div class="table-responsive mb-4">
       <table class="table table-bordered mt-3" id="table_purchase_ord">
         <thead class="table-light text-center">
@@ -33,11 +32,14 @@
             <th>DETAIL</th>
             {% if request.user|has_group:"Karyawan" or request.user|has_group:"Supervisor" %}
               <th>SENT SC</th>
-              <th>EDIT</th>
-              <th>DELETE</th>
+              {% if request.user|has_group:"Supervisor" %}
+                <th>EDIT</th>
+                <th>DELETE</th>
+              {% endif %}
             {% endif %}
           </tr>
         </thead>
+      {% if requests %}
         <tbody>
           {% for pr in requests %}
             {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
@@ -108,7 +110,7 @@
                       {% elif pr.approve_sspv is False %}
                         SSPV <i class="fas fa-times text-danger"></i>
                       {% elif pr.approve_spv is True %}
-                        Created 
+                        Pending 
                         {% comment %} <i class="fas fa-check text-success"></i> {% endcomment %}
                       {% elif pr.approve_spv is False %}
                         SPV <i class="fas fa-times text-danger"></i>
@@ -132,19 +134,22 @@
                         {% endif %}
                       {% endwith %}
                     </td>
-                    <!-- TD 2: Edit -->
-                    <td class="text-center align-middle">
-                      {% if request.user|has_group:"Supervisor" and not pr.approve_sspv %}
-                        <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
-                      {% endif %}
-                    </td>
+                    
+                    {% if request.user|has_group:"Supervisor" %}
+                      <!-- TD 2: Edit -->
+                      <td class="text-center align-middle">
+                        {% if not pr.approve_sspv %}
+                          <a href="{% url 'purchase_order_edit' pr.registered_no %}" class="btn btn-sm btn-success">Edit</a>
+                        {% endif %}
+                      </td>
 
-                    <!-- TD 3: Delete -->
-                    <td class="text-center align-middle">
-                      {% if request.user|has_group:"Supervisor" and not pr.approve_sspv %}
-                        <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
-                      {% endif %}
-                    </td>
+                      <!-- TD 3: Delete -->
+                      <td class="text-center align-middle">
+                        {% if not pr.approve_sspv %}
+                          <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
+                        {% endif %}
+                      </td>
+                    {% endif %}
                   </tr>
                 {% endif %}
 
@@ -177,17 +182,17 @@
                     <td class="text-center align-middle">
                       {% if request.user|has_group:"SeniorSupervisor" %}
                         {% if not pr.approve_sspv %}
-                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                          <button class="btn btn-sm btn-primary load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
 
                       {% elif request.user|has_group:"Manager" %}
                         {% if not pr.approve_manager and pr.approve_sspv %}
-                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                          <button class="btn btn-sm btn-primary load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
 
                       {% elif request.user|has_group:"FactoryManager" %}
                         {% if pr.approve_manager and not pr.approve_factory_manager %}
-                          <button class="btn btn-sm btn-success load-approve-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
+                          <button class="btn btn-sm btn-primary load-detail-btn" data-registered-no="{{ pr.registered_no }}">Approve</button>
                         {% endif %}
                       {% endif %}
                     </td>
@@ -210,23 +215,19 @@
             <tr><td colspan="4" class="text-center">No data available.</td></tr>
           {% endfor %}
         </tbody>
+        {% endif %}
       </table>
 
       <div class="border border-warning rounded p-2 mt-1">
         <strong>Note:</strong> The approval flow proceeds as follows:
-        SPV Add Purchase Order <i class="fas fa-long-arrow-alt-right"></i>
+        SPV Creates a Purchase Order <i class="fas fa-long-arrow-alt-right"></i>
         SSPV <i class="fas fa-long-arrow-alt-right"></i>
         Manager <i class="fas fa-long-arrow-alt-right"></i>
         Factory Manager
       </div>
     </div>
-  {% else %}
-    <p>No data available.</p>
-  {% endif %}
-
-  <div id="detail-container" class="mt-5"></div>
+  <div id="detail-container" class="mt-4"></div>
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

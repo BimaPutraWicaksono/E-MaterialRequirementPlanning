@@ -17,7 +17,7 @@
           </a>
         </li>
         <!-- Sparepart -->
-        {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
+        {% comment %} {% if request.user|has_group:"Supervisor" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
         <li class="nav-item has-treeview {% if request.resolver_match.url_name in 'applicator strokePart' or request.resolver_match.url_name == 'loadingPart' %}menu-open{% endif %}">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-box"></i>
@@ -41,7 +41,7 @@
             </li>
           </ul>
         </li>
-        {% endif %}
+        {% endif %} {% endcomment %}
         
         {% if request.user|has_group:"Karyawan" %}
           {% if request.user.departement %}

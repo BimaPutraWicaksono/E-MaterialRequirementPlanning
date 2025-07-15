@@ -290,7 +290,7 @@ def export_purchase_order_pdf(request, registered_no):
         po.sc_sent_at = timezone.now()
         po.save()
 
-    return redirect('list_exported_purchase_orders')
+    return redirect('purchaseOrd') 
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect

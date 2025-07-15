@@ -382,7 +382,7 @@ def create_purchase_order(request, registered_no):
             if not po.delivery:
                 po.delivery = initial_delivery
             po.save()
-            messages.success(request, f"Purchase Order untuk {registered_no} berhasil dibuat.")
+            # messages.success(request, f"Purchase Order untuk {registered_no} berhasil dibuat.")
             return redirect('purchaseReq')
         else:
             messages.error(request, "Terdapat kesalahan pada form.")

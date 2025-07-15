@@ -41,7 +41,7 @@
         id="uploadForm"
       >
         {% csrf_token %}
-        <div class="file-upload-wrapper">{{ form.as_p }}</div>
+        <div class="file-upload-wrapper pt-4">{{ form.as_p }}</div>
         <button type="submit" class="btn btn-primary d-flex" id="uploadButton">
           Upload
         </button>
@@ -53,7 +53,7 @@
     </div>
 
     <div>
-      <button type="button" class="btn-danger btn-sm" id="resetButton">
+      <button type="button" class="btn-danger btn" id="resetButton">
         Delete
       </button>
     </div>
