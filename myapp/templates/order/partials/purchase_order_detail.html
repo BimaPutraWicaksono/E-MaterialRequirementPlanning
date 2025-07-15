@@ -269,7 +269,9 @@
   }
 </style>
 <script>
-  new DataTable('#table_approve');
+  new DataTable('#table_approve', {
+    lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]]
+  });
 
   function toggleReason(role) {
     const select = document.getElementById(`approve_${role}`);

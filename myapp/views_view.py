@@ -126,8 +126,8 @@ def home(request):
     new_pr_ids = all_ids - used_ids
 
     stage_labels = [
-        "Purchase Order",
-        "Purchase Order Sent",
+        "PO not Sent",
+        "PO Sent",
         "Delivery Confirmed",
         "Airway Bill",
         "Invoice",

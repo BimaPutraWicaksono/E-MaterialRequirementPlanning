@@ -31,7 +31,6 @@
             {% endif %}
             <th>DETAIL</th>
             {% if request.user|has_group:"Karyawan" or request.user|has_group:"Supervisor" %}
-              <th>SENT SC</th>
               {% if request.user|has_group:"Supervisor" %}
                 <th>EDIT</th>
                 <th>DELETE</th>
@@ -44,7 +43,7 @@
           {% for pr in requests %}
             {% if request.user|has_group:"Admin" or request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" or request.user|has_group:"SeniorSupervisor" or request.user|has_group:"Manager" or request.user|has_group:"FactoryManager" %}
               {% if request.user|has_group:"Admin" %}
-                <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
+                {% comment %} <tr class="po-row {% if pr.registered_no in po_registered_nos %}has-po{% else %}no-po{% endif %}">
                   <td>{{ forloop.counter }}</td>
                   <td class="text-center align-middle">
                     {{ purchase_orders|dict_get:pr.registered_no|attr:"date"|default:"-" }}
@@ -70,20 +69,16 @@
                   </td>
                   <!-- TD 1: Kosong (tidak ada Add PO di sini) -->
                   <td class="text-center align-middle">
-
                   </td>
-
                   <!-- TD 2: Delete -->
                   <td class="text-center align-middle">
                     <a href="{% url 'purchase_order_delete' pr.registered_no %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus Purchase Order ini?')">Delete</a>
                   </td>
-
                   <!-- TD 3: Detail -->
                   <td class="text-center align-middle">
                     <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
                   </td>
-
-                </tr>
+                </tr> {% endcomment %}
 
               {% elif request.user|has_group:"Supervisor" or request.user|has_group:"Karyawan" %}
                 {% if pr.registered_no in po_registered_nos %}
@@ -97,42 +92,41 @@
                     </td>
                     <td class="text-start align-middle">{{ pr.registered_no }}</td>
                     <td class="text-center align-middle">
-                      {% if pr.approve_factory_manager is True %}
-                        Factory Manager <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_factory_manager is False %}
-                        Factory Manager <i class="fas fa-times text-danger"></i>
-                      {% elif pr.approve_manager is True %}
-                        Manager <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_manager is False %}
-                        Manager <i class="fas fa-times text-danger"></i>
-                      {% elif pr.approve_sspv is True %}
-                        SSPV <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_sspv is False %}
-                        SSPV <i class="fas fa-times text-danger"></i>
-                      {% elif pr.approve_spv is True %}
-                        Pending 
-                        {% comment %} <i class="fas fa-check text-success"></i> {% endcomment %}
-                      {% elif pr.approve_spv is False %}
-                        SPV <i class="fas fa-times text-danger"></i>
-                      {% elif pr.requested %}
-                        Pending <i class="fas fa-check text-success"></i>
-                      {% else %}
-                        <i class="fas fa-times text-danger"></i>
-                      {% endif %}
-                    </td>
+                      {% with po=purchase_orders|dict_get:pr.registered_no %}
+                        {% if po and po.sc_sent %}
+                          Sent to SC <i class="fas fa-check text-success"></i>
+                        {% else %}
+                          {% if pr.approve_factory_manager is True %}
+                            Factory Manager <i class="fas fa-check text-success"></i>
+                          {% elif pr.approve_factory_manager is False %}
+                            Factory Manager <i class="fas fa-times text-danger"></i>
 
+                          {% elif pr.approve_manager is True %}
+                            Manager <i class="fas fa-check text-success"></i>
+                          {% elif pr.approve_manager is False %}
+                            Manager <i class="fas fa-times text-danger"></i>
+
+                          {% elif pr.approve_sspv is True %}
+                            SSPV <i class="fas fa-check text-success"></i>
+                          {% elif pr.approve_sspv is False %}
+                            SSPV <i class="fas fa-times text-danger"></i>
+
+                          {% elif pr.approve_spv is True %}
+                            Pending
+                          {% elif pr.approve_spv is False %}
+                            Pending <i class="fas fa-times text-danger"></i>
+
+                          {% elif pr.requested %}
+                            Pending <i class="fas fa-check text-success"></i>
+                          {% else %}
+                            <i class="fas fa-times text-danger"></i>
+                          {% endif %}
+                        {% endif %}
+                      {% endwith %}
+                    </td>
                     <!-- TD 1: Detail -->
                     <td class="text-center align-middle">
                       <button class="btn btn-sm btn-info load-detail-btn" data-registered-no="{{ pr.registered_no }}">Detail</button>
-                    </td>
-                    <td class="text-center align-middle">
-                      {% with po=purchase_orders|dict_get:pr.registered_no %}
-                        {% if po and po.sc_sent %}
-                          <i class="fas fa-check text-success"></i> <!-- Centang hijau -->
-                        {% else %}
-                          <i class="fas fa-times text-danger"></i> <!-- Silang merah -->
-                        {% endif %}
-                      {% endwith %}
                     </td>
                     
                     {% if request.user|has_group:"Supervisor" %}
@@ -165,20 +159,34 @@
                     </td>
                     <td class="text-start align-middle">{{ pr.registered_no }}</td>
                     <td class="text-center align-middle">
-                      {% if pr.approve_factory_manager %}
+                      {% if pr.approve_factory_manager is True %}
                         Factory Manager <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_manager %}
+                      {% elif pr.approve_factory_manager is False %}
+                        Factory Manager <i class="fas fa-times text-danger"></i>
+                      
+                      {% elif pr.approve_manager is True %}
                         Manager <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_sspv %}
+                      {% elif pr.approve_manager is False %}
+                        Manager <i class="fas fa-times text-danger"></i>
+
+                      {% elif pr.approve_sspv is True %}
                         SSPV <i class="fas fa-check text-success"></i>
-                      {% elif pr.approve_spv %}
-                        SPV <i class="fas fa-check text-success"></i>
+                      {% elif pr.approve_sspv is False %}
+                        SSPV <i class="fas fa-times text-danger"></i>
+
+                      {% elif pr.approve_spv is True %}
+                        Pending 
+                      {% elif pr.approve_spv is False %}
+                        Pending 
+
                       {% elif pr.requested %}
-                        Pending <i class="fas fa-check text-success"></i>
+                        Pending <i class="fas fa-hourglass text-warning"></i>
+
                       {% else %}
                         <i class="fas fa-times text-danger"></i>
                       {% endif %}
                     </td>
+
                     <td class="text-center align-middle">
                       {% if request.user|has_group:"SeniorSupervisor" %}
                         {% if not pr.approve_sspv %}

@@ -98,11 +98,14 @@ def purchaseOrd(request):
     if status_filter == 'pending':
         requests_with_po = requests_with_po.filter(
             requested=True,
-            approve_spv__isnull=True
+            approve_spv=True,
+            approve_sspv__isnull=True
         )
     elif status_filter == 'approved':
         requests_with_po = requests_with_po.filter(
-            approve_factory_manager=True
+            approve_sspv=True
+            # approve_factory_manager=True
+            # approve_factory_manager=True
         )
     elif status_filter == 'rejected':
         requests_with_po = requests_with_po.filter(
