@@ -38,12 +38,10 @@
               >
                 Edit
               </button>
-              <button
-                class="btn btn-sm btn-danger"
-                onclick="hapusAkun('{{ user.id }}')"
-              >
+              <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')">
                 Delete
               </button>
+
             {% comment %} {% else %}
               <span class="text-muted">-</span>
             {% endif %} {% endcomment %}
@@ -131,33 +129,6 @@
   </div>
 </div>
 
-<!-- Modal Hapus Akun -->
-<div id="modal-hapus" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Delete Account</h2>
-      <span
-        class="close"
-        style="color: black"
-        onclick="closeModal('modal-hapus')"
-        >&times;</span
-      >
-    </div>
-    <div class="modal-body">
-      <p>Are you sure you want to delete this account?</p>
-      <form method="POST" action="{% url 'hapus_akun' %}">
-        {% csrf_token %}
-        <input type="hidden" name="hapus_user_id" id="hapus_user_id" value="" />
-        <div class="d-flex justify-content-end">
-          <button type="submit" class="reset-btn">
-            <i class="nav-icon fas fa-trash-alt mr-2"></i> Delete
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <style>
   .modal {
     display: none;
@@ -209,9 +180,44 @@
     max-height: 350px;
   }
 </style>
-
-<!-- Javascript -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+  function confirmDeleteUser(userId, username) {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Account "${username}" will be deleted.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Buat form secara dinamis dan submit ke deleteAccount
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{% url 'hapus_akun' %}";
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfmiddlewaretoken';
+        csrfToken.value = '{{ csrf_token }}';
+        form.appendChild(csrfToken);
+
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'hapus_user_id';
+        idInput.value = userId;
+        form.appendChild(idInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+
+
   function openModal(modalId) {
     document.getElementById(modalId).style.display = "block";
   }

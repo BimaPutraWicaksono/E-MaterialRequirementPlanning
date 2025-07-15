@@ -230,12 +230,12 @@
                   <p>Shipped</p>
                 </a>
               </li>
-              <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
+              {% comment %} <li class="nav-item {% if request.resolver_match.url_name == 'purchaseReq' %}active{% endif %}">
                 <a href="{% url 'purchaseReq' %}" class="nav-link">
                   <i class="nav-icon fas fa-cart-plus"></i>
                   <p>Purchase Request</p>
                 </a>
-              </li>
+              </li> {% endcomment %}
             </ul>
           </li>
         {% endif %}
