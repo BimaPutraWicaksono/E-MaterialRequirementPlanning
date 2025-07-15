@@ -10,8 +10,11 @@
       <p for="status" class="mr-2 mt-3">Status:</p>
       <select name="status" id="status" class="form-control" style="width: 178px; height:34px;" onchange="this.form.submit()">
         <option value="">All</option>
-        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
-        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending (SPV Approved)</option>
+        <option value="sspv" {% if status_filter == 'sspv' %}selected{% endif %}>SSPV Approved</option>
+        <option value="manager" {% if status_filter == 'manager' %}selected{% endif %}>Manager Approved</option>
+        <option value="factory_manager" {% if status_filter == 'factory_manager' %}selected{% endif %}>Factory Manager Approved</option>
+        <option value="sent_sc" {% if status_filter == 'sent_sc' %}selected{% endif %}>Sent to Stock Control</option>
         <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
       </select>
       <noscript><button type="submit" class="btn btn-primary btn-sm">Apply</button></noscript>

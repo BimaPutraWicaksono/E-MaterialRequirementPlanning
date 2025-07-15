@@ -4,6 +4,8 @@ import imaplib
 import email
 from email.header import decode_header
 from datetime import datetime
+from django.db.models import Q
+
 
 from django.conf import settings
 from django.contrib import messages
@@ -94,23 +96,40 @@ def purchaseOrd(request):
     # Hanya ambil PR yang sudah punya PO
     requests_with_po = all_requests.filter(registered_no__in=po_registered_nos)
 
-    # 🔽 Filter berdasarkan status
+    # 🔽 Filter berdasarkan status approval tahapan
     if status_filter == 'pending':
         requests_with_po = requests_with_po.filter(
-            requested=True,
             approve_spv=True,
             approve_sspv__isnull=True
         )
-    elif status_filter == 'approved':
+    elif status_filter == 'sspv':
         requests_with_po = requests_with_po.filter(
-            approve_sspv=True
-            # approve_factory_manager=True
-            # approve_factory_manager=True
+            approve_sspv=True,
+            approve_manager__isnull=True
+        )
+    elif status_filter == 'manager':
+        requests_with_po = requests_with_po.filter(
+            approve_manager=True,
+            approve_factory_manager__isnull=True
+        )
+    elif status_filter == 'factory_manager':
+        requests_with_po = requests_with_po.filter(
+            approve_factory_manager=True
+        ).exclude(
+            registered_no__in=PurchaseOrder.objects.filter(sc_sent=True).values_list('registered_no__registered_no', flat=True)
+        )
+    elif status_filter == 'sent_sc':
+        requests_with_po = requests_with_po.filter(
+            registered_no__in=PurchaseOrder.objects.filter(sc_sent=True).values_list('registered_no__registered_no', flat=True)
         )
     elif status_filter == 'rejected':
         requests_with_po = requests_with_po.filter(
-            approve_spv=False
+            Q(approve_spv=False) |
+            Q(approve_sspv=False) |
+            Q(approve_manager=False) |
+            Q(approve_factory_manager=False)
         )
+
 
     purchase_orders = {
         po.registered_no.registered_no: po
