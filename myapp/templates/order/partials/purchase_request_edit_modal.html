@@ -1,0 +1,59 @@
+<div class="modal fade" id="editPurchaseModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document" style="position: absolute; right: 9%; width: 80vw; max-width: 1140px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Purchase Request</h5>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'purchase_request_edit' pr.registered_no %}">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-2">
+                <label><strong>Registered No</strong></label>
+                <input type="text" class="form-control" name="registered_no" value="{{ pr.registered_no }}" readonly>
+              </div>
+              <div class="mb-2">
+                <label><strong>Departement</strong></label>
+                <input type="text" class="form-control" value="{{ user_departement }}" readonly>
+                <input type="hidden" name="departement" value="{{ user_departement.id }}">
+              </div>
+              <div class="mb-2">
+                <label><strong>Section</strong></label>
+                {{ form.section }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-2">
+                <label><strong>Purchase By</strong></label>
+                {{ form.purchase_by }}
+              </div>
+              <div class="mb-2">
+                <label class="mr-4"><strong>Requested</strong></label>
+                {{ form.requested }}
+              </div>
+              <div class="mb-2">
+                <label><strong>Pilih Carline</strong></label>
+                {{ form.part_order }}
+              </div>
+            </div>
+          </div>
+
+          <div id="loading-parts-table-container" class="mt-4">
+            {{ table_html|safe }}
+          </div>
+
+          <div class="mt-3">
+            <h6><strong>TOTAL: <span id="total-amount-display">$0.00</span></strong></h6>
+          </div>
+          <input type="hidden" name="total_amount_hidden" id="total-amount-hidden">
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -264,64 +264,96 @@ def delete_purchase_request(request, registered_no):
         messages.success(request, f"Purchase Request {registered_no} berhasil dihapus.")
     return redirect('purchaseReq')  # ganti sesuai nama path untuk halaman PR utama
 
-
+@login_required
 def purchase_request_edit(request, registered_no):
-    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no, created_by=request.user)
+
+    if not request.user.groups.filter(name='Karyawan').exists():
+        return HttpResponseForbidden("Tidak memiliki izin untuk mengedit")
 
     if request.method == 'POST':
-        form = PurchaseRequestEditForm(request.POST, instance=pr)
+        form = PurchaseRequestForm(request.POST, instance=pr)
         if form.is_valid():
-            form.save()
+            selected_carlines = form.cleaned_data['part_order']
+            budget_ref_no_list = request.POST.getlist('budget_ref_no')
+            estimated_prices_list = request.POST.getlist('estimated_price')
+            deadlines_list = request.POST.getlist('deadline')
 
-            # Tangkap data item
-            estimated_prices = request.POST.getlist('estimated_price')
-            budget_ref_nos = request.POST.getlist('budget_ref_no')
-            deadlines = request.POST.getlist('deadline')
-            item_ids = request.POST.getlist('item_id')
+            # Simpan form PR (tanpa menyimpan total_amount dulu)
+            pr = form.save(commit=False)
+            pr.save()
+            pr.part_order.set(selected_carlines)
 
-            total_amount = 0
-            for i, item_id in enumerate(item_ids):
-                if not item_id.strip():  # skip if empty or whitespace
-                    continue
+            # Hapus item lama
+            pr.items.all().delete()
+
+            # Persiapan data item baru
+            all_parts = []
+            seen_partdesk_ids = set()
+
+            for carline in selected_carlines:
+                parts = LoadingPartResult.objects.filter(carline=carline).order_by('partdesk')
+                for part in parts:
+                    if part.partdesk_id and part.partdesk_id not in seen_partdesk_ids:
+                        seen_partdesk_ids.add(part.partdesk_id)
+                        all_parts.append(part)
+
+            total_amount = 0  # Inisialisasi total amount
+
+            # Simpan item baru
+            for i, part in enumerate(all_parts):
                 try:
-                    item = RequestItem.objects.get(id=item_id, purchase_request=pr)
-                except RequestItem.DoesNotExist:
-                    continue
-
-                # Update nilai
-                try:
-                    est_price = float(estimated_prices[i])
-                except (ValueError, IndexError):
+                    budget = budget_ref_no_list[i]
+                    est_price = float(estimated_prices_list[i])
+                    dl = deadlines_list[i] if deadlines_list[i] else None
+                except (IndexError, ValueError):
+                    budget = ""
                     est_price = 0
+                    dl = None
 
-                budget = budget_ref_nos[i] if i < len(budget_ref_nos) else ""
-                deadline = deadlines[i] if i < len(deadlines) and deadlines[i] else None
-
-                avg = item.result_average_round or 0
+                avg = part.average_round or 0
                 amount = avg * est_price
+                total_amount += amount  # Akumulasi total
 
-                # Update item
-                item.estimated_price = est_price
-                item.budget_ref_no = budget
-                item.deadline = deadline
-                item.amount = amount
-                item.save()
+                RequestItem.objects.create(
+                    purchase_request=pr,
+                    loading_part_result=part,
+                    budget_ref_no=budget,
+                    result_average_round=avg,
+                    estimated_price=est_price,
+                    amount=amount,
+                    deadline=dl
+                )
 
-                total_amount += amount
-
+            # Update total_amount di PR
             pr.total_amount = total_amount
             pr.save()
 
+            messages.success(request, "Purchase Request berhasil diperbarui.")
             return redirect('purchaseReq')
     else:
-        form = PurchaseRequestEditForm(instance=pr)
+        form = PurchaseRequestForm(instance=pr)
+        form.fields['section'].queryset = Section.objects.filter(departement=pr.departement)
 
-    context = {
+    items = pr.items.all()
+    selected_carline_ids = pr.part_order.values_list('id', flat=True)
+    deadline_default = (date.today() + timedelta(days=30)).isoformat()
+
+    table_html = render_to_string('order/partials/loading_parts_table.html', {
+        'parts': [item.loading_part_result for item in items],
+        'deadline_default': deadline_default,
+        'items': items,
+    })
+
+    html = render_to_string('order/partials/purchase_request_edit_modal.html', {
         'form': form,
-        'registered_no': registered_no,
-        'purchase_request': pr,
-    }
-    return render(request, 'order/partials/purchase_request_edit.html', context)
+        'pr': pr,
+        'user_departement': pr.departement,
+        'table_html': table_html,
+    }, request=request)
+
+    return JsonResponse({'html': html})
+
 
 @login_required
 def ajax_get_loading_parts_edit(request):
