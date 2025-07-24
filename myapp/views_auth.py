@@ -1,9 +1,14 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from .form import SignupForm, LoginForm
-from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.contrib.auth.hashers import make_password
+from django.contrib import messages
+from django.http import JsonResponse
+
+from .form import SignupForm, LoginForm
 from .models import Departement
+
 
 # Create your views here.
 def user_login(request):
@@ -29,13 +34,6 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 
 User = get_user_model()  # Ambil model User yang aktif (CustomUser kalau sudah di-swap)
 
@@ -125,11 +123,6 @@ def hapus_akun(request):
         return redirect('daftar_akun')
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
-from django.shortcuts import redirect
-from django.contrib import messages
 
 @login_required
 def update_user_profile(request):

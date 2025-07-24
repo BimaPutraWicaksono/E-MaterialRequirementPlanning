@@ -94,10 +94,13 @@
             {% if request.user|has_group:"Karyawan" %}
               <td class="text-center align-middle">
                 {% if not pr.approve_spv or pr.approve_spv is False %}
-                <form class="d-flex justify-content-center align-items-center" method="POST" action="{% url 'delete_purchase_request' pr.registered_no %}" onsubmit="return confirm('Yakin ingin menghapus PR ini?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
+                  <form method="POST" class="d-inline delete-pr-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="registered_no" value="{{ pr.registered_no }}">
+                    <button type="button" class="btn btn-sm btn-danger btn-delete-pr" data-registered-no="{{ pr.registered_no }}">
+                      Delete
+                    </button>
+                  </form>
                 {% endif %}
               </td>
             {% endif %}
@@ -319,6 +322,37 @@
         $("#editPurchaseModal").modal("show");
       })
       .catch(error => console.error("Error fetching edit form:", error));
+  });
+
+
+  // Konfirmasi Delete PR
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.btn-delete-pr').forEach(button => {
+      button.addEventListener('click', function () {
+        const form = this.closest('form');
+        const registeredNo = this.dataset.registeredNo;
+
+        Swal.fire({
+          title: "Are You Sure?",
+          text: `Purchase Request "${registeredNo}" will be permanently deleted!`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes",
+          cancelButtonText: "Cancel",
+          customClass: {
+            popup: "custom-swal-popup",
+            confirmButton: "custom-swal-confirm-button",
+            cancelButton: "custom-swal-cancel-button",
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
   });
 
 </script>

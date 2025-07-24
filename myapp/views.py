@@ -1,14 +1,27 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Carline, MachineLoading, AssyValue, NoAssy, Bulan, Quantity
-from django.http import JsonResponse
-from django.contrib import messages
-from .form import CarlineForm, UploadFileForm
-import pandas as pd
+import math
 import logging
+import pandas as pd
 import openpyxl
-from django.http import HttpResponse
+from collections import OrderedDict
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Sum, Q
 from django.contrib.auth.decorators import login_required
+
 from myproject.decorators import group_required
+
+from .form import CarlineForm, UploadFileForm
+from .models import (
+    Carline, MachineLoading, AssyValue, NoAssy, Bulan, Quantity,
+    CalculationResult, CalculationResultLoading,
+    Load_applicator, AggregatedResultByTerminal,
+    TerminalNameMapping, LastRoundup, LoadingPartResult, PartDesk
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +48,6 @@ def carline_view(request):
     }
     return render(request, 'carline.html', context)
 
-
 # Produksi Plan QTY tampilan all
 @login_required()
 def allSixProductionPlan(request):
@@ -47,9 +59,6 @@ def allSixProductionPlan(request):
     }
 
     return render(request, 'allSixProductionPlan.html', context)
-
-        
-from django.urls import reverse
 
 @login_required()
 def delete_carline(request, pk):
@@ -199,12 +208,6 @@ def reset_sixProductionPlan(request, name):
 
 
 # Import excel Machine Loading
-from django.shortcuts import render, get_object_or_404
-import openpyxl
-from .models import Carline, MachineLoading, AssyValue
-
-from django.shortcuts import redirect
-
 @login_required()
 def machineLoading(request, name):
     carline = get_object_or_404(Carline, name=name)
@@ -320,10 +323,6 @@ def reset_machineLoading(request, name):
 
 
 # CalPart1
-from django.db.models import Sum    
-from collections import OrderedDict
-from .models import Carline, MachineLoading, AssyValue, Quantity, CalculationResult, CalculationResultLoading
-
 @login_required()
 def machineLoadingCalculate(request, name):
     carline = get_object_or_404(Carline, name=name)
@@ -515,12 +514,6 @@ def machineLoadingCalculate(request, name):
         'year': year,
     })
 
-from django.shortcuts import render
-from django.db.models import Sum
-from django.db import transaction
-from .models import CalculationResultLoading
-from django.contrib.auth.decorators import login_required
-
 @login_required()
 def requirementPartAllCarline(request):
     try:
@@ -567,9 +560,6 @@ def requirementPartAllCarline(request):
 
          
 # Loading Part
-import math
-from .models import Load_applicator, AggregatedResultByTerminal, TerminalNameMapping, CalculationResultLoading
-
 def process_terminal_mappings():
     load_applicators = Load_applicator.objects.all()
     aggregated_results = AggregatedResultByTerminal.objects.select_related('calculation_result').all()
@@ -663,8 +653,6 @@ def process_terminal_mappings():
     return terminal_data
 
 # Roundup Loading
-import math
-from .models import AggregatedResultByTerminal, TerminalNameMapping, LastRoundup, CalculationResultLoading
 def process_last_roundup():
     terminal_mappings = TerminalNameMapping.objects.select_related(
         'terminal__calculation_result__carline', 'name', 'month'
@@ -717,12 +705,6 @@ def process_last_roundup():
 
 
     return grouped_data, grouped_data_ceil
-
-from django.contrib.auth.decorators import login_required 
-from django.shortcuts import render
-from .models import Carline, LoadingPartResult, PartDesk
-from django.db.models import Q
-import math
 
 @login_required
 def loadingPart(request):

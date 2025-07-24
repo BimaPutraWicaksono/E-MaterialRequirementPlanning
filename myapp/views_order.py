@@ -3,14 +3,13 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 
-from .form import PurchaseRequestForm, PurchaseRequestEditForm
-from .models import (PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section)
+from .form import PurchaseRequestForm, PurchaseRequestEditForm, PurchaseOrderForm
+from .models import PurchaseRequest, RequestItem, LoadingPartResult, Carline, Section, PurchaseOrder
 from myapp.models import Departement
-
 
 @login_required()
 def master_departement_section(request):
@@ -380,13 +379,6 @@ def ajax_get_loading_parts_edit(request):
             'existing_details': existing_details
         })
         return JsonResponse({'table': table_html})
-    
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import PurchaseRequest, RequestItem, PurchaseOrder
-from .form import PurchaseOrderForm
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 
 
 @login_required
@@ -425,9 +417,6 @@ def create_purchase_order(request, registered_no):
         'form': form,
         'purchase_request': purchase_request,
     })
-
-from django.template.loader import render_to_string
-from django.http import JsonResponse
 
 @login_required
 def ajax_load_po_form(request, registered_no):

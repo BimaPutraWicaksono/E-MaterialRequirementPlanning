@@ -4,25 +4,32 @@ import imaplib
 import email
 from email.header import decode_header
 from datetime import datetime
-from django.db.models import Q
-
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import EmailMessage
-from django.http import (HttpResponse, JsonResponse, HttpResponseNotAllowed,)
-from django.shortcuts import (render, redirect, get_object_or_404)
+from django.db.models import Q
+from django.http import (
+    HttpResponse, JsonResponse, HttpResponseNotAllowed
+)
+from django.shortcuts import (
+    render, redirect, get_object_or_404
+)
 from django.template.loader import render_to_string, get_template
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from xhtml2pdf import pisa
-# Forms
-from .form import ( ShippedForm, PurchaseRequestForm, SupplierForm, PurchaseOrderForm)
-# Models
-from .models import ( Shipped, PurchaseRequest, RequestItem, LoadingPartResult, Section, Invoice, AirWayBill, PurchaseOrder, ScheduleConf, Supplier)
 
+from xhtml2pdf import pisa
+
+from .form import (
+    ShippedForm, PurchaseRequestForm, SupplierForm, PurchaseOrderForm
+)
+from .models import (
+    Shipped, PurchaseRequest, RequestItem, LoadingPartResult, Section,
+    Invoice, AirWayBill, PurchaseOrder, ScheduleConf, Supplier
+)
 
 @login_required
 def purchaseOrd(request):
@@ -150,7 +157,6 @@ def purchaseOrd(request):
         'status_filter': status_filter,  # ⬅️ kirim ke template
     })
 
-
 @login_required
 def purchase_order_detail(request, registered_no):
     purchase_request = get_object_or_404(PurchaseRequest, registered_no=registered_no)
@@ -187,8 +193,6 @@ def purchase_order_detail(request, registered_no):
     }).content.decode('utf-8')
 
     return JsonResponse({'html': html})
-
-from .models import PurchaseOrder, PurchaseRequest
 
 def purchase_order_edit(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
@@ -267,9 +271,6 @@ def approve_purchase_order(request, registered_no):
 
         return redirect('purchaseOrd')
 
-from django.utils import timezone
-from .models import ScheduleConf
-
 def export_purchase_order_pdf(request, registered_no):
     pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
 
@@ -298,14 +299,14 @@ def export_purchase_order_pdf(request, registered_no):
     if pisa_status.err:
         return HttpResponse('PDF generation failed', status=500)
 
-    # ✅ Update status sc_sent dan sc_sent_at
+    # Update status sc_sent dan sc_sent_at
     schedule_conf = ScheduleConf.objects.filter(registered_no=pr).first()
     if schedule_conf:
         schedule_conf.sc_sent = True
         schedule_conf.sc_sent_at = timezone.now()
         schedule_conf.save()
     
-    # 🔽 TAMBAHKAN INI: update juga sc_sent pada PurchaseOrder
+    # TAMBAHKAN INI: update juga sc_sent pada PurchaseOrder
     po = getattr(pr, 'purchaseorder', None)
     if po:
         po.sc_sent = True
@@ -313,15 +314,6 @@ def export_purchase_order_pdf(request, registered_no):
         po.save()
 
     return redirect('purchaseOrd') 
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.conf import settings
-from .models import PurchaseRequest, PurchaseOrder, ScheduleConf, Invoice, AirWayBill
-import os, imaplib, email, re
-from email.header import decode_header
-from datetime import datetime
 
 @login_required
 def list_exported_purchase_orders(request):
@@ -485,9 +477,6 @@ def list_exported_purchase_orders(request):
         "status_filter": status_filter, 
     })
 
-
-
-
 @login_required
 def manual_airwaybill(request):
     if request.method == "POST":
@@ -517,7 +506,6 @@ def manual_airwaybill(request):
         messages.success(request, "AirWay Bill berhasil disimpan.")
 
     return redirect('list_exported_purchase_orders')
-
 
 @login_required
 def manual_schedule_conf(request):
@@ -581,7 +569,6 @@ def manual_invoice_from_ordered(request):
 
     return redirect("list_exported_purchase_orders")
 
-from datetime import datetime  # Pastikan sudah diimport
 @login_required
 def edit_schedule_conf(request, registered_no):
     if request.method == "POST":
@@ -712,8 +699,6 @@ def send_exported_file_email(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-from django.http import JsonResponse
-
 def supplier_list(request):
     suppliers = Supplier.objects.all()
 
@@ -725,7 +710,6 @@ def supplier_list(request):
             return redirect('supplier_list')
 
     return render(request, 'order/supplier/supplier.html', {'suppliers': suppliers})
-
 
 def supplier_create(request):
     if request.method == 'POST':
@@ -754,9 +738,6 @@ def supplier_delete(request, pk):
         supplier.delete()
         return redirect('supplier_list')
     return render(request, 'order/supplier/supplier_confirm_delete.html', {'supplier': supplier})
-
-# shippedfrom django.shortcuts import render, redirect, get_object_or_404
-
 
 def shipped_list(request):
     shippeds = Shipped.objects.all()

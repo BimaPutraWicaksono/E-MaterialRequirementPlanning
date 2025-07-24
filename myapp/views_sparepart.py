@@ -1,11 +1,18 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from .models import PartName, ApplicatorPart, PartDesk
-from .form import UploadFileForm
 import openpyxl
 from openpyxl import Workbook
 import pandas as pd
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.urls import reverse
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
+
+from .form import UploadFileForm
+from .models import (
+    PartName, ApplicatorPart, PartDesk,
+    Load_applicator, LoadingPartResult
+)
 
 # Applicator 
 @login_required()
@@ -122,20 +129,7 @@ def reset_applicator(request):
     ApplicatorPart.objects.all().delete()
     return redirect('applicator')
 
-# loading applicator
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Load_applicator
-from django.urls import reverse 
-
-
 # Stroke Part
-# myapp/views.py
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.db import transaction
-from .models import Load_applicator, LoadingPartResult
-
 @login_required
 def strokePart(request):
     applicators = Load_applicator.objects.all()
@@ -159,7 +153,6 @@ def strokePart(request):
         applicator.save()
         return redirect(reverse('strokePart'))
 
-    # ----- DELETE -----
     if request.method == 'POST' and 'delete' in request.POST:
         applicator_id = request.POST['applicator_id']
         applicator = get_object_or_404(Load_applicator, id=applicator_id)
@@ -176,7 +169,6 @@ def strokePart(request):
         return redirect(reverse('strokePart'))
 
     return render(request, 'strokePart.html', {'applicators': applicators})
-
 
 #  about us
 @login_required()

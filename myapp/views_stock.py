@@ -2,11 +2,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
-from .models import PurchaseRequest, Stock, RequestItem
-
 from django.db.models import Exists, OuterRef
-from .models import PurchaseRequest, Stock, RequestItem, Invoice  # pastikan Invoice diimpor
+from .models import PurchaseRequest, Stock, RequestItem, Invoice
 
 @login_required
 def stockList(request):
@@ -122,7 +119,6 @@ def requestItemDetail(request, pk):
 
         return redirect('request_item_detail', pk=pk)  # ← POST redirect handled
 
-    # ====== GET request handler starts here =======
     stocks = Stock.objects.filter(
         source_request_item__in=[i.id for i in items]
     )
