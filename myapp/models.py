@@ -203,7 +203,7 @@ class Load_applicator(models.Model):
         
 # model calculation part 3
 class AggregatedResultByTerminal(models.Model):
-    calculation_result = models.ForeignKey(CalculationResultLoading, on_delete=models.SET_NULL, null=True, blank=True)
+    calculation_result = models.ForeignKey( CalculationResultLoading, on_delete=models.CASCADE,null=True, blank=True)
     terminal = models.CharField(max_length=100)
     month = models.CharField(max_length=10)
     total_result = models.FloatField()
