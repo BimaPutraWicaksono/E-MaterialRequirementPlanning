@@ -24,20 +24,26 @@ def stockList(request):
     for pr in connected_requests:
         item_ids = pr.items.values_list('id', flat=True)
         stocks = Stock.objects.filter(source_request_item__in=item_ids)
-        stock_map = {s.source_request_item_id: s.quantity for s in stocks}
+        stock_map = {s.source_request_item_id: s for s in stocks}
 
         total_items = pr.items.count()
         complete = True
         exact_match = True
         for item in pr.items.all():
             expected = int(float(item.result_average_round))
-            actual = stock_map.get(item.id)
+            stock = stock_map.get(item.id)
 
-            if actual is None:
+            if not stock:
                 complete = False
                 exact_match = False
                 break
-            elif actual < expected:
+
+            total_input = stock.quantity_real + stock.quantity_defect + stock.quantity_missing
+            if total_input != expected:
+                complete = False
+                exact_match = False
+                break
+            elif stock.quantity_missing > 0:
                 exact_match = False
 
         if not complete:
@@ -46,6 +52,7 @@ def stockList(request):
             pr.stock_status = 'done_exact'
         else:
             pr.stock_status = 'done_less'
+
 
     return render(
         request,
@@ -68,23 +75,17 @@ def requestItemDetail(request, pk):
         errors = []
 
         for item in items:
-            field_key = f"input_qty_{item.id}"
-            raw_val = request.POST.get(field_key, "").strip()
-
-            if raw_val in ("", "0"):
-                qty_input = 0
-            else:
-                try:
-                    qty_input = int(raw_val)
-                except ValueError:
-                    qty_input = 0
-
+            id = item.id
             original_qty = int(float(item.result_average_round))
-            if qty_input > original_qty:
-                errors.append(
-                    f"Qty untuk item {item.budget_ref_no} tidak boleh "
-                    f"melebihi {original_qty}."
-                )
+
+            qty_real = int(request.POST.get(f"input_qty_real_{id}", 0))
+            qty_defect = int(request.POST.get(f"input_qty_defect_{id}", 0))
+            qty_missing = int(request.POST.get(f"input_qty_missing_{id}", 0))
+
+            total_input = qty_real + qty_defect + qty_missing
+
+            if total_input != original_qty:
+                errors.append(f"Total input untuk item {item.budget_ref_no} harus sama dengan {original_qty}.")
                 continue
 
             partdesk = getattr(item.loading_part_result, "partdesk", None)
@@ -92,24 +93,11 @@ def requestItemDetail(request, pk):
             if not part:
                 continue
 
-            stock_obj = Stock.objects.filter(
-                part=part,
-                source_request_item=item.id
-            ).first()
-
-            if qty_input > 0:
-                if stock_obj:
-                    stock_obj.quantity = qty_input
-                    stock_obj.save()
-                else:
-                    Stock.objects.create(
-                        part=part,
-                        quantity=qty_input,
-                        source_request_item_id=item.id
-                    )
-            else:
-                if stock_obj:
-                    stock_obj.delete()
+            stock_obj, _ = Stock.objects.get_or_create(part=part, source_request_item=item)
+            stock_obj.quantity_real = qty_real
+            stock_obj.quantity_defect = qty_defect
+            stock_obj.quantity_missing = qty_missing
+            stock_obj.save()
 
         if errors:
             for err in errors:
@@ -119,31 +107,33 @@ def requestItemDetail(request, pk):
 
         return redirect('request_item_detail', pk=pk)  # ← POST redirect handled
 
-    stocks = Stock.objects.filter(
-        source_request_item__in=[i.id for i in items]
-    )
-    saved_qty = {s.source_request_item_id: s.quantity for s in stocks}
+    stocks = Stock.objects.filter(source_request_item__in=[i.id for i in items])
+    saved_map = {s.source_request_item_id: s for s in stocks}
 
     for item in items:
-        item.saved_qty = saved_qty.get(item.id)
+        stock = saved_map.get(item.id)
         original_qty = int(float(item.result_average_round))
 
-        if item.saved_qty is None:
-            item.input_value = original_qty
-            item.qty_color   = ""
+        if stock:
+            item.saved_qty_real = stock.quantity_real
+            item.saved_qty_defect = stock.quantity_defect
+            item.saved_qty_missing = stock.quantity_missing
         else:
-            item.input_value = item.saved_qty
-            if item.saved_qty == original_qty:
-                item.qty_color = "text-success fw-bold"
-            elif item.saved_qty < original_qty:
-                item.qty_color = "text-danger fw-bold"
-            else:
-                item.qty_color = ""
+            item.saved_qty_real = 0
+            item.saved_qty_defect = 0
+            item.saved_qty_missing = 0
+
+        total = item.saved_qty_real + item.saved_qty_defect + item.saved_qty_missing
+        item.qty_color = "text-success fw-bold" if total == original_qty else "text-danger fw-bold"
 
     all_qty_complete = all(
-        saved_qty.get(item.id) == int(float(item.result_average_round))
-        for item in items
+        i.saved_qty_real == int(float(i.result_average_round)) and
+        i.saved_qty_defect == 0 and
+        i.saved_qty_missing == 0
+        for i in items
     )
+
+
 
 
     return render(

@@ -423,7 +423,9 @@ class Invoice(models.Model):
         
 class Stock(models.Model):
     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
-    quantity = models.PositiveIntegerField(default=0)
+    quantity_real = models.PositiveIntegerField(default=0)
+    quantity_defect = models.PositiveIntegerField(default=0)
+    quantity_missing = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     source_request_item = models.ForeignKey('RequestItem', on_delete=models.SET_NULL, null=True, blank=True)
 

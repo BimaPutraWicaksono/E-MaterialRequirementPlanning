@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.utils.timezone import datetime
 from collections import OrderedDict
-from django.db.models import Q
+from django.db.models import Q, F
 
 MONTH_NAMES = OrderedDict([
     ("01", "January"), ("02", "February"), ("03", "March"),
@@ -21,10 +21,8 @@ def home(request):
     selected_month = request.GET.get('month')
     now = datetime.now()
 
-    # Convert to int if selected
     month_int = int(selected_month) if selected_month else None
 
-    # Data approval (berdasarkan tanggal PR)
     pr_qs = PurchaseRequest.objects.all()
     if month_int:
         pr_qs = pr_qs.filter(date__month=month_int)
@@ -35,10 +33,8 @@ def home(request):
     count_manager = pr_qs.filter(approve_manager=True, approve_factory_manager__isnull=True).count()
     count_factory_mgr = pr_qs.filter(approve_factory_manager=True).count()
 
-    # Semua registered_no dari PR (untuk awal tahap dokumen)
     all_ids = set(pr_qs.values_list('id', flat=True))
 
-    # Stock: created_at
     stock_ids = set()
     if month_int:
         stock_ids = set(
@@ -51,7 +47,6 @@ def home(request):
             .values_list('source_request_item__purchase_request_id', flat=True)
         )
 
-    # Invoice: date
     invoice_ids = set()
     if month_int:
         invoice_ids = set(
@@ -65,7 +60,6 @@ def home(request):
             .values_list('registered_no_id', flat=True)
         )
 
-    # AWB: date
     awb_ids = set()
     if month_int:
         awb_ids = set(
@@ -79,7 +73,6 @@ def home(request):
             .values_list('registered_no_id', flat=True)
         )
 
-    # ScheduleConf: date
     sc_ids = set()
     if month_int:
         sc_ids = set(
@@ -94,7 +87,6 @@ def home(request):
             .values_list('registered_no_id', flat=True)
         )
 
-    # PurchaseOrder: pisahkan filter sesuai email_sent
     po_sent_ids = set()
     po_not_sent_ids = set()
 
@@ -121,7 +113,6 @@ def home(request):
             .values_list('registered_no_id', flat=True)
         )
 
-    # PR yang belum masuk tahapan apa pun
     used_ids = stock_ids | invoice_ids | awb_ids | sc_ids | po_sent_ids | po_not_sent_ids
     new_pr_ids = all_ids - used_ids
 
@@ -144,7 +135,11 @@ def home(request):
 
     stock_summary = (
         Stock.objects.values('part__partName')
-        .annotate(total_qty=Sum('quantity'))
+        .annotate(
+            total_qty_real=Sum('quantity_real'),
+            total_qty_defect=Sum('quantity_defect'),
+            total_qty_missing=Sum('quantity_missing')
+        )
         .order_by('part__partName')
     )
 
@@ -162,4 +157,3 @@ def home(request):
         'selected_month': selected_month,
     }
     return render(request, 'home.html', context)
-

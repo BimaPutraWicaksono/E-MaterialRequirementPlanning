@@ -8,17 +8,14 @@
     <div class="table-responsive mt-3">
       <table class="table table-bordered">
         <thead class="table-secondary">
-          <tr>
+          <tr class="text-center">
             <th>NO</th>
             <th>PR. NO.</th>
             <th>DETAIL OF GOODS</th>
             <th>QTY</th>
             <th>UNIT PRICE</th>
             <th>AMOUNT</th>
-            {% comment %}
-            <th>DEADLINE</th>
-            {% endcomment %}
-            <th>REAL QTY</th>
+            <th>INPUT QTY</th>
           </tr>
         </thead>
         <tbody>
@@ -36,17 +33,48 @@
             <td>{{ item.deadline }}</td>
             {% endcomment %}
             <td>
-              <div class="d-flex flex-column" style="max-width: 110px">
-                <input
-                  type="number"
-                  name="input_qty_{{ item.id }}"
-                  class="form-control {{ item.qty_color }}"
-                  min="0"
-                  max="{{ item.result_average_round|floatformat:'0' }}"
-                  value="{{ item.input_value }}"
-                />
+              <div class="d-flex flex-row align-items-start" style="gap: 6px; max-width: 100%;">
+                <!-- REAL -->
+                <div class="d-flex flex-column text-success" style="width: 70px;">
+                  <input
+                    type="number"
+                    name="input_qty_real_{{ item.id }}"
+                    class="form-control form-control-sm text-success"
+                    min="0"
+                    max="{{ item.result_average_round|floatformat:'0' }}"
+                    value="{{ item.saved_qty_real|default:'0' }}"
+                  />
+                  <small class="text-success text-center">Real</small>
+                </div>
+
+                <!-- DEFECT -->
+                <div class="d-flex flex-column text-danger" style="width: 70px;">
+                  <input
+                    type="number"
+                    name="input_qty_defect_{{ item.id }}"
+                    class="form-control form-control-sm text-danger"
+                    min="0"
+                    max="{{ item.result_average_round|floatformat:'0' }}"
+                    value="{{ item.saved_qty_defect|default:'0' }}"
+                  />
+                  <small class="text-danger text-center">Defect</small>
+                </div>
+
+                <!-- MISSING -->
+                <div class="d-flex flex-column" style="width: 70px;">
+                  <input
+                    type="number"
+                    name="input_qty_missing_{{ item.id }}"
+                    class="form-control form-control-sm"
+                    min="0"
+                    max="{{ item.result_average_round|floatformat:'0' }}"
+                    value="{{ item.saved_qty_missing|default:'0' }}"
+                  />
+                  <small class="text-center">Missing</small>
+                </div>
               </div>
             </td>
+
           </tr>
           {% empty %}
           <tr>
@@ -57,7 +85,10 @@
       </table>
     </div>
     <div class="d-flex justify-content-end">
-      <button type="submit" class="btn mt-2 {% if all_qty_complete %}btn-secondary{% else %}btn-success{% endif %}" {% if all_qty_complete %}disabled{% endif %}>
+      <button
+        type="submit"
+        class="btn mt-2 {% if all_qty_complete %}btn-secondary{% else %}btn-success{% endif %}"
+        {% if all_qty_complete %}disabled title="Quantity Valid"{% endif %}>
         {% if all_qty_complete %}Complete{% else %}Save{% endif %}
       </button>
     </div>
@@ -110,7 +141,18 @@
     z-index: 9999;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
+
+  {% comment %} .text-success {
+    color: #198754 !important;  /* Bootstrap green */
+  }
+  .text-danger {
+    color: #dc3545 !important;  /* Bootstrap red */
+  }
+  .text-default {
+    color: #000 !important;     /* Hitam */
+  } {% endcomment %}
 </style>
+
 {% if messages %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

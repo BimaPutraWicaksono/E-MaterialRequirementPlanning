@@ -28,28 +28,35 @@
   <div>
     <div class="p-2 border rounded shadow-sm p-3">
       <h5 class="justify-content-center d-flex">STOCK</h5>
-      <table class="table table-bordered" id="table_stock_list">
-        <thead class="table-light text-center">
-          <tr>
-            <th>NO</th>
-            <th>PART NAME</th>
-            <th>TOTAL QUANTITY</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for stock in stock_summary %}
-          <tr class="text-center">
-            <td>{{ forloop.counter }}</td>
-            <td>{{ stock.part__partName|default:"<i>No Part</i>" }}</td>
-            <td>{{ stock.total_qty }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="3" class="text-center">No stock data available.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        <table class="table table-bordered" id="table_stock_list">
+          <thead class="table-light text-center">
+            <tr>
+              <th>NO</th>
+              <th>PART NAME</th>
+              <th>QTY REAL</th>
+              <th>QTY DEFECT</th>
+              <th>QTY MISSING</th>
+              {% comment %} <th>TOTAL</th> {% endcomment %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for stock in stock_summary %}
+            <tr class="text-center">
+              <td>{{ forloop.counter }}</td>
+              <td>{{ stock.part__partName|default:"<i>No Part</i>" }}</td>
+              <td class="text-dark">{{ stock.total_qty_real|default:0 }}</td>
+              <td class="text-danger">{{ stock.total_qty_defect|default:0 }}</td>
+              <td class="text-warning">{{ stock.total_qty_missing|default:0 }}</td>
+              {% comment %} <td>{{ stock.total_qty|default:0 }}</td> {% endcomment %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center">No stock data available.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
     </div>
   </div>
 </div>
