@@ -145,3 +145,51 @@ def requestItemDetail(request, pk):
             'all_qty_complete': all_qty_complete,
         }
     )
+
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+from django.http import HttpResponse
+from .models import PurchaseRequest, RequestItem, Stock
+
+def export_delivery_discrepancy_pdf(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    request_items = RequestItem.objects.filter(purchase_request=pr).select_related(
+    'loading_part_result',
+    'loading_part_result__partdesk',
+    'loading_part_result__partdesk__partName'
+    )
+
+
+    items_with_stock = []
+    for item in request_items:
+        try:
+            stock = Stock.objects.get(source_request_item=item)
+            items_with_stock.append({
+                'budget_ref_no': item.budget_ref_no,
+                'part_name': item.loading_part_result.partdesk.partName.partName,
+                'terminal': item.loading_part_result.terminal,
+                'qty_expected': item.result_average_round,
+                'qty_real': stock.quantity_real,
+                'qty_defect': stock.quantity_defect,
+                'qty_missing': stock.quantity_missing,
+            })
+        except Stock.DoesNotExist:
+            continue  # Skip items without stock entry
+
+    template = get_template('order/partials/delivery_discrepancy_pdf.html')
+    html = template.render({
+        'purchase_request': pr,
+        'items': items_with_stock,
+        'user': request.user,
+    })
+
+    result = BytesIO()
+    pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=result)
+    pdf_file = result.getvalue()
+    result.close()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+
+    response['Content-Disposition'] = f'filename="Delivery_Discrepancy_{registered_no}.pdf"'
+    return response

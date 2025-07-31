@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Delivery Discrepancy Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
+        th { background-color: #eee; }
+        h2, h4 { text-align: center; margin: 0; }
+    </style>
+</head>
+<body>
+    <h2>DELIVERY DISCREPANCY REPORT</h2>
+    <h4>Registered No: {{ purchase_request.registered_no }}</h4>
+    <p>Submitted by: {{ user.get_full_name }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Budget Ref No</th>
+                <th>Part Name</th>
+                <th>Terminal</th>
+                <th>Expected Qty</th>
+                <th>Real Qty</th>
+                <th>Defect</th>
+                <th>Missing</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.budget_ref_no }}</td>
+                <td>{{ item.part_name }}</td>
+                <td>{{ item.terminal }}</td>
+                <td>{{ item.qty_expected }}</td>
+                <td>{{ item.qty_real }}</td>
+                <td>{{ item.qty_defect }}</td>
+                <td>{{ item.qty_missing }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

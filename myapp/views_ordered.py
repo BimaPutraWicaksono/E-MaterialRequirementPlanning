@@ -276,7 +276,7 @@ def export_purchase_order_pdf(request, registered_no):
 
     if not pr.approve_factory_manager:
         return HttpResponse("Unauthorized", status=403)
-
+ 
     template = get_template('order/partials/purchase_order_pdf.html')
     html = template.render({
         'purchase_request': pr,

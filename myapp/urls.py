@@ -134,7 +134,9 @@ urlpatterns = [
     path('add-stock/', views_stock.stockList, name='add_stock'),
     path('stock/request-item-detail/<int:pk>/', views_stock.requestItemDetail, name='request_item_detail'),
 
-    
+    #defect
+    path('stock/discrepancy/export/<str:registered_no>/', views_stock.export_delivery_discrepancy_pdf, name='export_delivery_discrepancy_pdf'),
+ 
 ]
 
 if settings.DEBUG:

@@ -37,6 +37,11 @@
               </td>
               <td>
                   <a href="{% url 'request_item_detail' request.id %}" class="btn btn-info btn-sm">Detail</a>
+                  {% if request.registered_no %}
+                  <a href="{% url 'export_delivery_discrepancy_pdf' request.registered_no %}" class="btn btn-sm btn-outline-danger">
+                      <i class="fas fa-file-pdf"></i> PDF
+                  </a>
+                  {% endif %}
               </td>
           </tr>
           {% endfor %}
