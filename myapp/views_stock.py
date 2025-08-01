@@ -181,6 +181,7 @@ def export_delivery_discrepancy_pdf(request, registered_no):
     html = template.render(context)
     
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Delivery_Discrepancy_{registered_no}.pdf"'
+    # response['Content-Disposition'] = f'attachment; filename="Delivery_Discrepancy_{registered_no}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="Delivery_Discrepancy_{registered_no}.pdf"'
     pisa_status = pisa.CreatePDF(html, dest=response)
     return response if not pisa_status.err else HttpResponse("Error generating PDF", status=500)
