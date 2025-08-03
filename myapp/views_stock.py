@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Exists, OuterRef
 from .models import PurchaseRequest, Stock, RequestItem, Invoice
+from .models import DiscrepancyPDFLog
 
 @login_required
 def stockList(request):
@@ -54,10 +55,20 @@ def stockList(request):
             pr.stock_status = 'done_less'
 
 
+    logs = DiscrepancyPDFLog.objects.select_related('purchase_order')
+    log_map = {
+        log.purchase_order.registered_no_id: log
+        for log in logs
+    }
+
+
     return render(
         request,
         'stock/stock.html',
-        {'connected_requests': connected_requests}
+        {
+            'connected_requests': connected_requests,
+            'discrepancy_logs': log_map, 
+        }
     )
 
 
@@ -185,3 +196,79 @@ def export_delivery_discrepancy_pdf(request, registered_no):
     response['Content-Disposition'] = f'inline; filename="Delivery_Discrepancy_{registered_no}.pdf"'
     pisa_status = pisa.CreatePDF(html, dest=response)
     return response if not pisa_status.err else HttpResponse("Error generating PDF", status=500)
+
+import os
+from django.conf import settings
+from django.core.mail import EmailMessage
+from django.utils import timezone
+from .models import DiscrepancyPDFLog
+from django.template.loader import get_template
+
+@login_required
+def generate_and_send_discrepancy_pdf(request, registered_no):
+    pr = get_object_or_404(PurchaseRequest, registered_no=registered_no)
+    po = get_object_or_404(PurchaseOrder, registered_no=pr)
+    awb = AirWayBill.objects.filter(registered_no=pr).first()
+    invoice = Invoice.objects.filter(registered_no=pr).first()
+
+    request_items = RequestItem.objects.filter(purchase_request=pr).select_related(
+        'loading_part_result__partdesk__partName'
+    )
+
+    items = []
+    for item in request_items:
+        stock = Stock.objects.filter(source_request_item=item).first()
+        item.stock = stock or Stock(quantity_real=0, quantity_defect=0, quantity_missing=0)
+        items.append(item)
+
+    template = get_template('order/partials/delivery_discrepancy_pdf.html')
+    context = {
+        'purchase_request': pr,
+        'purchase_order': po,
+        'invoice': invoice,
+        'awb': awb,
+        'items': items,
+        'now': timezone.now(),
+    }
+    html = template.render(context)
+
+    # Path penyimpanan
+    directory = os.path.join(settings.MEDIA_ROOT, 'defect')
+    os.makedirs(directory, exist_ok=True)
+    filename = f"Delivery_Discrepancy_{registered_no}.pdf"
+    filepath = os.path.join(directory, filename)
+
+    # Simpan PDF
+    with open(filepath, "wb") as f:
+        pisa_status = pisa.CreatePDF(html, dest=f)
+    if pisa_status.err:
+        return HttpResponse("PDF generation failed", status=500)
+
+    # Simpan atau update log
+    pdf_url = os.path.join('defect', filename)
+    log, created = DiscrepancyPDFLog.objects.update_or_create(
+        purchase_order=po,
+        defaults={'pdf_path': pdf_url, 'created_at': timezone.now()}
+    )
+
+    # Kirim email ke supplier
+    if po.supplier.email:
+        email = EmailMessage(
+            subject=f"Delivery Discrepancy Report - {registered_no}",
+            body="Please find attached the delivery discrepancy report.",
+            to=[po.supplier.email],
+        )
+        email.attach_file(filepath)
+
+        try:
+            email.send()
+            log.email_sent = True
+            log.email_sent_at = timezone.now()
+            log.save()
+            messages.success(request, "PDF sent to supplier.")
+        except Exception as e:
+            messages.error(request, f"Failed to send email: {e}")
+    else:
+        messages.warning(request, "Supplier email not found.")
+
+    return redirect('add_stock')

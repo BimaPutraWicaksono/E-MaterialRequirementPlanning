@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load custom_filters %}
 
 <div class="container mt-4">
     <h2 class="justify-content-center d-flex" >DELIVERY</h2>
@@ -15,6 +16,7 @@
               <th>DATE</th>
               <th>STATUS</th>  {# kolom baru #}
               <th>ACTION</th>
+              <th>EMAIL STATUS</th>  {# kolom tambahan untuk Sent/Not Sent #}
           </tr>
       </thead>
       <tbody>
@@ -36,12 +38,35 @@
                   {% endif %}
               </td>
               <td>
-                  <a href="{% url 'request_item_detail' request.id %}" class="btn btn-info btn-sm">Detail</a>
-                  {% if request.registered_no %}
-                  <a href="{% url 'export_delivery_discrepancy_pdf' request.registered_no %}" class="btn btn-sm btn-outline-danger">
-                      <i class="fas fa-file-pdf"></i> PDF
-                  </a>
+                <a href="{% url 'request_item_detail' request.id %}" class="btn btn-info btn-sm">Stock</a>
+
+                <a href="{% url 'export_delivery_discrepancy_pdf' request.registered_no %}" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-file-pdf"></i> View PDF
+                </a>
+
+                {% with log=discrepancy_logs|get_item:request.id %}
+                  {% if log and log.email_sent %}
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>Sent</button>
+                  {% else %}
+                    <form method="get" action="{% url 'send_discrepancy_pdf' request.registered_no %}" class="send-discrepancy-form d-inline">
+                      <button type="button" class="btn btn-sm btn-success btn-send-discrepancy"
+                              data-url="{% url 'send_discrepancy_pdf' request.registered_no %}">
+                        <span class="spinner-border spinner-border-sm d-none me-1" role="status" aria-hidden="true"></span>
+                        Send
+                      </button>
+                    </form>
                   {% endif %}
+                {% endwith %}
+              </td>
+
+              <td class="text-center">
+                {% with log=discrepancy_logs|get_item:request.id %}
+                  {% if log and log.email_sent %}
+                    <span class="badge bg-success">Sent</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Not Sent</span>
+                  {% endif %}
+                {% endwith %}
               </td>
           </tr>
           {% endfor %}
@@ -81,7 +106,15 @@
     min-width: 70px; /* atau sesuaikan dengan kebutuhan */
     text-align: center;
   }
+
+  .btn-sent {
+    background-color: #6c757d;
+    color: white;
+    pointer-events: none;
+    opacity: 0.7;
+  }
 </style>
+
 <script>
 function showDetail(url) {
     fetch(url)
@@ -96,5 +129,57 @@ function showDetail(url) {
         });
 }
 </script>
+{% if messages %}
+<script>
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '{{ message }}',
+        timer: 3000,
+        showConfirmButton: false
+      });
+    {% endif %}
+  {% endfor %}
+</script>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const sendButtons = document.querySelectorAll('.btn-send-discrepancy');
+
+  sendButtons.forEach(button => {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      const url = button.getAttribute('data-url');
+      const spinner = button.querySelector('.spinner-border');
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you want to send this discrepancy email?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, send it!',
+        cancelButtonText: 'No, cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Tampilkan spinner
+          spinner.classList.remove('d-none');
+          button.disabled = true; // Optional: disable tombol
+
+          // Redirect setelah delay singkat (agar spinner sempat muncul)
+          setTimeout(() => {
+            window.location.href = url;
+          }, 300);
+        }
+      });
+    });
+  });
+});
+</script>
+
 
 {% endblock %}

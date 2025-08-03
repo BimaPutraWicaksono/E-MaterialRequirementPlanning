@@ -431,3 +431,13 @@ class Stock(models.Model):
 
     class Meta:
         db_table = 'stock'
+
+class DiscrepancyPDFLog(models.Model):
+    purchase_order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE)
+    pdf_path = models.CharField(max_length=255)
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Discrepancy PDF for {self.purchase_order.registered_no}"

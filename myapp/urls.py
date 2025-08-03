@@ -136,6 +136,8 @@ urlpatterns = [
 
     #defect
     path('stock/discrepancy/export/<str:registered_no>/', views_stock.export_delivery_discrepancy_pdf, name='export_delivery_discrepancy_pdf'),
+    path('delivery_discrepancy/send/<str:registered_no>/', views_stock.generate_and_send_discrepancy_pdf, name='send_discrepancy_pdf'),
+
  
 ]
 
