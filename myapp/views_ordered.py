@@ -436,7 +436,7 @@ def list_exported_purchase_orders(request):
             "email_sent_at": po.email_sent_at if po else None,
             "acc_rej": acc_rej,
             "schedule_date": schedule_date,
-            "schedule_exists": schedule_exists,  # ✅ Tambahkan ini agar form bisa tahu kapan edit
+            "schedule_exists": schedule_exists, 
         })
 
     # Mapping invoice & airwaybill
